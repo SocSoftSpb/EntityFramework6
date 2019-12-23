@@ -11,6 +11,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
     internal class SimplePropertyRef : PropertyRef
     {
         private readonly EdmMember m_property;
+        private int m_hashCode;
 
         // <summary>
         // Simple constructor
@@ -47,7 +48,13 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         // </summary>
         public override int GetHashCode()
         {
-            return m_property.Name.GetHashCode();
+            var hashCode = m_hashCode;
+            if (hashCode == 0)
+            {
+                hashCode   = m_property.Name.GetHashCode();
+                m_hashCode = hashCode;
+            }
+            return hashCode;
         }
 
         public override string ToString()
