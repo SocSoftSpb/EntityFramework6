@@ -1944,7 +1944,8 @@ namespace System.Data.Entity.Core.Objects
             // We either auto-load <T>'s assembly into the ObjectItemCollection or we auto-load the user's calling assembly and its referenced assemblies.
             // If the entities in the user's result spans multiple assemblies, the user must manually call LoadFromAssembly.
             // *GetCallingAssembly returns the assembly of the method that invoked the currently executing method.
-            MetadataWorkspace.ImplicitLoadAssemblyForType(typeof(T), Assembly.GetCallingAssembly());
+            if (!MetadataWorkspace.ImplicitLoadAssemblyForType(typeof(T)))
+                MetadataWorkspace.ImplicitLoadAssemblyForType(typeof(T), Assembly.GetCallingAssembly());
 
             // create a ObjectQuery<T> with default settings
             var query = new ObjectQuery<T>(queryString, this, MergeOption.AppendOnly);
@@ -2263,7 +2264,8 @@ namespace System.Data.Entity.Core.Objects
         internal TypeUsage GetTypeUsage(Type entityCLRType)
         {
             // Register the assembly so the type information will be sure to be loaded in metadata
-            MetadataWorkspace.ImplicitLoadAssemblyForType(entityCLRType, Assembly.GetCallingAssembly());
+            if (!MetadataWorkspace.ImplicitLoadAssemblyForType(entityCLRType))
+                MetadataWorkspace.ImplicitLoadAssemblyForType(entityCLRType, Assembly.GetCallingAssembly());
 
             TypeUsage entityTypeUsage = null;
             if (!Perspective.TryGetType(entityCLRType, out entityTypeUsage)
@@ -2299,7 +2301,8 @@ namespace System.Data.Entity.Core.Objects
             // If the schema types are not loaded: metadata, cache & query would be unable to reason about the type.
             // Either the entity type's assembly is already in the ObjectItemCollection or we auto-load the user's calling assembly and its referenced assemblies.
             // *GetCallingAssembly returns the assembly of the method that invoked the currently executing method.
-            MetadataWorkspace.ImplicitLoadFromEntityType(entitySet.ElementType, Assembly.GetCallingAssembly());
+            if (!MetadataWorkspace.ImplicitLoadFromEntityType(entitySet.ElementType))
+                MetadataWorkspace.ImplicitLoadFromEntityType(entitySet.ElementType, Assembly.GetCallingAssembly());
 
             object entity;
             if (!TryGetObjectByKey(key, out entity))
@@ -3438,7 +3441,8 @@ namespace System.Data.Entity.Core.Objects
             // If the schema types are not loaded: metadata, cache & query would be unable to reason about the type.
             // Either the entity type's assembly is already in the ObjectItemCollection or we auto-load the user's calling assembly and its referenced assemblies.
             // *GetCallingAssembly returns the assembly of the method that invoked the currently executing method.
-            MetadataWorkspace.ImplicitLoadFromEntityType(entitySet.ElementType, Assembly.GetCallingAssembly());
+            if (!MetadataWorkspace.ImplicitLoadFromEntityType(entitySet.ElementType))
+                MetadataWorkspace.ImplicitLoadFromEntityType(entitySet.ElementType, Assembly.GetCallingAssembly());
 
             // Execute the query:
             // SELECT VALUE X FROM [EC].[ES] AS X
@@ -4410,7 +4414,8 @@ namespace System.Data.Entity.Core.Objects
             // If the entities in the user's result spans multiple assemblies, the
             // user must manually call LoadFromAssembly. *GetCallingAssembly returns
             // the assembly of the method that invoked the currently executing method.
-            MetadataWorkspace.ImplicitLoadAssemblyForType(typeof(TElement), Assembly.GetCallingAssembly());
+            if (!MetadataWorkspace.ImplicitLoadAssemblyForType(typeof(TElement)))
+                MetadataWorkspace.ImplicitLoadAssemblyForType(typeof(TElement), Assembly.GetCallingAssembly());
 
             var executionStrategy = DbProviderServices.GetExecutionStrategy(Connection, MetadataWorkspace);
 
@@ -4764,7 +4769,8 @@ namespace System.Data.Entity.Core.Objects
                 // If the entities in the user's result spans multiple assemblies, the
                 // user must manually call LoadFromAssembly. *GetCallingAssembly returns
                 // the assembly of the method that invoked the currently executing method.
-                MetadataWorkspace.ImplicitLoadAssemblyForType(typeof(TElement), Assembly.GetCallingAssembly());
+                if (!MetadataWorkspace.ImplicitLoadAssemblyForType(typeof(TElement)))
+                    MetadataWorkspace.ImplicitLoadAssemblyForType(typeof(TElement), Assembly.GetCallingAssembly());
                 if (!executionOptions.UserSpecifiedStreaming.HasValue)
                 {
                     executionOptions = new ExecutionOptions(executionOptions.MergeOption, !executionStrategy.RetriesOnFailure);
@@ -4887,7 +4893,8 @@ namespace System.Data.Entity.Core.Objects
             // If the entities in the user's result spans multiple assemblies, the
             // user must manually call LoadFromAssembly. *GetCallingAssembly returns
             // the assembly of the method that invoked the currently executing method.
-            MetadataWorkspace.ImplicitLoadAssemblyForType(typeof(TElement), Assembly.GetCallingAssembly());
+            if (!MetadataWorkspace.ImplicitLoadAssemblyForType(typeof(TElement)))
+                MetadataWorkspace.ImplicitLoadAssemblyForType(typeof(TElement), Assembly.GetCallingAssembly());
 
             EntitySet entitySet;
             TypeUsage edmType;
@@ -4931,7 +4938,8 @@ namespace System.Data.Entity.Core.Objects
             // If the entities in the user's result spans multiple assemblies, the
             // user must manually call LoadFromAssembly. *GetCallingAssembly returns
             // the assembly of the method that invoked the currently executing method.
-            MetadataWorkspace.ImplicitLoadAssemblyForType(typeof(TEntity), Assembly.GetCallingAssembly());
+            if (!MetadataWorkspace.ImplicitLoadAssemblyForType(typeof(TEntity)))
+                MetadataWorkspace.ImplicitLoadAssemblyForType(typeof(TEntity), Assembly.GetCallingAssembly());
 
             EntitySet entitySet;
             TypeUsage edmType;

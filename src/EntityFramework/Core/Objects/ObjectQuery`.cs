@@ -91,7 +91,8 @@ namespace System.Data.Entity.Core.Objects
             // If the entities in the user's result spans multiple assemblies, the
             // user must manually call LoadFromAssembly. *GetCallingAssembly returns
             // the assembly of the method that invoked the currently executing method.
-            context.MetadataWorkspace.ImplicitLoadAssemblyForType(typeof(T), Assembly.GetCallingAssembly());
+            if (!context.MetadataWorkspace.ImplicitLoadAssemblyForType(typeof(T)))
+                context.MetadataWorkspace.ImplicitLoadAssemblyForType(typeof(T), Assembly.GetCallingAssembly());
         }
 
         /// <summary>
@@ -121,7 +122,8 @@ namespace System.Data.Entity.Core.Objects
             // If the entities in the user's result spans multiple assemblies, the
             // user must manually call LoadFromAssembly. *GetCallingAssembly returns
             // the assembly of the method that invoked the currently executing method.
-            context.MetadataWorkspace.ImplicitLoadAssemblyForType(typeof(T), Assembly.GetCallingAssembly());
+            if (!context.MetadataWorkspace.ImplicitLoadAssemblyForType(typeof(T)))
+                context.MetadataWorkspace.ImplicitLoadAssemblyForType(typeof(T), Assembly.GetCallingAssembly());
         }
 
         // <summary>
@@ -152,7 +154,8 @@ namespace System.Data.Entity.Core.Objects
             // If the entities in the user's result spans multiple assemblies, the
             // user must manually call LoadFromAssembly. *GetCallingAssembly returns
             // the assembly of the method that invoked the currently executing method.
-            context.MetadataWorkspace.ImplicitLoadAssemblyForType(typeof(T), Assembly.GetCallingAssembly());
+            if (!context.MetadataWorkspace.ImplicitLoadAssemblyForType(typeof(T)))
+                context.MetadataWorkspace.ImplicitLoadAssemblyForType(typeof(T), Assembly.GetCallingAssembly());
         }
 
         private static string BuildScanEntitySetEsql(EntitySetBase entitySet)
@@ -381,7 +384,8 @@ namespace System.Data.Entity.Core.Objects
             }
 
             // SQLPUDT 484477: Make sure TResultType is loaded.
-            QueryState.ObjectContext.MetadataWorkspace.ImplicitLoadAssemblyForType(typeof(TResultType), Assembly.GetCallingAssembly());
+            if (!QueryState.ObjectContext.MetadataWorkspace.ImplicitLoadAssemblyForType(typeof(TResultType)))
+                QueryState.ObjectContext.MetadataWorkspace.ImplicitLoadAssemblyForType(typeof(TResultType), Assembly.GetCallingAssembly());
 
             // Retrieve the O-Space type metadata for the result type specified. If no
             // metadata can be found for the specified type, fail. Otherwise, if the
@@ -459,7 +463,8 @@ namespace System.Data.Entity.Core.Objects
             Check.NotNull(parameters, "parameters");
 
             // SQLPUDT 484974: Make sure TResultType is loaded.
-            QueryState.ObjectContext.MetadataWorkspace.ImplicitLoadAssemblyForType(typeof(TResultType), Assembly.GetCallingAssembly());
+            if (!QueryState.ObjectContext.MetadataWorkspace.ImplicitLoadAssemblyForType(typeof(TResultType)))
+                QueryState.ObjectContext.MetadataWorkspace.ImplicitLoadAssemblyForType(typeof(TResultType), Assembly.GetCallingAssembly());
 
             return
                 new ObjectQuery<TResultType>(

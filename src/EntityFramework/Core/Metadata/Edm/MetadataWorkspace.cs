@@ -449,6 +449,28 @@ namespace System.Data.Entity.Core.Metadata.Edm
         }
 
         // <summary>
+        // Try load assembly for type
+        // </summary>
+        // <param name="type"> The type's assembly is loaded into the OSpace ItemCollection </param>
+        // <returns>true - success, false - need call ImplicitLoadAssemblyForType(Type type, Assembly callingAssembly)</returns>
+        internal virtual bool ImplicitLoadAssemblyForType(Type type)
+        {
+            // this exists separately from LoadFromAssembly so that we can handle generics, like IEnumerable<Product>
+            DebugCheck.NotNull(type);
+            ItemCollection collection;
+            if (TryGetItemCollection(DataSpace.OSpace, out collection))
+            {
+                // if OSpace is not loaded - don't register
+                var objItemCollection = (ObjectItemCollection)collection;
+                ItemCollection itemCollection;
+                TryGetItemCollection(DataSpace.CSpace, out itemCollection);
+                var edmItemCollection = (EdmItemCollection)itemCollection;
+                return objItemCollection.ImplicitLoadAssemblyForType(type, edmItemCollection);
+            }
+            return false;
+        }
+
+        // <summary>
         // Implicit loading means that we are trying to help the user find the right
         // assembly, but they didn't explicitly ask for it. Our Implicit rules require that
         // we filter out assemblies with the Ecma or MicrosoftPublic PublicKeyToken on them
@@ -501,6 +523,26 @@ namespace System.Data.Entity.Core.Metadata.Edm
                     }
                 }
             }
+        }
+
+        // <summary>
+        // If OSpace is not loaded for the specified EntityType try load metadata from the callingAssembly and its referenced assemblies.
+        // </summary>
+        // <param name="type"> The CSPace type to verify its OSpace counterpart is loaded </param>
+        // <returns>true - success, false - need call ImplicitLoadAssemblyForType(EntityType type, Assembly callingAssembly)</returns>
+        internal virtual bool ImplicitLoadFromEntityType(EntityType type)
+        {
+            // used by ObjectContext.*GetObjectByKey when the clr type is not available
+            // so we check the OCMap to find the clr type else attempt to autoload the OSpace from callingAssembly
+            DebugCheck.NotNull(type);
+            MappingBase map;
+            if (!TryGetMap(type, DataSpace.OCSpace, out map))
+            {
+                // an OCMap is not exist, attempt to load OSpace to retry
+                return ImplicitLoadAssemblyForType(typeof(IEntityWithKey));
+            }
+
+            return true;
         }
 
         // <summary>
@@ -1538,7 +1580,8 @@ namespace System.Data.Entity.Core.Metadata.Edm
             var nonNullableType = TypeSystem.GetNonNullableType(type);
 
             // make sure the workspace knows about T
-            ImplicitLoadAssemblyForType(nonNullableType, Assembly.GetCallingAssembly());
+            if (!ImplicitLoadAssemblyForType(nonNullableType))
+                ImplicitLoadAssemblyForType(nonNullableType, Assembly.GetCallingAssembly());
             var objectItemCollection = (ObjectItemCollection)GetItemCollection(DataSpace.OSpace);
             EdmType objectEdmType;
             if (objectItemCollection.TryGetItem(nonNullableType.FullNameWithNesting(), out objectEdmType))

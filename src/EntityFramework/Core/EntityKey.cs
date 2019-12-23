@@ -232,14 +232,14 @@ namespace System.Data.Entity.Core
             _isLocked = true;
         }
 
-        // <summary>
-        // Constructor optimized for a singleton key.
-        // SQLBUDT 478655: Performance optimization: Does no integrity checking on the key value.
-        // SQLBUDT 523554: Performance optimization: Does no validate type of key members.
-        // </summary>
-        // <param name="entitySet"> EntitySet of the entity </param>
-        // <param name="singletonKeyValue"> The single value that composes the entity's key, assumed to contain the correct type. </param>
-        internal EntityKey(EntitySetBase entitySet, object singletonKeyValue)
+        /// <summary>
+        /// Constructor optimized for a singleton key.
+        /// SQLBUDT 478655: Performance optimization: Does no integrity checking on the key value.
+        /// SQLBUDT 523554: Performance optimization: Does no validate type of key members.
+        /// </summary>
+        /// <param name="entitySet"> EntitySet of the entity </param>
+        /// <param name="singletonKeyValue"> The single value that composes the entity's key, assumed to contain the correct type. </param>
+        public EntityKey(EntitySetBase entitySet, object singletonKeyValue)
         {
             DebugCheck.NotNull(entitySet);
             DebugCheck.NotNull(entitySet.EntityContainer);
@@ -254,14 +254,14 @@ namespace System.Data.Entity.Core
             _isLocked = true;
         }
 
-        // <summary>
-        // Constructor optimized for a composite key.
-        // SQLBUDT 478655: Performance optimization: Does no integrity checking on the key values.
-        // SQLBUDT 523554: Performance optimization: Does no validate type of key members.
-        // </summary>
-        // <param name="entitySet"> EntitySet of the entity </param>
-        // <param name="compositeKeyValues"> A list of the values (at least 2) that compose the entity's key, assumed to contain correct types. </param>
-        internal EntityKey(EntitySetBase entitySet, object[] compositeKeyValues)
+        /// <summary>
+        /// Constructor optimized for a composite key.
+        /// SQLBUDT 478655: Performance optimization: Does no integrity checking on the key values.
+        /// SQLBUDT 523554: Performance optimization: Does no validate type of key members.
+        /// </summary>
+        /// <param name="entitySet"> EntitySet of the entity </param>
+        /// <param name="compositeKeyValues"> A list of the values (at least 2) that compose the entity's key, assumed to contain correct types. </param>
+        public EntityKey(EntitySetBase entitySet, object[] compositeKeyValues)
         {
             DebugCheck.NotNull(entitySet);
             DebugCheck.NotNull(entitySet.EntityContainer);
@@ -273,6 +273,30 @@ namespace System.Data.Entity.Core
             _keyNames = entitySet.ElementType.KeyMemberNames; // using EntitySetBase avoids an (EntityType) cast that EntitySet incurs
 
             AssertCorrectState(entitySet, false);
+            _isLocked = true;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="T:System.Data.Entity.Core.EntityKey" /> class with an entity set name and a generic
+        /// <see cref="T:System.Collections.Generic.KeyValuePair" /> collection.
+        /// </summary>
+        /// <param name="entitySet"> EntitySet of the entity </param>
+        /// <param name="entityKeyValues">
+        /// A generic <see cref="T:System.Collections.Generic.KeyValuePair" /> collection.Each key/value pair has a property name as the key and the value of that property as the value. There should be one pair for each property that is part of the
+        /// <see cref="T:System.Data.Entity.Core.EntityKey" />
+        /// . The order of the key/value pairs is not important, but each key property should be included. The property names are simple names that are not qualified with an entity type name or the schema name.
+        /// </param>
+        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures")]
+        public EntityKey(EntitySetBase entitySet, IEnumerable<KeyValuePair<string, object>> entityKeyValues)
+        {
+            Check.NotNull(entitySet, "entitySet");
+            Check.NotNull(entityKeyValues, "entityKeyValues");
+
+            _entitySetName       = entitySet.Name;
+            _entityContainerName = entitySet.EntityContainer.Name;
+            InitializeKeyValues(entityKeyValues);
+
+            AssertCorrectState(null, false);
             _isLocked = true;
         }
 

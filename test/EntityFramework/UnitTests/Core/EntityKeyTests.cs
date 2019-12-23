@@ -20,7 +20,7 @@ namespace System.Data.Entity.Core
             {
                 Assert.Equal(
                     Strings.ArgumentIsNullOrWhitespace("qualifiedEntitySetName"),
-                    Assert.Throws<ArgumentException>(() => new EntityKey(null, (IEnumerable<KeyValuePair<string, object>>)null)).Message);
+                    Assert.Throws<ArgumentException>(() => new EntityKey((string)null, (IEnumerable<KeyValuePair<string, object>>)null)).Message);
 
                 Assert.Equal(
                     Strings.ArgumentIsNullOrWhitespace("qualifiedEntitySetName"),
