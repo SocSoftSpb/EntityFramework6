@@ -1648,6 +1648,18 @@ namespace System.Data.Entity
         }
 
         /// <summary>
+        /// Get time in string format HH:MM:SS
+        /// </summary>
+        /// <param name="timeValue">DateTime argument</param>
+        /// <returns>Time string in HH:MM:SS format</returns>
+        [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "timeValue")]
+        [DbFunction("Edm", "TimeToString")]
+        public static string TimeToString(DateTime? timeValue)
+        {
+            throw new NotSupportedException(Strings.ELinq_DbFunctionDirectCall);
+        }
+
+        /// <summary>
         /// When used as part of a LINQ to Entities query, this method invokes the canonical Truncate EDM function to
         /// truncate the given value to the number of specified digits.
         /// </summary>

@@ -803,6 +803,7 @@ namespace System.Data.Entity.Core.Metadata.Edm.Provider
                 timeParameterTypes,
                 type => functions.AddFunction(PrimitiveTypeKind.Int32, "DiffNanoseconds", type, "timeValue1", type, "timeValue2"));
 
+            functions.AddFunction(PrimitiveTypeKind.String, "TimeToString", PrimitiveTypeKind.DateTime, "timeValue");
             #endregion // DateTime Functions
 
             #region Math Functions

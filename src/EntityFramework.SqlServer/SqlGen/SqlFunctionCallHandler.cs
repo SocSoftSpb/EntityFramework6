@@ -280,6 +280,7 @@ namespace System.Data.Entity.SqlServer.SqlGen
             functionHandlers.Add("DiffMilliseconds", HandleCanonicalFunctionDateDiff);
             functionHandlers.Add("DiffMicroseconds", HandleCanonicalFunctionDateDiffKatmaiOrNewer);
             functionHandlers.Add("DiffNanoseconds", HandleCanonicalFunctionDateDiffKatmaiOrNewer);
+            functionHandlers.Add("TimeToString", HandleCanonicalFunctionTimeToString);
 
             //Functions that translate to operators
             functionHandlers.Add("Concat", HandleConcatFunction);
@@ -1454,6 +1455,20 @@ namespace System.Data.Entity.SqlServer.SqlGen
                     result.Append("))");
                 }
             }
+
+            return result;
+        }
+
+        // <summary>
+        // Handler for canonical function TimeToString
+        // </summary>
+        private static ISqlFragment HandleCanonicalFunctionTimeToString(SqlGenerator sqlgen, DbFunctionExpression e)
+        {
+            var result = new SqlBuilder();
+
+            result.Append("CONVERT (VARCHAR(8), ");
+            result.Append(e.Arguments[0].Accept(sqlgen));
+            result.Append(", 14)");
 
             return result;
         }

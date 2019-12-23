@@ -664,6 +664,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
                         {
                             GetProperty(typeof(DateTime), "Now", CurrentDateTime),
                             GetProperty(typeof(DateTime), "UtcNow", CurrentUtcDateTime),
+                            GetProperty(typeof(DateTime), "Date", TruncateTime),
 
                             GetProperty(typeof(DateTimeOffset), "Now", CurrentDateTimeOffset),
 

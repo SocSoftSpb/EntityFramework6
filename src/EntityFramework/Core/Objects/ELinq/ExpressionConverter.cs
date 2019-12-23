@@ -104,6 +104,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
         private const string Minute = "Minute";
         private const string Second = "Second";
         private const string Millisecond = "Millisecond";
+        private const string TruncateTime = "TruncateTime";
 
         #endregion
 
