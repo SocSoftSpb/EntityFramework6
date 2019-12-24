@@ -679,7 +679,7 @@ namespace System.Data.Entity.Core.Objects.DataClasses
         {
             DebugCheck.NotNull(relationshipName);
 
-            if (!relationshipName.Contains("."))
+            if (relationshipName.IndexOf('.') == -1)
             {
                 AssociationType associationType;
                 if (EntityProxyFactory.TryGetAssociationTypeFromProxyInfo(WrappedOwner, relationshipName, out associationType))

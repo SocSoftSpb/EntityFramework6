@@ -4,6 +4,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
 {
     using System.Collections.Generic;
     using System.Data.Entity.Core.Common.Utils;
+    using System.Data.Entity.Core.Objects.Internal;
     using System.Data.Entity.Utilities;
     using System.Diagnostics;
     using System.Diagnostics.CodeAnalysis;
@@ -72,6 +73,8 @@ namespace System.Data.Entity.Core.Metadata.Edm
         {
             get { return _cspaceNamespaceName; }
         }
+
+        internal EntityProxyTypeInfo ProxyTypeInfo;
 
         // <summary>
         // Gets a collision resistent (SHA256) hash of the information used to build

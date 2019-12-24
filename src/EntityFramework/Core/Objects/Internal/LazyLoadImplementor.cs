@@ -4,6 +4,7 @@ namespace System.Data.Entity.Core.Objects.Internal
 {
     using System.Collections.Generic;
     using System.Data.Entity.Core.Metadata.Edm;
+    using System.Data.Entity.Core.Objects.DataClasses;
     using System.Data.Entity.Utilities;
     using System.Reflection;
     using System.Reflection.Emit;
@@ -11,6 +12,7 @@ namespace System.Data.Entity.Core.Objects.Internal
     internal class LazyLoadImplementor
     {
         private HashSet<EdmMember> _members;
+        private static readonly MethodInfo _getWrapperMethod = typeof(IEntityProxy).GetOnlyDeclaredMethod("GetWrapper");
 
         public LazyLoadImplementor(EntityType ospaceEntityType)
         {
@@ -53,6 +55,30 @@ namespace System.Data.Entity.Core.Objects.Internal
             // 2. We purposely want the wrapper field to be opaque on the proxy type.
             var wrapperField = typeBuilder.DefineField(EntityProxyTypeInfo.EntityWrapperFieldName, typeof(object), FieldAttributes.Public);
             registerField(wrapperField, false);
+
+            ImplementIEntityProxy(typeBuilder, wrapperField);
+        }
+
+        private static void ImplementIEntityProxy(TypeBuilder typeBuilder, FieldBuilder wrapperField)
+        {
+            typeBuilder.AddInterfaceImplementation(typeof(IEntityProxy));
+
+            var getWrapper = typeBuilder.DefineMethod(
+                "IEntityProxy.GetWrapper",
+                MethodAttributes.Private | MethodAttributes.HideBySig | MethodAttributes.NewSlot | MethodAttributes.Virtual
+                | MethodAttributes.Final,
+                typeof(IPublicEntityWrapper),
+                Type.EmptyTypes);
+
+            var generator = getWrapper.GetILGenerator();
+
+            generator.Emit(OpCodes.Ldarg_0);
+            generator.Emit(OpCodes.Ldfld, wrapperField);
+            generator.Emit(OpCodes.Castclass, typeof(IPublicEntityWrapper));
+            generator.Emit(OpCodes.Ret);
+
+            typeBuilder.DefineMethodOverride(getWrapper, _getWrapperMethod);
+
         }
 
         public bool EmitMember(

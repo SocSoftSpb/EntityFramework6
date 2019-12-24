@@ -236,5 +236,10 @@ namespace System.Data.Entity.Core.Objects.Internal
         public abstract void SetCurrentValue(EntityEntry entry, StateManagerMemberMetadata member, int ordinal, object target, object value);
         public abstract void UpdateCurrentValueRecord(object value, EntityEntry entry);
         public abstract bool RequiresRelationshipChangeTracking { get; }
+
+        ObjectStateEntry IPublicEntityWrapper.GetObjectStateEntry()
+        {
+            return ObjectStateEntry;
+        }
     }
 }

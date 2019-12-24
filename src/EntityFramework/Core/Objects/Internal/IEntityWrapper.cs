@@ -12,7 +12,7 @@ namespace System.Data.Entity.Core.Objects.Internal
     // to treat POCO entities and traditional entities in the same way
     // where ever possible.
     // </summary>
-    internal interface IEntityWrapper
+    internal interface IEntityWrapper : IPublicEntityWrapper
     {
         // <summary>
         // The Relationship Manager that is associated with the wrapped entity.

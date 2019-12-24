@@ -2,6 +2,7 @@
 
 namespace System.Data.Entity.Core.Objects.Internal
 {
+    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Data.Entity.Core.Common.Utils;
     using System.Data.Entity.Core.Metadata.Edm;
@@ -38,6 +39,8 @@ namespace System.Data.Entity.Core.Objects.Internal
         // Dictionary of proxy class type information, keyed by the proxy type
         // </summary>
         private static readonly Dictionary<Type, EntityProxyTypeInfo> _proxyTypeMap = new Dictionary<Type, EntityProxyTypeInfo>();
+        private static readonly ConcurrentDictionary<Type, EntityProxyTypeInfo> _proxyTypeMapCache = new ConcurrentDictionary<Type, EntityProxyTypeInfo>();
+        private static readonly Func<Type, EntityProxyTypeInfo> _getProxyTypeCacheDelegate = GetProxyTypeInternal;
 
         private static readonly Dictionary<Assembly, ModuleBuilder> _moduleBuilders = new Dictionary<Assembly, ModuleBuilder>();
         private static readonly ReaderWriterLockSlim _typeMapLock = new ReaderWriterLockSlim();
@@ -80,12 +83,20 @@ namespace System.Data.Entity.Core.Objects.Internal
             _moduleBuilders.Remove(ospaceEntityType.ClrType.Assembly());
         }
 
-        internal static bool TryGetProxyType(Type clrType, string entityTypeName, out EntityProxyTypeInfo proxyTypeInfo)
+        internal static bool TryGetProxyType(ClrEntityType ospaceEntityType, out EntityProxyTypeInfo proxyTypeInfo)
         {
+            proxyTypeInfo = ospaceEntityType.ProxyTypeInfo;
+            if (proxyTypeInfo != null)
+                return true;
             _typeMapLock.EnterReadLock();
             try
             {
-                return _proxyNameMap.TryGetValue(new Tuple<Type, string>(clrType, entityTypeName), out proxyTypeInfo);
+                if (_proxyNameMap.TryGetValue(CreateProxyIdentity(ospaceEntityType), out proxyTypeInfo))
+                {
+                    ospaceEntityType.ProxyTypeInfo = proxyTypeInfo;
+                    return true;
+                }
+                return false;
             }
             finally
             {
@@ -95,10 +106,17 @@ namespace System.Data.Entity.Core.Objects.Internal
 
         internal static bool TryGetProxyType(Type proxyType, out EntityProxyTypeInfo proxyTypeInfo)
         {
+            proxyTypeInfo = _proxyTypeMapCache.GetOrAdd(proxyType, _getProxyTypeCacheDelegate);
+            return proxyTypeInfo != null;
+        }
+
+        private static EntityProxyTypeInfo GetProxyTypeInternal(Type proxyType)
+        {
             _typeMapLock.EnterReadLock();
             try
             {
-                return _proxyTypeMap.TryGetValue(proxyType, out proxyTypeInfo);
+                EntityProxyTypeInfo proxyTypeInfo;
+                return _proxyTypeMap.TryGetValue(proxyType, out proxyTypeInfo) ? proxyTypeInfo : null;
             }
             finally
             {
@@ -134,7 +152,7 @@ namespace System.Data.Entity.Core.Objects.Internal
             EntityProxyTypeInfo proxyTypeInfo = null;
 
             // Check if an entry for the proxy type already exists.
-            if (TryGetProxyType(ospaceEntityType.ClrType, ospaceEntityType.CSpaceTypeName, out proxyTypeInfo))
+            if (TryGetProxyType(ospaceEntityType, out proxyTypeInfo))
             {
                 if (proxyTypeInfo != null)
                 {
@@ -226,7 +244,7 @@ namespace System.Data.Entity.Core.Objects.Internal
             EntityProxyTypeInfo proxyTypeInfo;
             var clrEntityType = (ClrEntityType)ospaceEntityType;
 
-            var proxyIdentity = new Tuple<Type, string>(clrEntityType.ClrType, clrEntityType.HashedDescription);
+            var proxyIdentity = CreateProxyIdentity(clrEntityType);
 
             if (!_proxyNameMap.TryGetValue(proxyIdentity, out proxyTypeInfo)
                 && CanProxyType(ospaceEntityType))
@@ -263,7 +281,15 @@ namespace System.Data.Entity.Core.Objects.Internal
                 }
             }
 
+            if (proxyTypeInfo != null)
+                clrEntityType.ProxyTypeInfo = proxyTypeInfo;
+
             return proxyTypeInfo;
+        }
+
+        private static Tuple<Type, string> CreateProxyIdentity(ClrEntityType clrEntityType)
+        {
+            return new Tuple<Type, string>(clrEntityType.ClrType, clrEntityType.HashedDescription);
         }
 
         // <summary>
@@ -274,7 +300,7 @@ namespace System.Data.Entity.Core.Objects.Internal
         internal static bool IsProxyType(Type type)
         {
             DebugCheck.NotNull(type);
-            return type != null && _proxyRuntimeAssemblies.Contains(type.Assembly());
+            return type != null && typeof(IEntityProxy).IsAssignableFrom(type);
         }
 
         // <summary>

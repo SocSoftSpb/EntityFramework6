@@ -193,5 +193,10 @@ namespace System.Data.Entity.Core.Objects.Internal
         {
             get { return false; }
         }
+
+        ObjectStateEntry IPublicEntityWrapper.GetObjectStateEntry()
+        {
+            return ObjectStateEntry;
+        }
     }
 }
