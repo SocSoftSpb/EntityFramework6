@@ -33,7 +33,7 @@ namespace System.Data.Entity.Core.Common.CommandTrees.Internal
             }
             else
             {
-                allowedMetadataSpaces = new[] { DataSpace.CSpace };
+                allowedMetadataSpaces = new[] { DataSpace.SSpace, DataSpace.CSpace };
             }
         }
 

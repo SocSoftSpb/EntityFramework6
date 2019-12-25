@@ -174,6 +174,13 @@ namespace System.Data.Entity.Core.Common.CommandTrees
             return printer.Print(this);
         }
 
+        internal Dictionary<string, TableHints> StoreSetHints { get; set; }
+
+        /// <summary>
+        /// Options of SQL Query
+        /// </summary>
+        public QueryOptions QueryOptions { get; set; }
+
         internal static DbQueryCommandTree FromValidExpression(MetadataWorkspace metadata, DataSpace dataSpace, DbExpression query, 
             bool useDatabaseNullSemantics, bool disableFilterOverProjectionSimplificationForCustomFunctions)
         {

@@ -42,6 +42,8 @@ namespace System.Data.Entity.Core.Objects.ELinq
         private int _ignoreInclude;
         private readonly AliasGenerator _aliasGenerator = new AliasGenerator("LQ", 0);
         private readonly OrderByLifter _orderByLifter;
+        private Dictionary<string, TableHints> _hintsForType;
+        private QueryOptions _queryOptions;
 
         #region Consts
 
@@ -240,6 +242,12 @@ namespace System.Data.Entity.Core.Objects.ELinq
         {
             get { return _span; }
         }
+
+        internal Dictionary<string, TableHints> HintsForType => _hintsForType;
+
+        internal QueryOptions QueryOptions => _queryOptions;
+
+        internal TableHints? _scopedHints;
 
         internal Func<bool> RecompileRequired
         {
@@ -776,7 +784,37 @@ namespace System.Data.Entity.Core.Objects.ELinq
                 resultExpression = ParameterReferenceRemover.RemoveParameterReferences(resultExpression, objectParameters);
             }
 
+            if (_scopedHints != null)
+            {
+                resultExpression = ScanHintsSetter.SetScanHints(resultExpression, _scopedHints.Value);
+            }
+
             return resultExpression;
+        }
+
+        private class ScanHintsSetter : DefaultExpressionVisitor
+        {
+            private readonly TableHints _hints;
+
+            private ScanHintsSetter(TableHints hints)
+            {
+                _hints = hints;
+            }
+
+            public static DbExpression SetScanHints(DbExpression expression, TableHints hint)
+            {
+                var v = new ScanHintsSetter(hint);
+                return v.VisitExpression(expression);
+            }
+
+            public override DbExpression Visit(DbScanExpression expression)
+            {
+                if (expression.Hints == null)
+                {
+                    return expression.Target.Scan(_hints);
+                }
+                return base.Visit(expression);
+            }
         }
 
         private class ParameterReferenceRemover : DefaultExpressionVisitor
@@ -1024,6 +1062,24 @@ namespace System.Data.Entity.Core.Objects.ELinq
                 }
             }
             return result;
+        }
+
+        private void AddTypedHint(Type type, TableHints hint)
+        {
+            if (_hintsForType == null)
+                _hintsForType = new Dictionary<string, TableHints>();
+            if (type != null)
+            {
+                EdmType modelEdmType;
+                var metadataWorkspace = _funcletizer.RootContext.MetadataWorkspace;
+                if (!metadataWorkspace.TryDetermineCSpaceModelType(type, out modelEdmType) || modelEdmType.BuiltInTypeKind != BuiltInTypeKind.EntityType)
+                    throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Typed table hints allowed only for Entity Type's. Mapping for {0} is not found.", type.Name));
+                _hintsForType[modelEdmType.Identity] = hint;
+            }
+            else
+            {
+                _hintsForType[string.Empty] = hint;
+            }
         }
 
         // Cast expression to align types between CQT and eLINQ
@@ -1749,6 +1805,28 @@ namespace System.Data.Entity.Core.Objects.ELinq
             var rowType = new RowType(properties, initializerMetadata);
             var typeUsage = TypeUsage.Create(rowType);
             return typeUsage.New(propertyValues);
+        }
+
+        internal string GetHintsKey()
+        {
+            if ((HintsForType == null || HintsForType.Count == 0) && _queryOptions == null)
+                return null;
+            var sb = new StringBuilder(1024);
+            if (HintsForType != null)
+            {
+                foreach (var keyValuePair in HintsForType)
+                {
+                    if (sb.Length != 0)
+                        sb.Append("|");
+                    sb.Append(string.IsNullOrEmpty(keyValuePair.Key) ? "<ALL>" : keyValuePair.Key)
+                        .Append(':')
+                        .Append(keyValuePair.Value);
+                }
+            }
+
+            _queryOptions?.AddCacheKey(sb);
+
+            return sb.ToString();
         }
 
         #endregion

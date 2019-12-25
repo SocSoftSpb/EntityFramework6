@@ -534,7 +534,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
 
         public override void Visit(ScanTableOp op, Node n)
         {
-            using (new AutoXml(this, op))
+            using (new AutoXml(this, op, new Dictionary<string, object> { { nameof(op.Hints), op.Hints.ToString() } }))
             {
                 DumpTable(op.Table);
                 VisitChildren(n);
@@ -543,7 +543,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
 
         public override void Visit(ScanViewOp op, Node n)
         {
-            using (new AutoXml(this, op))
+            using (new AutoXml(this, op, new Dictionary<string, object> { { nameof(op.Hints), op.Hints.ToString() } }))
             {
                 DumpTable(op.Table);
                 VisitChildren(n);

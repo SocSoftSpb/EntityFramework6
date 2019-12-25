@@ -60,6 +60,11 @@ namespace System.Data.Entity.Core.Objects.ELinq
                     }
                 }
 
+                if (TableHintTranslator.IsCandidateMethod(linq.Method))
+                {
+                    return TableHintTranslator.Translate(parent, linq);
+                }
+
                 // check if this method has the FunctionAttribute (known proxy)
                 var functionAttribute = linq.Method.GetCustomAttributes<DbFunctionAttribute>(inherit: false).FirstOrDefault();
                 if (null != functionAttribute)
@@ -3701,5 +3706,81 @@ namespace System.Data.Entity.Core.Objects.ELinq
 
             #endregion
         }
+
+        private static class TableHintTranslator
+        {
+            public static bool IsCandidateMethod(MethodInfo method)
+            {
+                return method.DeclaringType == typeof(TableHintExtension);
+            }
+
+            public static DbExpression Translate(ExpressionConverter parent, MethodCallExpression linq)
+            {
+                switch (linq.Method.Name)
+                {
+                    case nameof(TableHintExtension.WithDefaultTableHint):
+                        return TranslateHint(parent, linq.Arguments[0], linq.Arguments[1], null);
+                    case nameof(TableHintExtension.WithTypeTableHint):
+                        var typeArg = linq.Arguments[2] as ConstantExpression;
+                        if (typeArg == null)
+                            throw new InvalidOperationException("Type of Hint must be a constant.");
+                        var type = (Type)(typeArg.Value);
+                        return TranslateHint(parent, linq.Arguments[0], linq.Arguments[1], type);
+                    case nameof(TableHintExtension.WithTableHint):
+                        var sourceArgumentType = TypeSystem.GetElementType(linq.Arguments[0].Type);
+                        return TranslateHint(parent, linq.Arguments[0], linq.Arguments[1], sourceArgumentType);
+                    case nameof(TableHintExtension.WithScopedTableHint):
+                        return TranslateScopedHint(parent, linq.Arguments[0], linq.Arguments[1]);
+                    case nameof(TableHintExtension.WithQueryOptions):
+                        return TranslateQueryOptions(parent, linq.Arguments[0], linq.Arguments[1]);
+                    default:
+                        throw new NotSupportedException(Strings.ELinq_UnsupportedMethod(linq.Method));
+                }
+            }
+
+            private static DbExpression TranslateQueryOptions(ExpressionConverter parent, Expression sourceQueryExp, Expression hintArgument)
+            {
+                var retVal = parent.TranslateExpression(sourceQueryExp);
+
+                var hintArg = hintArgument as ConstantExpression;
+                if (hintArg == null)
+                    throw new InvalidOperationException("Hint must be a constant.");
+                var queryOptions = (QueryOptions)(hintArg.Value);
+
+                parent._queryOptions = queryOptions;
+
+                return retVal;
+            }
+
+            private static DbExpression TranslateScopedHint(ExpressionConverter parent, Expression sourceQueryExp, Expression hintArgument)
+            {
+                var hintArg = hintArgument as ConstantExpression;
+                if (hintArg == null)
+                    throw new InvalidOperationException("Hint must be a constant.");
+                var hint = (TableHints)(hintArg.Value);
+
+                var oldHints = parent._scopedHints;
+                parent._scopedHints = hint;
+                var retVal = parent.TranslateExpression(sourceQueryExp);
+                parent._scopedHints = oldHints;
+
+                return retVal;
+            }
+
+            private static DbExpression TranslateHint(ExpressionConverter parent, Expression sourceQueryExp, Expression hintArgument, Type applyToType)
+            {
+                var retVal = parent.TranslateExpression(sourceQueryExp);
+
+                var hintArg = hintArgument as ConstantExpression;
+                if (hintArg == null)
+                    throw new InvalidOperationException("Hint must be a constant.");
+                var hint = (TableHints)(hintArg.Value);
+
+                parent.AddTypedHint(applyToType, hint);
+
+                return retVal;
+            }
+        }
+
     }
 }

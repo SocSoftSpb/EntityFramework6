@@ -683,6 +683,12 @@ namespace System.Data.Entity.Core.Common.CommandTrees.Internal
             _key.Append(e.Target.Name);
             _key.Append(':');
             _key.Append(e.ResultType.EdmType.Identity);
+            if (e.Hints != null)
+            {
+                _key.Append('(');
+                _key.Append(e.Hints);
+                _key.Append(')');
+            }
             _key.Append(')');
         }
 

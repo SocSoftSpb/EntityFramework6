@@ -2342,7 +2342,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             var tableMetadata = Command.CreateTableDefinition(e.Target);
 
             // Create a scan table operator
-            var op = _iqtCommand.CreateScanTableOp(tableMetadata);
+            var op = _iqtCommand.CreateScanTableOp(tableMetadata, e.Hints);
 
             // Map the ScanTableOp to the ColumnVar of the Table's single column of the Extent's element type
             var node = _iqtCommand.CreateNode(op);

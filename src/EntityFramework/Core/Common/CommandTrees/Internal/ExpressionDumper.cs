@@ -754,7 +754,7 @@ namespace System.Data.Entity.Core.Common.CommandTrees.Internal
         {
             Check.NotNull(e, "e");
 
-            Begin(e);
+            Begin(e, "Hints", e.Hints);
             Begin("Target", "Name", e.Target.Name, "Container", e.Target.EntityContainer.Name);
             Dump(e.Target.ElementType, "TargetElementType");
             End("Target");

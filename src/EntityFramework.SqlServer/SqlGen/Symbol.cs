@@ -131,4 +131,21 @@ namespace System.Data.Entity.SqlServer.SqlGen
 
         #endregion
     }
+
+    internal class ScanSymbol : ISqlFragment
+    {
+        public string Text    { get; }
+        public string Options { get; }
+
+        internal ScanSymbol(string text, string options)
+        {
+            Text    = text;
+            Options = options;
+        }
+
+        public void WriteSql(SqlWriter writer, SqlGenerator sqlGenerator)
+        {
+            writer.Write(Text);
+        }
+    }
 }

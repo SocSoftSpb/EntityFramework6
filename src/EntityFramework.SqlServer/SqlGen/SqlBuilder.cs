@@ -38,6 +38,29 @@ namespace System.Data.Entity.SqlServer.SqlGen
             sqlFragments.Add(s);
         }
 
+        public void AppendAsFromSymbol(Symbol fromSymbol)
+        {
+            ScanSymbol scanSymbol;
+            if (sqlFragments.Count > 0
+                && (scanSymbol = sqlFragments[sqlFragments.Count - 1] as ScanSymbol) != null)
+            {
+                sqlFragments[sqlFragments.Count - 1] = scanSymbol.Text;
+                Append(" AS ");
+                Append(fromSymbol);
+                if (scanSymbol.Options != null)
+                {
+                    Append(" WITH (");
+                    Append(scanSymbol.Options);
+                    Append(")");
+                }
+            }
+            else
+            {
+                Append(" AS ");
+                Append(fromSymbol);
+            }
+        }
+
         // <summary>
         // This is to pretty print the SQL.  The writer <see cref="SqlWriter" />
         // needs to know about new lines so that it can add the right amount of

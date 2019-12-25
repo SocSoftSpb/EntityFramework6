@@ -860,7 +860,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             {
                 if (op.Table.Columns.Contains(m_oldVar))
                 {
-                    var newScanTableOp = m_command.CreateScanTableOp(op.Table.TableMetadata);
+                    var newScanTableOp = m_command.CreateScanTableOp(op.Table.TableMetadata, op.Hints);
                     for (var i = 0; i < op.Table.Columns.Count; i++)
                     {
                         AddMapping(op.Table.Columns[i], newScanTableOp.Table.Columns[i]);

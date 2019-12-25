@@ -16,12 +16,13 @@ namespace System.Data.Entity.Core.Common.CommandTrees
         {
         }
 
-        internal DbScanExpression(TypeUsage collectionOfEntityType, EntitySetBase entitySet)
+        internal DbScanExpression(TypeUsage collectionOfEntityType, EntitySetBase entitySet, TableHints? hints)
             : base(DbExpressionKind.Scan, collectionOfEntityType)
         {
             DebugCheck.NotNull(entitySet);
 
             _targetSet = entitySet;
+            Hints = hints;
         }
 
         /// <summary>Gets the metadata for the referenced entity or relationship set.</summary>
@@ -30,6 +31,10 @@ namespace System.Data.Entity.Core.Common.CommandTrees
         {
             get { return _targetSet; }
         }
+
+        /// <summary>Represents table hints (i.e. NOLOCK).</summary>
+        /// <returns>Table Hints.</returns>
+        public TableHints? Hints { get; }
 
         /// <summary>Implements the visitor pattern for expressions that do not produce a result value.</summary>
         /// <param name="visitor">

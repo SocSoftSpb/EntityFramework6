@@ -7,15 +7,17 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         #region private state
 
         private readonly Table m_table;
+        private readonly TableHints? m_hints;
 
         #endregion
 
         #region constructors
 
-        protected ScanTableBaseOp(OpType opType, Table table)
+        protected ScanTableBaseOp(OpType opType, Table table, TableHints? hints)
             : base(opType)
         {
             m_table = table;
+            m_hints = hints;
         }
 
         protected ScanTableBaseOp(OpType opType)
@@ -33,6 +35,14 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         internal Table Table
         {
             get { return m_table; }
+        }
+
+        // <summary>
+        // Get hints of scan operation (i.e. NOLOCK)
+        // </summary>
+        internal TableHints? Hints
+        {
+            get { return m_hints; }
         }
 
         #endregion

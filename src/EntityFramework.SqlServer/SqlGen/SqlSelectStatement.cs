@@ -5,6 +5,7 @@ namespace System.Data.Entity.SqlServer.SqlGen
     using System.Collections.Generic;
     using System.Data.Entity.Core.Common.CommandTrees;
     using System.Data.Entity.SqlServer.Utilities;
+    using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
 
     // <summary>
@@ -144,6 +145,8 @@ namespace System.Data.Entity.SqlServer.SqlGen
         // if not Order By should be omitted unless there is a corresponding TOP
         internal bool IsTopMost { get; set; }
 
+        internal QueryOptions QueryOptions { get; set; }
+
         #region Internal Constructor
 
         internal SqlSelectStatement()
@@ -169,6 +172,7 @@ namespace System.Data.Entity.SqlServer.SqlGen
         //     <item>Write each of the clauses (if it exists) as a string</item>
         // </list>
         // </summary>
+        [SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity")]
         public void WriteSql(SqlWriter writer, SqlGenerator sqlGenerator)
         {
             #region Check if FROM aliases need to be renamed
@@ -281,6 +285,11 @@ namespace System.Data.Entity.SqlServer.SqlGen
             {
                 writer.WriteLine();
                 WriteOffsetFetch(writer, Select.Top, Select.Skip, sqlGenerator); // Write OFFSET, FETCH clause.
+            }
+
+            if (null != QueryOptions && !QueryOptions.IsEmpty())
+            {
+                new OptionClause(QueryOptions).WriteSql(writer, sqlGenerator);
             }
 
             --writer.Indent;

@@ -13,6 +13,7 @@ namespace System.Data.Entity.Core.Objects.Internal
     using System.Data.Entity.Infrastructure;
     using System.Data.Entity.Resources;
     using System.Data.Entity.Utilities;
+    using System.Globalization;
 
     internal class ObjectQueryExecutionPlanFactory
     {
@@ -25,7 +26,8 @@ namespace System.Data.Entity.Core.Objects.Internal
 
         public virtual ObjectQueryExecutionPlan Prepare(
             ObjectContext context, DbQueryCommandTree tree, Type elementType, MergeOption mergeOption, bool streaming, Span span,
-            IEnumerable<Tuple<ObjectParameter, QueryParameterExpression>> compiledQueryParameters, AliasGenerator aliasGenerator)
+            IEnumerable<Tuple<ObjectParameter, QueryParameterExpression>> compiledQueryParameters, AliasGenerator aliasGenerator,
+            Dictionary<string, TableHints> hintsForType = null, QueryOptions queryOptions = null)
         {
             var treeResultType = tree.Query.ResultType;
 
@@ -41,6 +43,11 @@ namespace System.Data.Entity.Core.Objects.Internal
             {
                 spanInfo = null;
             }
+
+            if (hintsForType != null)
+                MakeTableHints(tree, hintsForType);
+
+            tree.QueryOptions = queryOptions;
 
             var entityDefinition = CreateCommandDefinition(context, tree);
 
@@ -78,6 +85,41 @@ namespace System.Data.Entity.Core.Objects.Internal
 
             return new ObjectQueryExecutionPlan(
                 entityDefinition, shaperFactory, treeResultType, mergeOption, streaming, singleEntitySet, compiledQueryParameters);
+        }
+
+        private static void MakeTableHints(DbQueryCommandTree tree, Dictionary<string, TableHints> hintsForType)
+        {
+            if (hintsForType == null || hintsForType.Count == 0)
+                return;
+            var tableHints = new Dictionary<string, TableHints>();
+            foreach (var keyValuePair in hintsForType)
+            {
+                if (string.IsNullOrEmpty(keyValuePair.Key))
+                    tableHints[string.Empty] = keyValuePair.Value;
+                else
+                {
+                    if (!tree.MetadataWorkspace.TryGetItem(keyValuePair.Key, false /*ignoreCase*/, DataSpace.CSpace, out EntityType cspaceItem))
+                        throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Item for Table hint {0} is not found.", keyValuePair.Key));
+                    if (tree.MetadataWorkspace.TryGetMappingInformation(cspaceItem, out var mapInfo))
+                    {
+                        mapInfo = mapInfo.GetRootTypeMapping();
+                        foreach (var ii in mapInfo.EnumerateHierarchyMappings(true))
+                        {
+                            foreach (var etm in ii.EntityTypeMappings)
+                            {
+                                foreach (var mappingFragment in etm.Fragments)
+                                {
+                                    if (mappingFragment.StoreEntitySet != null)
+                                    {
+                                        tableHints[mappingFragment.StoreEntitySet.ElementType.Identity] = keyValuePair.Value;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            tree.StoreSetHints = tableHints;
         }
 
         private static EntityCommandDefinition CreateCommandDefinition(ObjectContext context, DbQueryCommandTree tree)

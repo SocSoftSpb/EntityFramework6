@@ -476,6 +476,7 @@ namespace System.Data.Entity.SqlServer.SqlGen
                 Debug.Assert(sqlStatement != null, "The outer most sql statement is null");
 
                 sqlStatement.IsTopMost = true;
+                sqlStatement.QueryOptions = tree.QueryOptions;
                 result = sqlStatement;
             }
             else
@@ -484,6 +485,8 @@ namespace System.Data.Entity.SqlServer.SqlGen
 
                 sqlBuilder.Append("SELECT ");
                 sqlBuilder.Append(targetTree.Query.Accept(this));
+                if (tree.QueryOptions != null && !tree.QueryOptions.IsEmpty())
+                    sqlBuilder.Append(new OptionClause(tree.QueryOptions));
 
                 result = sqlBuilder;
             }
@@ -1245,6 +1248,7 @@ namespace System.Data.Entity.SqlServer.SqlGen
         //     cref="SqlSelectStatement" />
         // with the From field set.
         // </returns>
+        [SuppressMessage("Microsoft.Globalization", "CA1304:SpecifyCultureInfo", MessageId = "System.String.ToUpper")]
         public override ISqlFragment Visit(DbScanExpression e)
         {
             Check.NotNull(e, "e");
@@ -1254,7 +1258,15 @@ namespace System.Data.Entity.SqlServer.SqlGen
             // ISSUE: Should we just return a string all the time, and let
             // VisitInputExpression create the SqlSelectStatement?
 
-            var targetTSql = GetTargetTSql(target);
+            var targetTSql = GetTargetTSql(target, out bool isDefiningQuery);
+            ScanSymbol targetSymbol = null;
+
+            if (!isDefiningQuery
+                && e.Hints.GetValueOrDefault(TableHints.None) != TableHints.None)
+            {
+                var hintOptions = e.Hints.ToString().ToUpper();
+                targetSymbol = new ScanSymbol(targetTSql, hintOptions);
+            }
 
             if (_targets != null)
             {
@@ -1263,6 +1275,8 @@ namespace System.Data.Entity.SqlServer.SqlGen
 
             if (IsParentAJoin)
             {
+                if (targetSymbol != null)
+                    return targetSymbol;
                 var result = new SqlBuilder();
                 result.Append(targetTSql);
 
@@ -1271,7 +1285,7 @@ namespace System.Data.Entity.SqlServer.SqlGen
             else
             {
                 var result = new SqlSelectStatement();
-                result.From.Append(targetTSql);
+                result.From.Append((object)targetSymbol ?? targetTSql);
 
                 return result;
             }
@@ -1282,11 +1296,22 @@ namespace System.Data.Entity.SqlServer.SqlGen
         // </summary>
         internal static string GetTargetTSql(EntitySetBase entitySetBase)
         {
+            bool dummy;
+            return GetTargetTSql(entitySetBase, out dummy);
+        }
+
+        // <summary>
+        // Gets escaped TSql identifier describing this entity set.
+        // </summary>
+        internal static string GetTargetTSql(EntitySetBase entitySetBase, out bool isDefiningQuery)
+        {
             var definingQuery = entitySetBase.GetMetadataPropertyValue<string>("DefiningQuery");
             if (definingQuery != null)
             {
+                isDefiningQuery = true;
                 return "(" + definingQuery + ")";
             }
+            isDefiningQuery = false;
             // construct escaped T-SQL referencing entity set
             var builder = new StringBuilder(50);
 
@@ -3812,8 +3837,7 @@ namespace System.Data.Entity.SqlServer.SqlGen
                 || fromSymbol != selectStatement.FromExtents[0])
             {
                 selectStatement.FromExtents.Add(fromSymbol);
-                selectStatement.From.Append(" AS ");
-                selectStatement.From.Append(fromSymbol);
+                selectStatement.From.AppendAsFromSymbol(fromSymbol);
 
                 // We have this inside the if statement, since
                 // we only want to add extents that are actually used.

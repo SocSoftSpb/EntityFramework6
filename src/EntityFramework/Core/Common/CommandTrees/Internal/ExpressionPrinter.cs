@@ -994,6 +994,12 @@ namespace System.Data.Entity.Core.Common.CommandTrees.Internal
                 retInfo.Text.Append(e.Target.EntityContainer.Name);
                 retInfo.Text.Append(".");
                 retInfo.Text.Append(e.Target.Name);
+                if (e.Hints != null)
+                {
+                    retInfo.Text.Append(" (");
+                    retInfo.Text.Append(e.Hints);
+                    retInfo.Text.Append(")");
+                }
                 return retInfo;
             }
 
