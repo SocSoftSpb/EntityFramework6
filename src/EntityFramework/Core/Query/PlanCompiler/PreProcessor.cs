@@ -315,7 +315,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             // At this point we're guaranteed to have found a defining query for the view.
             // We're now going to convert this into an IQT, and then copy it into our own IQT.
             //
-            var ret = definingQuery.GetInternalTree(m_command);
+            var ret = definingQuery.GetInternalTree(m_command, scanTableOp.Hints);
 
             //
             // Make sure we're tracking what we've asked any discriminator maps to contain.
@@ -325,7 +325,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             //
             // Build up a ScanViewOp to "cap" the defining query below
             //
-            var scanViewOp = m_command.CreateScanViewOp(scanTableOp.Table);
+            var scanViewOp = m_command.CreateScanViewOp(scanTableOp.Table, scanTableOp.Hints);
             ret = m_command.CreateNode(scanViewOp, ret);
 
             return ret;
@@ -462,7 +462,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             foreach (var relSet in relationshipSets)
             {
                 var tableMD = Command.CreateTableDefinition(relSet);
-                var tableOp = m_command.CreateScanTableOp(tableMD);
+                var tableOp = m_command.CreateScanTableOp(tableMD, null);
                 var branchNode = m_command.CreateNode(tableOp);
                 var branchVar = tableOp.Table.Columns[0];
                 scanTableVars.Add(branchVar);
@@ -524,7 +524,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         private Node BuildOfTypeTable(EntitySetBase entitySet, TypeUsage ofType, out Var resultVar)
         {
             var tableMetadata = Command.CreateTableDefinition(entitySet);
-            var tableOp = m_command.CreateScanTableOp(tableMetadata);
+            var tableOp = m_command.CreateScanTableOp(tableMetadata, null);
             var tableNode = m_command.CreateNode(tableOp);
             var tableVar = tableOp.Table.Columns[0];
 
@@ -1645,7 +1645,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
                 return m_command.CreateNode(m_command.CreateNullOp(relProperty.ToEnd.TypeUsage));
             }
 
-            var scanTableOp = m_command.CreateScanTableOp(Command.CreateTableDefinition(relSet));
+            var scanTableOp = m_command.CreateScanTableOp(Command.CreateTableDefinition(relSet), null);
             PlanCompiler.Assert(
                 scanTableOp.Table.Columns.Count == 1,
                 "Unexpected column count for table:" + scanTableOp.Table.TableMetadata.Extent + "=" + scanTableOp.Table.Columns.Count);
@@ -2124,6 +2124,20 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         // <returns> the transformed view-op </returns>
         public override Node Visit(ScanTableOp op, Node n)
         {
+            if (op.Hints == null && m_compilerState.StoreSetHints != null)
+            {
+                var elType = op.Table.TableMetadata.Extent.ElementType;
+                if (elType != null
+                    && elType.DataSpace == DataSpace.SSpace
+                    && elType.BuiltInTypeKind == BuiltInTypeKind.EntityType)
+                {
+                    TableHints hint;
+                    if (m_compilerState.StoreSetHints.TryGetValue(elType.Identity, out hint))
+                        n.Op = op = m_command.CreateScanTableOp(op.Table, hint);
+                    else if (m_compilerState.GlobalHints != null)
+                        n.Op = op = m_command.CreateScanTableOp(op.Table, m_compilerState.GlobalHints.Value);
+                }
+            }
             IsOfOp nullFilter = null;
             return ProcessScanTable(n, op, ref nullFilter);
         }

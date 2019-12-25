@@ -14,8 +14,8 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <summary>
         // Scan constructor
         // </summary>
-        internal ScanTableOp(Table table)
-            : base(OpType.ScanTable, table)
+        internal ScanTableOp(Table table, TableHints? hints)
+            : base(OpType.ScanTable, table, hints)
         {
         }
 

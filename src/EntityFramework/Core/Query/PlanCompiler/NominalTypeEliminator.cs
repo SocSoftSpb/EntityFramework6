@@ -1173,7 +1173,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
 
             m_varInfoMap.CreateStructuredVarInfo(columnVar, newRowType, newTable.Columns, properties);
 
-            n.Op = m_command.CreateScanTableOp(newTable);
+            n.Op = m_command.CreateScanTableOp(newTable, op.Hints);
             return n;
         }
 

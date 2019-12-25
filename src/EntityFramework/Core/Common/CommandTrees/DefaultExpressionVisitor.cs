@@ -1032,7 +1032,7 @@ namespace System.Data.Entity.Core.Common.CommandTrees
             var newSet = VisitEntitySet(expression.Target);
             if (!ReferenceEquals(expression.Target, newSet))
             {
-                result = CqtBuilder.Scan(newSet);
+                result = CqtBuilder.Scan(newSet, expression.Hints);
             }
             NotifyIfChanged(expression, result);
             return result;

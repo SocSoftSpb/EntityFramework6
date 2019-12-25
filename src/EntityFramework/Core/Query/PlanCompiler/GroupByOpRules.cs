@@ -158,7 +158,9 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
 
             var groupByOp = (GroupByOp)n.Op;
 
-            var sourceTable = ((ScanTableOp)n.Child0.Op).Table;
+            var sourceScanOp = (ScanTableOp)n.Child0.Op;
+            var sourceTable = sourceScanOp.Table;
+            var sourceHints = sourceScanOp.Hints;
             var allInputColumns = sourceTable.Columns;
 
             // Exit if the group's keys do not contain all the columns defined by Child0
@@ -180,7 +182,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             // Build the OuterApply and also set the filter around the GroupBy's scan table.
             var command = context.Command;
 
-            var scanTableOp = command.CreateScanTableOp(sourceTable.TableMetadata);
+            var scanTableOp = command.CreateScanTableOp(sourceTable.TableMetadata, sourceHints);
             var scanTable = command.CreateNode(scanTableOp);
             var outerApplyNode = command.CreateNode(command.CreateOuterApplyOp(), scanTable, n);
 

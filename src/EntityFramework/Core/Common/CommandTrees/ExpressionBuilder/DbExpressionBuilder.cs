@@ -896,11 +896,23 @@ namespace System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder
         /// <exception cref="T:System.ArgumentNullException">targetSet is null.</exception>
         public static DbScanExpression Scan(this EntitySetBase targetSet)
         {
+            return Scan(targetSet, null);
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="T:System.Data.Entity.Core.Common.CommandTrees.DbScanExpression" /> that references the specified entity or relationship set.
+        /// </summary>
+        /// <returns>A new DbScanExpression based on the specified entity or relationship set.</returns>
+        /// <param name="targetSet">Metadata for the entity or relationship set to reference.</param>
+        /// <param name="hints">Table hint for scan operation.</param>
+        /// <exception cref="T:System.ArgumentNullException">targetSet is null.</exception>
+        public static DbScanExpression Scan(this EntitySetBase targetSet, TableHints? hints)
+        {
             Check.NotNull(targetSet, "targetSet");
 
             ArgumentValidation.CheckEntitySet(targetSet, "targetSet");
             var resultType = CreateCollectionResultType(targetSet.ElementType);
-            return new DbScanExpression(resultType, targetSet);
+            return new DbScanExpression(resultType, targetSet, hints);
         }
 
         #endregion

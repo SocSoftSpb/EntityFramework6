@@ -175,7 +175,8 @@ namespace System.Data.Entity.Core.Objects.ELinq
                             mergeOption,
                             EffectiveStreamingBehavior,
                             _useCSharpNullComparisonBehavior,
-                            ElementType);
+                            ElementType,
+                            converter.GetHintsKey());
 
                         cacheManager = ObjectContext.MetadataWorkspace.GetQueryCacheManager();
                         ObjectQueryExecutionPlan executionPlan = null;
@@ -193,7 +194,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
                         ObjectContext.MetadataWorkspace, DataSpace.CSpace, queryExpression, !_useCSharpNullComparisonBehavior, _disableFilterOverProjectionSimplificationForCustomFunctions);
                     plan = _objectQueryExecutionPlanFactory.Prepare(
                         ObjectContext, tree, ElementType, mergeOption, EffectiveStreamingBehavior, converter.PropagatedSpan, null,
-                        converter.AliasGenerator);
+                        converter.AliasGenerator, converter.HintsForType, converter.QueryOptions);
 
                     // If caching is enabled then update the cache now.
                     // Note: the logic is the same as in EntitySqlQueryState.

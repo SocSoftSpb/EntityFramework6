@@ -226,6 +226,12 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         // </summary>
         internal bool HasSortingOnNullSentinels { get; set; }
 
+        internal Dictionary<string, TableHints> StoreSetHints { get; private set; }
+
+        internal TableHints? GlobalHints { get; private set; }
+
+        internal QueryOptions QueryOptions { get; private set; }
+
         // <summary>
         // Keeps track of foreign key relationships. Needed by  Join Elimination
         // </summary>
@@ -578,6 +584,17 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             // Only support queries for now
             var cqtree = m_ctree as cqt.DbQueryCommandTree;
             Assert(cqtree != null, "Unexpected command tree kind. Only query command tree is supported.");
+
+            if (cqtree != null)
+            {
+                StoreSetHints = cqtree.StoreSetHints;
+                TableHints hh;
+                if (StoreSetHints != null
+                    && StoreSetHints.TryGetValue(String.Empty, out hh))
+                    GlobalHints = hh;
+
+                QueryOptions = cqtree.QueryOptions;
+            }
 
             // Generate the ITree
             m_command = ITreeGenerator.Generate(cqtree);

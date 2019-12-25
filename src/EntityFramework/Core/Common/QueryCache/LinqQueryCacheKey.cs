@@ -56,6 +56,8 @@ namespace System.Data.Entity.Core.Common.QueryCache
         // </summary>
         private readonly bool _useCSharpNullComparisonBehavior;
 
+        private readonly string _hintsKey;
+
         // <summary>
         // Creates a new instance of LinqQueryCacheKey.
         // </summary>
@@ -74,7 +76,8 @@ namespace System.Data.Entity.Core.Common.QueryCache
             MergeOption mergeOption,
             bool streaming,
             bool useCSharpNullComparisonBehavior,
-            Type resultType)
+            Type resultType,
+            string hintsKey)
         {
             DebugCheck.NotNull(expressionKey);
 
@@ -86,6 +89,7 @@ namespace System.Data.Entity.Core.Common.QueryCache
             _streaming = streaming;
             _resultType = resultType;
             _useCSharpNullComparisonBehavior = useCSharpNullComparisonBehavior;
+            _hintsKey = hintsKey;
 
             var combinedHash = _expressionKey.GetHashCode() ^
                                _mergeOption.GetHashCode();
@@ -101,6 +105,9 @@ namespace System.Data.Entity.Core.Common.QueryCache
             }
 
             combinedHash ^= _useCSharpNullComparisonBehavior.GetHashCode();
+
+            if (_hintsKey != null)
+                combinedHash ^= hintsKey.GetHashCode();
 
             _hashCode = combinedHash;
         }
@@ -126,7 +133,8 @@ namespace System.Data.Entity.Core.Common.QueryCache
                    Equals(otherObjectQueryCacheKey._includePathsToken, _includePathsToken) &&
                    Equals(otherObjectQueryCacheKey._parametersToken, _parametersToken) &&
                    Equals(otherObjectQueryCacheKey._resultType, _resultType) &&
-                   Equals(otherObjectQueryCacheKey._useCSharpNullComparisonBehavior, _useCSharpNullComparisonBehavior);
+                   Equals(otherObjectQueryCacheKey._useCSharpNullComparisonBehavior, _useCSharpNullComparisonBehavior) &&
+                   Equals(otherObjectQueryCacheKey._hintsKey, _hintsKey);
         }
 
         // <summary>

@@ -1413,7 +1413,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             var outputVars = GetTableVars(op.Table);
 
             // ScanTable converts to ExtentExpression
-            DbExpression retExpr = op.Table.TableMetadata.Extent.Scan();
+            DbExpression retExpr = op.Table.TableMetadata.Extent.Scan(op.Hints);
 
             //
             // Publish the Vars that are logically produced by the ExtentExpression:

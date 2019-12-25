@@ -35,6 +35,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
         private Lazy<ObjectItemCollection> _itemsOSpace;
         private Lazy<StorageMappingItemCollection> _itemsCSSpace;
         private Lazy<DefaultObjectMappingItemCollection> _itemsOCSpace;
+        private Lazy<Dictionary<string, CSpaceTypeMappingInfo>> _mappingInfos;
 
         private bool _foundAssemblyWithAttribute;
         private double _schemaVersion = XmlConstants.UndefinedVersion;
@@ -49,6 +50,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
         public MetadataWorkspace()
         {
             _itemsOSpace = new Lazy<ObjectItemCollection>(() => new ObjectItemCollection(), isThreadSafe: true);
+            _mappingInfos = new Lazy<Dictionary<string, CSpaceTypeMappingInfo>>(() => BuildMappingInformation(), isThreadSafe: true);
 
             MetadataOptimization = new MetadataOptimization(this);
         }
@@ -84,6 +86,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
             _itemsCSSpace = new Lazy<StorageMappingItemCollection>(() => LoadAndCheckItemCollection(csMappingLoader), isThreadSafe: true);
             _itemsOCSpace = new Lazy<DefaultObjectMappingItemCollection>(
                 () => new DefaultObjectMappingItemCollection(_itemsCSpace.Value, _itemsOSpace.Value), isThreadSafe: true);
+            _mappingInfos = new Lazy<Dictionary<string, CSpaceTypeMappingInfo>>(() => BuildMappingInformation(), isThreadSafe: true);
 
             MetadataOptimization = new MetadataOptimization(this);
         }
@@ -115,6 +118,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
             _itemsCSSpace = new Lazy<StorageMappingItemCollection>(() => LoadAndCheckItemCollection(csMappingLoader), isThreadSafe: true);
             _itemsOCSpace = new Lazy<DefaultObjectMappingItemCollection>(
                 () => new DefaultObjectMappingItemCollection(_itemsCSpace.Value, _itemsOSpace.Value), isThreadSafe: true);
+            _mappingInfos = new Lazy<Dictionary<string, CSpaceTypeMappingInfo>>(() => BuildMappingInformation(), isThreadSafe: true);
 
             MetadataOptimization = new MetadataOptimization(this);
         }
@@ -152,6 +156,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
                 };
 
             CreateMetadataWorkspaceWithResolver(paths, () => assembliesToConsider, resolveReference);
+            _mappingInfos = new Lazy<Dictionary<string, CSpaceTypeMappingInfo>>(() => BuildMappingInformation(), isThreadSafe: true);
 
             MetadataOptimization = new MetadataOptimization(this);
         }
@@ -1570,6 +1575,14 @@ namespace System.Data.Entity.Core.Metadata.Edm
             return _itemsSSpace.Value.QueryCacheManager;
         }
 
+        /// <summary>
+        /// Clear query plan cache
+        /// </summary>
+        public void ClearQueryPlanCache()
+        {
+            GetQueryCacheManager()?.Clear();
+        }
+
         internal bool TryDetermineCSpaceModelType<T>(out EdmType modelEdmType)
         {
             return TryDetermineCSpaceModelType(typeof(T), out modelEdmType);
@@ -1598,6 +1611,236 @@ namespace System.Data.Entity.Core.Metadata.Edm
             modelEdmType = null;
 
             return false;
+        }
+
+        /// <summary>
+        /// Get mapping information for CLR type
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="mappingInfo"></param>
+        /// <returns></returns>
+        public bool TryGetMappingInformation(Type type, out CSpaceTypeMappingInfo mappingInfo)
+        {
+            EdmType edmType;
+            if (!TryDetermineCSpaceModelType(type, out edmType)
+                || edmType.BuiltInTypeKind != BuiltInTypeKind.EntityType)
+            {
+                mappingInfo = null;
+                return false;
+            }
+            var entityType = (EntityType)edmType;
+            return TryGetMappingInformation(entityType, out mappingInfo);
+        }
+
+        [SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "CSpace")]
+        internal bool TryGetMappingInformation(EntityType entityType, out CSpaceTypeMappingInfo mappingInfo)
+        {
+            if (entityType.DataSpace != DataSpace.CSpace)
+                throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "{0} type expected.", nameof(DataSpace.CSpace)));
+            var dict = _mappingInfos.Value;
+
+            return dict.TryGetValue(entityType.Identity, out mappingInfo);
+        }
+
+        private Dictionary<string, CSpaceTypeMappingInfo> BuildMappingInformation()
+        {
+            var entityContainerMaps = GetItems<EntityContainerMapping>(DataSpace.CSSpace);
+            var dict = new Dictionary<string, CSpaceTypeMappingInfo>();
+            foreach (var containerMapping in entityContainerMaps)
+            {
+                foreach (var entitySetMapping in containerMapping.EntitySetMappings)
+                {
+                    foreach (var typeMapping in entitySetMapping.TypeMappings)
+                    {
+                        var entityTypeMapping = typeMapping as EntityTypeMapping;
+                        if (entityTypeMapping == null)
+                            continue;
+                        foreach (var type in typeMapping.Types)
+                        {
+                            ProcessMappedType(entitySetMapping, entityTypeMapping, type, dict);
+                        }
+                        foreach (var type in typeMapping.IsOfTypes)
+                        {
+                            ProcessMappedType(entitySetMapping, entityTypeMapping, type, dict);
+                        }
+                    }
+                }
+            }
+
+            // Add middle abstract types
+            foreach (var mappingInfo in dict.Values.ToList())
+            {
+                CSpaceTypeMappingInfo tmp;
+                EnsureBaseType(dict, mappingInfo.CSpaceEntityType, out tmp);
+            }
+
+            // Build hierarchy info
+            foreach (var mappingInfo in dict.Values)
+            {
+                var baseType = mappingInfo.CSpaceEntityType.BaseType;
+                if (baseType != null
+                    && baseType.BuiltInTypeKind == BuiltInTypeKind.EntityType
+                    && baseType.DataSpace == DataSpace.CSpace)
+                {
+                    CSpaceTypeMappingInfo baseMappipng;
+                    if (!dict.TryGetValue(baseType.Identity, out baseMappipng))
+                    {
+                        Debug.Fail(string.Format("Base type mapping not found for type {0}.", mappingInfo.CSpaceEntityType.FullName));
+                        continue;
+                    }
+                    mappingInfo.BaseTypeMappingInfo = baseMappipng;
+                    baseMappipng.ChildTypeMappingInfos.Add(mappingInfo);
+                }
+            }
+
+            return dict;
+        }
+
+        private static void EnsureBaseType(Dictionary<string, CSpaceTypeMappingInfo> dict, EntityType thisType, out CSpaceTypeMappingInfo baseInfo)
+        {
+            baseInfo = null;
+            var baseType = thisType.BaseType as EntityType;
+            if (baseType != null
+                && baseType.BuiltInTypeKind == BuiltInTypeKind.EntityType
+                && baseType.DataSpace == DataSpace.CSpace)
+            {
+                if (dict.TryGetValue(baseType.Identity, out baseInfo))
+                    return;
+                if (baseType.BaseType == null)
+                {
+                    var info1 = new CSpaceTypeMappingInfo(baseType, null, true);
+                    dict[baseType.Identity] = info1;
+                    return;
+                }
+                CSpaceTypeMappingInfo grandBaseMapping;
+                EnsureBaseType(dict, baseType, out grandBaseMapping);
+                var info = new CSpaceTypeMappingInfo(baseType, grandBaseMapping.EntitySetMapping, true);
+                info.EntityTypeMappings.AddRange(grandBaseMapping.EntityTypeMappings);
+                dict[baseType.Identity] = info;
+                baseInfo = info;
+            }
+        }
+
+        private static void ProcessMappedType(EntitySetMapping entitySetMapping, EntityTypeMapping entityTypeMapping, EntityTypeBase type, Dictionary<string, CSpaceTypeMappingInfo> dict)
+        {
+            if (!(type.BuiltInTypeKind == BuiltInTypeKind.EntityType && type.DataSpace == DataSpace.CSpace))
+                return;
+            var entityType = (EntityType)type;
+            var key = entityType.Identity;
+            CSpaceTypeMappingInfo info;
+            if (!dict.TryGetValue(key, out info))
+            {
+                info = new CSpaceTypeMappingInfo(entityType, entitySetMapping);
+                dict[key] = info;
+            }
+            else
+            {
+                Debug.Assert(type.EdmEquals(info.CSpaceEntityType));
+                Debug.Assert(entitySetMapping.EntitySet.EdmEquals(info.EntitySetMapping.EntitySet));
+            }
+            info.EntityTypeMappings.Add(entityTypeMapping);
+        }
+    }
+
+    /// <summary>
+    /// Represents mapping information for CSpace type
+    /// </summary>
+    [SuppressMessage("Microsoft.Naming", "CA1722:IdentifiersShouldNotHaveIncorrectPrefix")]
+    public sealed class CSpaceTypeMappingInfo
+    {
+        internal CSpaceTypeMappingInfo(EntityType entityType, EntitySetMapping entitySetMapping, bool isFakeHierarchyMapping = false)
+        {
+            CSpaceEntityType = entityType;
+            EntitySetMapping = entitySetMapping;
+            EntityTypeMappings = new List<EntityTypeMapping>();
+            ChildTypeMappingInfos = new List<CSpaceTypeMappingInfo>();
+            IsFakeHierarchyMapping = isFakeHierarchyMapping;
+        }
+
+        /// <summary>
+        /// Type
+        /// </summary>
+        public EntityType CSpaceEntityType { get; }
+
+        /// <summary>
+        /// Entity Set Mapping (for hierarchies - root of hierarchy)
+        /// </summary>
+        public EntitySetMapping EntitySetMapping { get; }
+
+        /// <summary>
+        /// Mappings of this type
+        /// </summary>
+        [SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists")]
+        public List<EntityTypeMapping> EntityTypeMappings { get; }
+
+        /// <summary>
+        /// Mappin info for base type
+        /// </summary>
+        public CSpaceTypeMappingInfo BaseTypeMappingInfo { get; internal set; }
+
+        /// <summary>
+        /// Mapping infos for direct children types
+        /// </summary>
+        [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Infos")]
+        [SuppressMessage("Microsoft.Design", "CA1002:DoNotExposeGenericLists")]
+        public List<CSpaceTypeMappingInfo> ChildTypeMappingInfos { get; }
+
+        /// <summary>
+        /// If true, mapping info is generated from base type mapping of intermediate abstract type
+        /// </summary>
+        public bool IsFakeHierarchyMapping { get; }
+
+        /// <summary>
+        /// Get Mapping for root of hierarchy
+        /// </summary>
+        /// <returns></returns>
+        [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate")]
+        public CSpaceTypeMappingInfo GetRootTypeMapping()
+        {
+            if (BaseTypeMappingInfo == null)
+                return this;
+            return BaseTypeMappingInfo.GetRootTypeMapping();
+        }
+
+        /// <summary>
+        /// Recursive enumerate all child types (in order by distance from this type)
+        /// </summary>
+        /// <param name="includeThis">Include this instance to results</param>
+        /// <returns></returns>
+        public IEnumerable<CSpaceTypeMappingInfo> EnumerateHierarchyMappings(bool includeThis)
+        {
+            if (includeThis)
+                yield return this;
+            List<CSpaceTypeMappingInfo> lstToReturn = null;
+            foreach (var childInfo in ChildTypeMappingInfos)
+            {
+                yield return childInfo;
+                if (childInfo.ChildTypeMappingInfos.Count > 0)
+                {
+                    if (lstToReturn == null)
+                        lstToReturn = new List<CSpaceTypeMappingInfo>();
+                    lstToReturn.Add(childInfo);
+                }
+            }
+
+            while (lstToReturn != null)
+            {
+                var lstCurrent = lstToReturn;
+                lstToReturn = null;
+                foreach (var ii in lstCurrent)
+                {
+                    foreach (var childInfo in ii.ChildTypeMappingInfos)
+                    {
+                        yield return childInfo;
+                        if (childInfo.ChildTypeMappingInfos.Count > 0)
+                        {
+                            if (lstToReturn == null)
+                                lstToReturn = new List<CSpaceTypeMappingInfo>();
+                            lstToReturn.Add(childInfo);
+                        }
+                    }
+                }
+            }
         }
     }
 }
