@@ -9,6 +9,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
     using System.Diagnostics;
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
+    using System.IO.Compression;
     using System.Reflection;
     using System.Xml;
 
@@ -191,6 +192,14 @@ namespace System.Data.Entity.Core.Metadata.Edm
         private bool TryCreateResourceStream(out Stream resourceStream)
         {
             resourceStream = _assembly.GetManifestResourceStream(_resourceName);
+            if (resourceStream != null)
+                return true;
+
+            resourceStream = _assembly.GetManifestResourceStream(_resourceName + ".gz");
+            if (resourceStream != null)
+            {
+                resourceStream = new GZipStream(resourceStream, CompressionMode.Decompress);
+            }
             return resourceStream != null;
         }
     }
