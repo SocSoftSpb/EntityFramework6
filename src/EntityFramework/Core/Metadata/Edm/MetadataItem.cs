@@ -30,6 +30,16 @@ namespace System.Data.Entity.Core.Metadata.Edm
             _flags = (int)flags;
         }
 
+        /// <summary>
+        /// Build Annotation property name with XMLNS prefix "http://schemas.microsoft.com/ado/2013/11/edm/customannotation:" 
+        /// </summary>
+        /// <param name="annotationName">Annotation name without namespace prefix</param>
+        /// <returns></returns>
+        public static string BuildCustomAnnotationNameWithPrefix(string annotationName)
+        {
+            return XmlConstants.CustomAnnotationPrefix + annotationName;
+        }
+
         [Flags]
         internal enum MetadataFlags
         {
@@ -60,6 +70,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
 
         private int _flags;
         private MetadataPropertyCollection _itemAttributes;
+        private object _configuration;
 
         // <summary>
         // Gets the currently assigned annotations.
@@ -67,6 +78,36 @@ namespace System.Data.Entity.Core.Metadata.Edm
         internal virtual IEnumerable<MetadataProperty> Annotations
         {
             get { return GetMetadataProperties().Where(p => p.IsAnnotation); }
+        }
+
+        internal object Configuration
+        {
+            get { return _configuration; }
+            set
+            {
+                _configuration = value;
+            }
+        }
+
+        internal virtual object GetAnnotation(string name)
+        {
+            var properties = GetMetadataProperties();
+            if (properties.TryGetValue(name, false, out var p) && p.IsAnnotation)
+                return p.Value;
+
+            /*
+
+            // ReSharper disable once LoopCanBeConvertedToQuery
+            // ReSharper disable once ForCanBeConvertedToForeach
+            for (var index = 0; index < properties.Count; index++)
+            {
+                var metadataProperty = properties[index];
+                if (metadataProperty.IsAnnotation && metadataProperty.Name.Equals(name, StringComparison.Ordinal))
+                    return metadataProperty.Value;
+            }
+            */
+
+            return null;
         }
 
         /// <summary>Gets the built-in type kind for this type.</summary>

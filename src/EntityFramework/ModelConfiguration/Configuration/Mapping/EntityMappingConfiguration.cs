@@ -232,7 +232,8 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Mapping
             bool isMappingAnyInheritedProperty,
             int configurationIndex,
             int configurationCount,
-            IDictionary<string, object> commonAnnotations)
+            IDictionary<string, object> commonAnnotations,
+            IDictionary<string, object> storeSetAnnotations)
         {
             DebugCheck.NotNull(entityType);
             DebugCheck.NotNull(databaseMapping);
@@ -408,10 +409,29 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Mapping
             CleanupUnmappedArtifacts(databaseMapping, fromTable);
             CleanupUnmappedArtifacts(databaseMapping, toTable);
 
+            if (storeSetAnnotations != null)
+                ConfigureStoreSetAnnotations(fragment.StoreEntitySet, storeSetAnnotations);
             ConfigureAnnotations(toTable, commonAnnotations);
             ConfigureAnnotations(toTable, _annotations);
 
             toTable.SetConfiguration(this);
+        }
+
+        private static void ConfigureStoreSetAnnotations(EntitySetBase storeEntitySet, IDictionary<string, object> annotations)
+        {
+            foreach (var annotation in annotations)
+            {
+                var name = XmlConstants.CustomAnnotationPrefix + annotation.Key;
+                var existingAnnotation = storeEntitySet.Annotations.FirstOrDefault(
+                    a => a.Name == name && !Equals(a.Value, annotation.Value));
+                if (existingAnnotation != null)
+                {
+                    throw new InvalidOperationException(
+                        Strings.ConflictingTypeAnnotation(annotation.Key, annotation.Value, existingAnnotation.Value, storeEntitySet.Name));
+                }
+
+                storeEntitySet.AddAnnotation(name, annotation.Value);
+            }
         }
 
         private static void ConfigureAnnotations(EdmType toTable, IDictionary<string, object> annotations)

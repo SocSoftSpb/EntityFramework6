@@ -12,7 +12,10 @@ namespace System.Data.Entity.Utilities
     using System.Text.RegularExpressions;
     using Resources;
 
-    internal class DatabaseName
+    /// <summary>
+    /// Class for parse two-component name
+    /// </summary>
+    public class DatabaseName
     {
         private const string NamePartRegex
             = @"(?:(?:\[(?<part{0}>(?:(?:\]\])|[^\]])+)\])|(?<part{0}>[^\.\[\]]+))";
@@ -26,6 +29,11 @@ namespace System.Data.Entity.Utilities
                     string.Format(CultureInfo.InvariantCulture, NamePartRegex, 2)),
                 RegexOptions.Compiled);
 
+        /// <summary>
+        /// Parse one or two components name, possible quoted
+        /// </summary>
+        /// <param name="name">"Name", "Schema.Name", "Schema.[Name]", etc...</param>
+        /// <returns><see cref="DatabaseName"/></returns>
         public static DatabaseName Parse(string name)
         {
             DebugCheck.NotEmpty(name);
@@ -50,27 +58,46 @@ namespace System.Data.Entity.Utilities
         private readonly string _name;
         private readonly string _schema;
 
+        /// <summary>
+        /// Constructs <see cref="DatabaseName"/> without <see cref="Schema"/>
+        /// </summary>
+        /// <param name="name">Name of object</param>
         public DatabaseName(string name)
             : this(name, null)
         {
         }
 
+        /// <summary>
+        /// Constructs <see cref="DatabaseName"/> with <see cref="Schema"/>
+        /// </summary>
+        /// <param name="name">Name of object</param>
+        /// <param name="schema">Schema of object</param>
         public DatabaseName(string name, string schema)
         {
             _name = name;
             _schema = !string.IsNullOrEmpty(schema) ? schema : null;
         }
 
+        /// <summary>
+        /// Name part
+        /// </summary>
         public string Name
         {
             get { return _name; }
         }
 
+        /// <summary>
+        /// Schema part
+        /// </summary>
         public string Schema
         {
             get { return _schema; }
         }
 
+        /// <summary>
+        /// Build Schema.Name
+        /// </summary>
+        /// <returns>Schema.Name, may be escaped</returns>
         public override string ToString()
         {
             var s = Escape(_name);
@@ -90,6 +117,11 @@ namespace System.Data.Entity.Utilities
                        : name;
         }
 
+        /// <summary>
+        /// Compare this <see cref="DatabaseName"/> with other
+        /// </summary>
+        /// <param name="other">Other name</param>
+        /// <returns>true if equals</returns>
         public bool Equals(DatabaseName other)
         {
             if (ReferenceEquals(null, other))
@@ -106,6 +138,7 @@ namespace System.Data.Entity.Utilities
                    && string.Equals(other._schema, _schema, StringComparison.Ordinal);
         }
 
+        /// <inheritdoc />
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj))
@@ -122,6 +155,7 @@ namespace System.Data.Entity.Utilities
                    && Equals((DatabaseName)obj);
         }
 
+        /// <inheritdoc />
         public override int GetHashCode()
         {
             unchecked

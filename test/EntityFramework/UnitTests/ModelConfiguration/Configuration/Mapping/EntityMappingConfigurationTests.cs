@@ -51,7 +51,7 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Mapping
                 databaseMapping, databaseMapping.Model.Container.EntitySets,
                 ProviderRegistry.Sql2008_ProviderManifest, entityTypeMapping.EntityType,
                 ref entityTypeMapping, false, 0, 1,
-                new Dictionary<string, object>());
+                new Dictionary<string, object>(), new Dictionary<string, object>());
 
             Assert.Equal("Foo", table.GetTableName().Name);
         }
