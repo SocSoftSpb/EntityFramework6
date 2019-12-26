@@ -11,6 +11,7 @@ namespace System.Data.Entity.Core.EntityClient.Internal
     using System.Data.Entity.Core.Mapping;
     using System.Data.Entity.Core.Metadata.Edm;
     using System.Data.Entity.Core.Metadata.Edm.Provider;
+    using System.Data.Entity.Core.Objects;
     using System.Data.Entity.Core.Query.InternalTrees;
     using System.Data.Entity.Core.Query.PlanCompiler;
     using System.Data.Entity.Core.Query.ResultAssembly;
@@ -34,6 +35,7 @@ namespace System.Data.Entity.Core.EntityClient.Internal
         // nested store command definitions
         // </summary>
         private readonly List<DbCommandDefinition> _mappedCommandDefinitions;
+        private readonly List<ProviderCommandInfo> _mappedCommands;
 
         // <summary>
         // generates column map for the store result reader
@@ -100,19 +102,19 @@ namespace System.Data.Entity.Core.EntityClient.Internal
                     == commandTree.CommandTreeKind)
                 {
                     // Next compile the plan for the command tree
-                    var mappedCommandList = new List<ProviderCommandInfo>();
+                    _mappedCommands = new List<ProviderCommandInfo>();
                     ColumnMap columnMap;
                     int columnCount;
-                    PlanCompiler.Compile(commandTree, out mappedCommandList, out columnMap, out columnCount, out _entitySets);
+                    PlanCompiler.Compile(commandTree, out _mappedCommands, out columnMap, out columnCount, out _entitySets);
                     _columnMapGenerators = new IColumnMapGenerator[] { new ConstantColumnMapGenerator(columnMap, columnCount) };
                     // Note: we presume that the first item in the ProviderCommandInfo is the root node;
-                    Debug.Assert(mappedCommandList.Count > 0, "empty providerCommandInfo collection and no exception?");
+                    Debug.Assert(_mappedCommands.Count > 0, "empty providerCommandInfo collection and no exception?");
                     // this shouldn't ever happen.
 
                     // Then, generate the store commands from the resulting command tree(s)
-                    _mappedCommandDefinitions = new List<DbCommandDefinition>(mappedCommandList.Count);
+                    _mappedCommandDefinitions = new List<DbCommandDefinition>(_mappedCommands.Count);
 
-                    foreach (var providerCommandInfo in mappedCommandList)
+                    foreach (var providerCommandInfo in _mappedCommands)
                     {
                         var providerCommandDefinition = _storeProviderServices.CreateCommandDefinition(
                             providerCommandInfo.CommandTree, interceptionContext);
@@ -531,6 +533,41 @@ namespace System.Data.Entity.Core.EntityClient.Internal
             }
         }
 
+        [SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities")]
+        internal virtual int WrapAndExecuteStoreCommandsNoQuery(EntityCommand entityCommand, string sqlTextBefore, string sqlTextAfter)
+        {
+            var storeProviderCommand = PrepareEntityCommandBeforeExecution(entityCommand);
+
+            if (sqlTextBefore != null || sqlTextAfter != null)
+            {
+                var txtCommand = storeProviderCommand.CommandText;
+                if (sqlTextBefore != null)
+                    txtCommand = sqlTextBefore + txtCommand;
+                if (sqlTextAfter != null)
+                    txtCommand = txtCommand + sqlTextAfter;
+
+                storeProviderCommand.CommandText = txtCommand;
+            }
+
+            try
+            {
+                return storeProviderCommand.ExecuteNonQuery();
+            }
+            catch (Exception e)
+            {
+                // we should not be wrapping all exceptions
+                if (e.IsCatchableExceptionType())
+                {
+                    // we don't wan't folks to have to know all the various types of exceptions that can 
+                    // occur, so we just rethrow a CommandDefinitionException and make whatever we caught  
+                    // the inner exception of it.
+                    throw new EntityCommandExecutionException(Strings.EntityClient_CommandDefinitionExecutionFailed, e);
+                }
+
+                throw;
+            }
+        }
+
         // <summary>
         // Execute the store commands, and return IteratorSources for each one
         // </summary>
@@ -712,6 +749,58 @@ namespace System.Data.Entity.Core.EntityClient.Internal
             {
                 dbDataParameter.Scale = entityParameter.Scale;
             }
+        }
+
+        [SuppressMessage("Microsoft.Naming", "CA2204")]
+        internal ObjectQueryColumnMap[] GetProjectionMapping()
+        {
+            IList<EdmProperty> GetRowTypeProperties(DbExpression commandTreeQuery)
+            {
+                var queryCollectionType = ((CollectionType)(commandTreeQuery.ResultType.EdmType));
+                var rowType = (RowType)(queryCollectionType.TypeUsage.EdmType);
+                return rowType.Properties;
+            }
+
+            if (_mappedCommandDefinitions == null)
+                throw new InvalidOperationException("_mappedCommandDefinitions == null.");
+            if (_mappedCommandDefinitions.Count != 1)
+                throw new InvalidOperationException("_mappedCommandDefinitions.Count != 1.");
+            if (_columnMapGenerators == null)
+                throw new InvalidOperationException("_columnMapGenerators == null.");
+            if (_columnMapGenerators.Length != 1)
+                throw new InvalidOperationException("_columnMapGenerators.Length != 1.");
+            if (_mappedCommands == null)
+                throw new InvalidOperationException("_mappedCommands == null.");
+
+            var mapGenerator = _columnMapGenerators[0];
+
+            var columnMap = mapGenerator.CreateColumnMap(null);
+
+            if (columnMap is CollectionColumnMap collectionColumnMap)
+            {
+                var element = collectionColumnMap.Element;
+                if (element is StructuredColumnMap structuredColumnMap)
+                {
+                    var retVal = new ObjectQueryColumnMap[structuredColumnMap.Properties.Length];
+                    var commandTree = _mappedCommands[0].CommandTree as DbQueryCommandTree ?? throw new InvalidOperationException("DbQueryCommandTree expected.");
+                    var queryProperties = GetRowTypeProperties(commandTree.Query);
+
+                    for (var index = 0; index < structuredColumnMap.Properties.Length; index++)
+                    {
+                        var map = structuredColumnMap.Properties[index];
+                        if (!(map is ScalarColumnMap scalarColumnMap))
+                            throw new InvalidOperationException("ScalarColumnMap expected.");
+                        var objectQueryColumnMap = new ObjectQueryColumnMap(queryProperties[scalarColumnMap.ColumnPos], scalarColumnMap.ColumnPos, scalarColumnMap.Name, scalarColumnMap.Type);
+                        retVal[index] = objectQueryColumnMap;
+                    }
+
+                    return retVal;
+                }
+
+                throw new InvalidOperationException("StructuredColumnMap expected.");
+            }
+
+            throw new InvalidOperationException("CollectionColumnMap expected.");
         }
 
         // <summary>

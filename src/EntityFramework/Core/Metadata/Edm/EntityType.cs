@@ -192,6 +192,11 @@ namespace System.Data.Entity.Core.Metadata.Edm
         }
 
         /// <summary>
+        /// For dynamic types - EntitySet reference
+        /// </summary>
+        public EntitySet DynamicEntitySet { get; set; }
+
+        /// <summary>
         /// Gets the list of properties for this <see cref="T:System.Data.Entity.Core.Metadata.Edm.EntityType" />.
         /// </summary>
         /// <returns>

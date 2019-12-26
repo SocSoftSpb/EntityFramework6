@@ -63,6 +63,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
         private EntityTypeBase _elementType;
         private string _table;
         private string _schema;
+        private string _database;
         private string _definingQuery;
 
         /// <summary>
@@ -202,6 +203,23 @@ namespace System.Data.Entity.Core.Metadata.Edm
                 Util.ThrowIfReadOnly(this);
 
                 _schema = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the database for this entity set.
+        /// </summary>
+        /// <exception cref="System.ArgumentNullException">if value passed into setter is null</exception>
+        /// <exception cref="System.InvalidOperationException">Thrown if the setter is called when EntitySetBase instance is in ReadOnly state</exception>
+        [MetadataProperty(PrimitiveTypeKind.String, false)]
+        public string Database
+        {
+            get { return _database; }
+            set
+            {
+                Util.ThrowIfReadOnly(this);
+
+                _database = value;
             }
         }
 

@@ -47,13 +47,19 @@ namespace System.Data.Entity.Core.Common.Internal.Materialization
 
             // If the query cache already contains a plan, then we're done
             ShaperFactory<T> result;
-            var columnMapKey = ColumnMapKeyBuilder.GetColumnMapKey(columnMap, spanIndex);
-            var cacheKey = new ShaperFactoryQueryCacheKey<T>(columnMapKey, mergeOption, streaming, valueLayer);
 
-            var queryCacheManager = workspace.GetQueryCacheManager();
-            if (queryCacheManager.TryCacheLookup(cacheKey, out result))
+            ShaperFactoryQueryCacheKey<T> cacheKey = null;
+            QueryCacheManager queryCacheManager = null;
+            var columnMapKey = ColumnMapKeyBuilder.GetColumnMapKey(columnMap, spanIndex);
+            if (columnMapKey != null)
             {
-                return result;
+                cacheKey = new ShaperFactoryQueryCacheKey<T>(columnMapKey, mergeOption, streaming, valueLayer);
+
+                queryCacheManager = workspace.GetQueryCacheManager();
+                if (queryCacheManager.TryCacheLookup(cacheKey, out result))
+                {
+                    return result;
+                }
             }
 
             // Didn't find it in the cache, so we have to do the translation;  First create
@@ -97,12 +103,16 @@ namespace System.Data.Entity.Core.Common.Internal.Materialization
             // for this query again.
             result = new ShaperFactory<T>(
                 translatorVisitor.StateSlotCount, coordinatorFactory, columnTypes, nullableColumns, mergeOption);
-            var cacheEntry = new QueryCacheEntry(cacheKey, result);
-            if (queryCacheManager.TryLookupAndAdd(cacheEntry, out cacheEntry))
+            if (columnMapKey != null)
             {
-                // Someone beat us to it. Use their result instead.
-                result = (ShaperFactory<T>)cacheEntry.GetTarget();
+                var cacheEntry = new QueryCacheEntry(cacheKey, result);
+                if (queryCacheManager.TryLookupAndAdd(cacheEntry, out cacheEntry))
+                {
+                    // Someone beat us to it. Use their result instead.
+                    result = (ShaperFactory<T>)cacheEntry.GetTarget();
+                }
             }
+
             return result;
         }
 
@@ -272,10 +282,71 @@ namespace System.Data.Entity.Core.Common.Internal.Materialization
             }
 
             // <summary>
+            // Visit(DynamicType // as ComplexTypeColumnMap)
+            // </summary>
+            private TranslatorResult VisitDynamicType(EntityColumnMap columnMap, TranslatorArg arg)
+            {
+                Expression result = null;
+                Expression nullSentinelCheck = null;
+
+                var originalInNullableType = _inNullableType;
+                if (null != columnMap.NullSentinel)
+                {
+                    nullSentinelCheck = CodeGenEmitter.Emit_Reader_IsDBNull(columnMap.NullSentinel);
+
+                    _inNullableType = true;
+                    var ordinal = ((ScalarColumnMap)columnMap.NullSentinel).ColumnPos;
+                    if (!_streaming && !NullableColumns.Contains(ordinal))
+                    {
+                        NullableColumns.Add(ordinal);
+                    }
+                }
+
+                if (IsValueLayer)
+                {
+                    result = BuildExpressionToGetRecordState(columnMap, null, null, nullSentinelCheck);
+                }
+                else
+                {
+                    var cSpaceType = (EntityType)columnMap.Type.EdmType;
+                    Debug.Assert(cSpaceType.BuiltInTypeKind == BuiltInTypeKind.EntityType, "Type was " + cSpaceType.BuiltInTypeKind);
+                    var oSpaceType = (ClrEntityType)LookupObjectMapping(cSpaceType).ClrType;
+                    var clrType = oSpaceType.ClrType;
+
+                    var constructor = DelegateFactory.GetConstructorForType(clrType);
+
+                    // Build expressions to read the property values from the source data 
+                    // reader and bind them to their target properties
+                    var propertyBindings = CreatePropertyBindings(columnMap, cSpaceType.Properties);
+
+                    // We have all the property bindings now; go ahead and build the expression to
+                    // construct the type and store the property values.
+                    result = Expression.MemberInit(Expression.New(constructor), propertyBindings);
+
+                    // If there's a null sentinel, then everything above is gated upon whether 
+                    // it's value is DBNull.Value.
+                    if (null != nullSentinelCheck)
+                    {
+                        // shaper.Reader.IsDBNull(nullsentinelOridinal) ? (type)null : result
+                        result = Expression.Condition(nullSentinelCheck, CodeGenEmitter.Emit_NullConstant(result.Type), result);
+                    }
+                }
+
+                _inNullableType = originalInNullableType;
+                return new TranslatorResult(result, arg.RequestedType);
+            }
+            // =
+
+            // <summary>
             // Visit(EntityColumnMap)
             // </summary>
             internal override TranslatorResult Visit(EntityColumnMap columnMap, TranslatorArg arg)
             {
+                if (Helper.IsDynamicType(columnMap.Type.EdmType))
+                {
+                    return VisitDynamicType(columnMap, arg);
+                }
+
                 Expression result;
 
                 // Build expressions to read the entityKey and determine the entitySet. Note

@@ -376,6 +376,12 @@ namespace System.Data.Entity.Core.Objects.ELinq
                             }
                         }
                     }
+
+                    if (DynamicSqlTranslator.TryGetMember(structuralType, name, out member))
+                    {
+                        propertyExpression = instance.Property(name);
+                        return true;
+                    }
                 }
 
                 // try to unwrap GroupBy "Key" member

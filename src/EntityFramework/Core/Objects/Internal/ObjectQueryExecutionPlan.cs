@@ -60,6 +60,14 @@ namespace System.Data.Entity.Core.Objects.Internal
                     : string.Empty;
         }
 
+        internal int WrapCommandAndExecuteNonQuery(ObjectContext context, ObjectParameterCollection parameterValues, string sqlTextBefore, string sqlTextAfter)
+        {
+            using (var entityCommand = PrepareEntityCommand(context, parameterValues))
+            {
+                return entityCommand.GetCommandDefinition().WrapAndExecuteStoreCommandsNoQuery(entityCommand, sqlTextBefore, sqlTextAfter);
+            }
+        }
+
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope",
             Justification = "Buffer disposed by the returned ObjectResult")]
         internal virtual ObjectResult<TResultType> Execute<TResultType>(ObjectContext context, ObjectParameterCollection parameterValues)

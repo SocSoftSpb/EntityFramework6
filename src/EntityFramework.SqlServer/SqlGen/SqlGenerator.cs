@@ -1305,7 +1305,7 @@ namespace System.Data.Entity.SqlServer.SqlGen
         // </summary>
         internal static string GetTargetTSql(EntitySetBase entitySetBase, out bool isDefiningQuery)
         {
-            var definingQuery = entitySetBase.GetMetadataPropertyValue<string>("DefiningQuery");
+            var definingQuery = entitySetBase.DefiningQuery;
             if (definingQuery != null)
             {
                 isDefiningQuery = true;
@@ -1313,21 +1313,27 @@ namespace System.Data.Entity.SqlServer.SqlGen
             }
             isDefiningQuery = false;
             // construct escaped T-SQL referencing entity set
-            var builder = new StringBuilder(50);
+            var builder = new StringBuilder(64);
 
-            var schema = entitySetBase.GetMetadataPropertyValue<string>("Schema");
+            var database = entitySetBase.Database;
+            var schema = entitySetBase.Schema;
+            var table = entitySetBase.Table;
+            if (!string.IsNullOrEmpty(database))
+            {
+                builder.Append(QuoteIdentifier(database));
+                builder.Append(".");
+            }
             if (!string.IsNullOrEmpty(schema))
             {
                 builder.Append(QuoteIdentifier(schema));
                 builder.Append(".");
             }
-            else
+            else if (string.IsNullOrEmpty(table) || table[0] != '#')
             {
                 builder.Append(QuoteIdentifier(entitySetBase.EntityContainer.Name));
                 builder.Append(".");
             }
 
-            var table = entitySetBase.GetMetadataPropertyValue<string>("Table");
             builder.Append(
                 string.IsNullOrEmpty(table)
                     ? QuoteIdentifier(entitySetBase.Name)

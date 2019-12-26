@@ -27,6 +27,7 @@ namespace System.Data.Entity.Core.Common.Internal.Materialization
 
         private readonly StringBuilder _builder = new StringBuilder();
         private readonly SpanIndex _spanIndex;
+        private bool _ignoreCaching;
 
         #endregion
 
@@ -48,7 +49,7 @@ namespace System.Data.Entity.Core.Common.Internal.Materialization
         {
             var builder = new ColumnMapKeyBuilder(spanIndex);
             columnMap.Accept(builder, 0);
-            return builder._builder.ToString();
+            return builder._ignoreCaching? null : builder._builder.ToString();
         }
 
         internal void Append(string value)
@@ -211,6 +212,10 @@ namespace System.Data.Entity.Core.Common.Internal.Materialization
 
         internal override void Visit(EntityColumnMap columnMap, int dummy)
         {
+            if (Helper.IsDynamicType(columnMap.Type.EdmType)
+                && !((EntityType)(columnMap.Type.EdmType)).DynamicEntitySet.AllowDynamicPlanCaching())
+                _ignoreCaching = true;
+
             Append("E-", columnMap.Type);
             Append(",N", columnMap.NullSentinel);
             Append(",P", columnMap.Properties);

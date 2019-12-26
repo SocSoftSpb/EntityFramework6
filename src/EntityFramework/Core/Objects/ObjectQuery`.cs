@@ -274,6 +274,12 @@ namespace System.Data.Entity.Core.Objects
             return GetResultsAsync(mergeOption, cancellationToken);
         }
 
+        /// <inheritdoc />
+        public override void WrapCommandAndExecuteNonQuery(string sqlTextBefore, string sqlTextAfter)
+        {
+            WrapCommandAndExecuteNonQueryImpl(sqlTextBefore, sqlTextAfter);
+        }
+
 #endif
 
         /// <summary>Specifies the related objects to include in the query results.</summary>
@@ -687,6 +693,22 @@ namespace System.Data.Entity.Core.Objects
         #endregion
 
         #region Private Methods
+
+        private void WrapCommandAndExecuteNonQueryImpl(string sqlTextBefore, string sqlTextAfter)
+        {
+            QueryState.ObjectContext.AsyncMonitor.EnsureNotEntered();
+            var executionStrategy = ExecutionStrategy
+                                    ?? DbProviderServices.GetExecutionStrategy(
+                                        QueryState.ObjectContext.Connection, QueryState.ObjectContext.MetadataWorkspace);
+
+            executionStrategy.Execute(
+                () => QueryState.ObjectContext.ExecuteInTransaction(
+                    () => QueryState.GetExecutionPlan(MergeOption.NoTracking).WrapCommandAndExecuteNonQuery(QueryState.ObjectContext, QueryState.Parameters, sqlTextBefore, sqlTextAfter),
+                    executionStrategy,
+                    startLocalTransaction: false,
+                    releaseConnectionOnSuccess: true));
+
+        }
 
         private ObjectResult<T> GetResults(MergeOption? forMergeOption)
         {

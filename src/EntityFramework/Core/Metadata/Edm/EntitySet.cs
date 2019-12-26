@@ -5,6 +5,9 @@ namespace System.Data.Entity.Core.Metadata.Edm
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Data.Entity.Core.Common.Utils;
+    using System.Data.Entity.Core.Mapping;
+    using System.Data.Entity.Core.Metadata.Edm.Provider;
+    using System.Data.Entity.Core.Objects;
     using System.Data.Entity.Utilities;
     using System.Diagnostics;
     using System.Linq;
@@ -41,6 +44,8 @@ namespace System.Data.Entity.Core.Metadata.Edm
         private ReadOnlyCollection<AssociationSet> _associationSets;
         private volatile bool _hasForeignKeyRelationships;
         private volatile bool _hasIndependentRelationships;
+
+        internal DynamicEntitySetMapper DynamicEntitySetMapper { get; set; }
 
         /// <summary>
         /// Gets the built-in type kind for this <see cref="T:System.Data.Entity.Core.Metadata.Edm.EntitySet" />.
@@ -222,6 +227,91 @@ namespace System.Data.Entity.Core.Metadata.Edm
 
             entitySet.SetReadOnly();
             return entitySet;
+        }
+
+        internal ObjectTypeMapping GetDynamicObjectMapping()
+        {
+            return DynamicEntitySetMapper.GetDynamicObjectMapping();
+        }
+
+        internal bool AllowDynamicPlanCaching()
+        {
+            return DynamicEntitySetMapper.AllowDynamicPlanCaching();
+        }
+    }
+
+    internal class DynamicEntitySetMapper
+    {
+        private readonly EntitySet _entitySet;
+        private readonly DynamicEntitySetOptions _options;
+        private readonly Type _clrType;
+        private volatile ClrEntityType _clrEntityType;
+        private volatile ObjectTypeMapping _dynamicObjectMapping;
+
+        public DynamicEntitySetMapper(EntitySet entitySet, DynamicEntitySetOptions options, Type clrType)
+        {
+            _entitySet = entitySet;
+            _options = options;
+            _clrType = clrType;
+        }
+
+        public ObjectTypeMapping GetDynamicObjectMapping()
+        {
+            return _dynamicObjectMapping ?? (_dynamicObjectMapping = CreateDynamicObjectMapping());
+        }
+
+        private ClrEntityType GetClrEntityType()
+        {
+            return _clrEntityType ?? (_clrEntityType = CreateClrEntityType());
+        }
+
+        private ClrEntityType CreateClrEntityType()
+        {
+            var clrEntityType = new ClrEntityType(_clrType, _clrType.Namespace, _clrType.Name);
+            foreach (var optionsColumn in _options.Columns)
+            {
+                var property = optionsColumn.Property;
+                if (!TryGetPrimitiveType(property.PropertyType, out var primitiveType))
+                    throw new InvalidOperationException($"Can't get primitive type for property: {property.Name}.");
+
+                var member = new EdmProperty(property.Name, TypeUsage.Create(
+                        primitiveType, new FacetValues
+                        {
+                            Nullable = optionsColumn.IsNullable
+                        }),
+                    property, _clrType);
+
+                clrEntityType.AddMember(member);
+            }
+
+            return clrEntityType;
+        }
+
+        private ObjectTypeMapping CreateDynamicObjectMapping()
+        {
+            var clrEntityType = GetClrEntityType();
+            var entityType = _entitySet.ElementType;
+            var mapping = new ObjectTypeMapping(clrEntityType, entityType);
+
+            foreach (var optionsColumn in _options.Columns)
+            {
+                var clrProperty = clrEntityType.Properties[optionsColumn.Property.Name];
+                var edmProperty = entityType.Properties[optionsColumn.ColumnName];
+
+                mapping.AddMemberMap(new ObjectPropertyMapping(edmProperty, clrProperty));
+            }
+
+            return mapping;
+        }
+
+        protected static bool TryGetPrimitiveType(Type type, out PrimitiveType primitiveType)
+        {
+            return ClrProviderManifest.Instance.TryGetPrimitiveType(Nullable.GetUnderlyingType(type) ?? type, out primitiveType);
+        }
+
+        public bool AllowDynamicPlanCaching()
+        {
+            return _options.UniqueSetName != null;
         }
     }
 }

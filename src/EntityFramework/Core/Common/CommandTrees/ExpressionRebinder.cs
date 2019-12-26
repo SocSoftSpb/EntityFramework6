@@ -40,6 +40,9 @@ namespace System.Data.Entity.Core.Common.CommandTrees
         /// <param name="entitySet">The entity set.</param>
         protected override EntitySetBase VisitEntitySet(EntitySetBase entitySet)
         {
+            var elementType = entitySet.ElementType;
+            if (elementType != null && Helper.IsDynamicType(elementType))
+                return entitySet;
             EntityContainer container;
             if (_metadata.TryGetEntityContainer(entitySet.EntityContainer.Name, entitySet.EntityContainer.DataSpace, out container))
             {

@@ -43,6 +43,11 @@ namespace System.Data.Entity.Core.Metadata.Edm
         // </summary>
         internal static ObjectTypeMapping GetObjectMapping(EdmType type, MetadataWorkspace workspace)
         {
+            if (Helper.IsDynamicType(type))
+            {
+                return ((EntityType)type).DynamicEntitySet.GetDynamicObjectMapping();
+            }
+
             // Check if the workspace has cspace item collection registered with it. If not, then its a case
             // of public materializer trying to create objects from PODR or EntityDataReader with no context.
             ItemCollection collection;
