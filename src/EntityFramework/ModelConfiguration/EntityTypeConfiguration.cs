@@ -204,6 +204,28 @@ namespace System.Data.Entity.ModelConfiguration
         }
 
         /// <summary>
+        /// Sets an annotation in the model for the store entity set to which this entity is mapped. The annotation
+        /// value can later be used when processing the table such as when creating migrations.
+        /// </summary>
+        /// <remarks>
+        /// It will likely be necessary to register a <see cref="IMetadataAnnotationSerializer"/> if the type of
+        /// the annotation value is anything other than a string. Passing a null value clears any annotation with
+        /// the given name on the column that had been previously set.
+        /// </remarks>
+        /// <param name="name">The annotation name, which must be a valid C#/EDM identifier.</param>
+        /// <param name="value">The annotation value, which may be a string or some other type that
+        /// can be serialized with an <see cref="IMetadataAnnotationSerializer"/></param>.
+        /// <returns>The same configuration instance so that multiple calls can be chained.</returns>
+        public EntityTypeConfiguration<TEntityType> HasStoreSetAnnotation(string name, object value)
+        {
+            Check.NotEmpty(name, "name");
+
+            _entityTypeConfiguration.SetStoreSetAnnotation(name, value);
+
+            return this;
+        }
+
+        /// <summary>
         /// Configures this type to use stored procedures for insert, update and delete.
         /// The default conventions for procedure and parameter names will be used.
         /// </summary>

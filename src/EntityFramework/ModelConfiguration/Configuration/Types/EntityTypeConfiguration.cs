@@ -47,6 +47,8 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Types
 
         private readonly IDictionary<string, object> _annotations = new Dictionary<string, object>();
 
+        private IDictionary<string, object> _storeSetAnnotations;
+
         private string _entitySetName;
 
         private ModificationStoredProceduresConfiguration _modificationStoredProceduresConfiguration;
@@ -89,6 +91,15 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Types
             foreach (var annotation in source._annotations)
             {
                 _annotations.Add(annotation);
+            }
+
+            if (source._storeSetAnnotations != null)
+            {
+                _storeSetAnnotations = new Dictionary<string, object>();
+                foreach (var annotation in source._storeSetAnnotations)
+                {
+                    _storeSetAnnotations.Add(annotation);
+                }
             }
         }
 
@@ -380,6 +391,21 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Types
             _annotations[name] = value;
         }
 
+        public virtual void SetStoreSetAnnotation(string name, object value)
+        {
+            // Technically we could accept some names that are invalid in EDM, but this is not too restrictive
+            // and is an easy way of ensuring that name is valid all places we want to use it--i.e. in the XML
+            // and in the MetadataWorkspace.
+            if (!name.IsValidUndottedName())
+            {
+                throw new ArgumentException(Strings.BadAnnotationName(name));
+            }
+
+            if (_storeSetAnnotations == null)
+                _storeSetAnnotations = new Dictionary<string, object>();
+            _storeSetAnnotations[name] = value;
+        }
+
         private void UpdateTableNameForSubTypes()
         {
             _entitySubTypesMappingConfigurations
@@ -650,12 +676,13 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Types
                             IsMappingAnyInheritedProperty(entityType),
                             i,
                             _entityMappingConfigurations.Count,
-                            _annotations);
+                            _annotations,
+                            _storeSetAnnotations);
                 }
             }
             else
             {
-                ConfigureUnconfiguredType(databaseMapping, entitySets, providerManifest, entityType, _annotations);
+                ConfigureUnconfiguredType(databaseMapping, entitySets, providerManifest, entityType, _annotations, _storeSetAnnotations);
             }
         }
 
@@ -674,12 +701,13 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Types
             ICollection<EntitySet> entitySets,
             DbProviderManifest providerManifest, 
             EntityType entityType, 
-            IDictionary<string, object> commonAnnotations)
+            IDictionary<string, object> commonAnnotations,
+            IDictionary<string, object> storeSetAnnotations)
         {
             var c = new EntityMappingConfiguration();
             var entityTypeMapping
                 = databaseMapping.GetEntityTypeMapping(entityType.GetClrType());
-            c.Configure(databaseMapping, entitySets, providerManifest, entityType, ref entityTypeMapping, false, 0, 1, commonAnnotations);
+            c.Configure(databaseMapping, entitySets, providerManifest, entityType, ref entityTypeMapping, false, 0, 1, commonAnnotations, storeSetAnnotations);
         }
 
         internal void Configure(
