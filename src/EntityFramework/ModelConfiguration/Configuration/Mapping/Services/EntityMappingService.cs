@@ -75,7 +75,7 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Mapping
 
                         RemoveRedundantDefaultDiscriminators(tableMapping);
 
-                        var requiresIsTypeOf = DetermineRequiresIsTypeOf(tableMapping, entitySet, entityType);
+                        var requiresIsTypeOf = DetermineRequiresIsTypeOf(tableMapping, entitySet, entityType, out var isForcedTphAbstractNode);
                         var requiresSplit = false;
 
                         // Find the entity type mapping and fragment for this table / entity type mapping where properties will be mapped
@@ -99,7 +99,7 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Mapping
 
                         // Find the entity type mapping and fragment for this table / entity type mapping where conditions will be mapped
                         var conditionTypeMapping
-                            = FindConditionTypeMapping(entityType, requiresSplit, propertiesTypeMapping);
+                            = FindConditionTypeMapping(entityType, requiresSplit, isForcedTphAbstractNode, propertiesTypeMapping);
 
                         var conditionTypeMappingFragment
                             = FindConditionTypeMappingFragment(
@@ -160,7 +160,7 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Mapping
 
                         ConfigureTypeMappings(
                             tableMapping, rootMappings, entityType, propertiesTypeMappingFragment,
-                            conditionTypeMappingFragment);
+                            conditionTypeMappingFragment, isForcedTphAbstractNode);
 
                         if (propertiesTypeMappingFragment.IsUnmappedPropertiesFragment()
                             &&
@@ -262,7 +262,8 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Mapping
             Dictionary<EntityType, EntityTypeMapping> rootMappings,
             EntityType entityType,
             MappingFragment propertiesTypeMappingFragment,
-            MappingFragment conditionTypeMappingFragment)
+            MappingFragment conditionTypeMappingFragment,
+            bool isForcedTphAbstractNode)
         {
             var existingPropertyMappings =
                 new List<ColumnMappingBuilder>(
@@ -326,7 +327,7 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Mapping
                 conditionTypeMappingFragment.RemoveConditionProperty(leftoverCondition);
             }
 
-            if (entityType.Abstract)
+            if (entityType.Abstract && !isForcedTphAbstractNode)
             {
                 propertiesTypeMappingFragment.ClearConditions();
             }
@@ -361,7 +362,7 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Mapping
         }
 
         private EntityTypeMapping FindConditionTypeMapping(
-            EntityType entityType, bool requiresSplit, EntityTypeMapping propertiesTypeMapping)
+            EntityType entityType, bool requiresSplit, bool isForcedTphAbstractNode, EntityTypeMapping propertiesTypeMapping)
         {
             var conditionTypeMapping = propertiesTypeMapping;
 
@@ -379,25 +380,80 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Mapping
                     parentEntitySetMapping.AddTypeMapping(conditionTypeMapping);
                 }
 
-                propertiesTypeMapping.MappingFragments.Each(tmf => tmf.ClearConditions());
+                if (!isForcedTphAbstractNode)
+                    propertiesTypeMapping.MappingFragments.Each(tmf => tmf.ClearConditions());
             }
             return conditionTypeMapping;
         }
 
         private bool DetermineRequiresIsTypeOf(
-            TableMapping tableMapping, EntitySet entitySet, EntityType entityType)
+            TableMapping tableMapping, EntitySet entitySet, EntityType entityType, out bool isForcedTphAbstractNode)
         {
-            // IsTypeOf if this is the root for this table and any derived type shares a property mapping
-            return entityType.IsRootOfSet(tableMapping.EntityTypes.GetEntityTypes(entitySet)) &&
-                   ((tableMapping.EntityTypes.GetEntityTypes(entitySet).Count() > 1
-                     && tableMapping.EntityTypes.GetEntityTypes(entitySet).Any(et => et != entityType && !et.Abstract))
-                    ||
-                    _tableMappings.Values.Any(
-                        tm =>
-                        tm != tableMapping
-                        &&
-                        tm.Table.ForeignKeyBuilders.Any(
-                            fk => fk.GetIsTypeConstraint() && fk.PrincipalTable == tableMapping.Table)));
+            var typesInSetEnumerable = tableMapping.EntityTypes.GetEntityTypes(entitySet);
+            var typesInSet = typesInSetEnumerable as ICollection<EntityType> ?? typesInSetEnumerable.ToList();
+            var isRootOfSet = true;
+            var hasNonAbstractSubtypes = false;
+            var hasSameConditionsInInheritors = false;
+            var hasConditionMappings = false;
+            isForcedTphAbstractNode = false;
+            
+
+            if (typesInSet.Count > 1)
+            {
+                List<PropertyMappingSpecification> conditionMappings = null;
+                if (entityType.Abstract)
+                {
+                    conditionMappings = GetConditionPropertiesMappings(tableMapping, entityType);
+                    hasConditionMappings = conditionMappings.Count > 0;
+                }
+
+                foreach (var type in typesInSet)
+                {
+                    if (type == entityType)
+                        continue;
+                    if (type.IsSubtypeOf(entityType))
+                    {
+                        if (!type.Abstract)
+                            hasNonAbstractSubtypes = true;
+                        if (hasConditionMappings)
+                        {
+                            if (conditionMappings.Any(e => e.EntityType == type))
+                                hasSameConditionsInInheritors = true;
+                        }
+                    }
+                    else
+                    {
+                        isRootOfSet = false;
+                    }
+                }
+            }
+
+            if (!isRootOfSet && entityType.Abstract && hasNonAbstractSubtypes && hasConditionMappings && !hasSameConditionsInInheritors)
+                isForcedTphAbstractNode = true;
+            
+            if (isForcedTphAbstractNode || (isRootOfSet && hasNonAbstractSubtypes))
+                return true;
+
+            return isRootOfSet &&
+                   _tableMappings.Values.Any(
+                       tm =>
+                           tm != tableMapping
+                           &&
+                           tm.Table.ForeignKeyBuilders.Any(
+                               fk => fk.GetIsTypeConstraint() && fk.PrincipalTable == tableMapping.Table));
+        }
+
+        private static List<PropertyMappingSpecification> GetConditionPropertiesMappings(TableMapping tableMapping, EntityType entityType)
+        {
+            var conditionMappings = tableMapping.ColumnMappings
+                .Where(
+                    e => e.PropertyMappings.Any(
+                        pm => pm.Conditions.Count > 0
+                              && !pm.IsDefaultDiscriminatorCondition
+                              && pm.EntityType == entityType))
+                .SelectMany(e => e.PropertyMappings)
+                .ToList();
+            return conditionMappings;
         }
 
         private static bool DetermineRequiresSplitEntityTypeMapping(
@@ -536,9 +592,9 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Mapping
                 EntityTypeMapping rootMapping;
                 if (rootMappings.TryGetValue(baseType, out rootMapping))
                 {
-                    return
-                        rootMapping.MappingFragments.SelectMany(etmf => etmf.ColumnMappings).Any(
-                            pm => pm.PropertyPath.SequenceEqual(propertyPath));
+                    if (rootMapping.MappingFragments.SelectMany(etmf => etmf.ColumnMappings).Any(
+                        pm => pm.PropertyPath.SequenceEqual(propertyPath)))
+                        return true;
                 }
                 baseType = (EntityType)baseType.BaseType;
             }

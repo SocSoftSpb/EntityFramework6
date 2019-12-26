@@ -392,29 +392,24 @@ namespace System.Data.Entity.Core.Mapping
 
         protected virtual void Visit(PropertyMapping propertyMapping)
         {
-            // this is a switching node, so no object header and footer will be add for this node,
-            // also this Visit won't add the object to the seen list
-
-            if (propertyMapping.GetType()
-                == typeof(ComplexPropertyMapping))
+            switch (propertyMapping)
             {
-                Visit((ComplexPropertyMapping)propertyMapping);
-            }
-            else if (propertyMapping.GetType()
-                     == typeof(ConditionPropertyMapping))
-            {
-                Visit((ConditionPropertyMapping)propertyMapping);
-            }
-            else if (propertyMapping.GetType()
-                     == typeof(ScalarPropertyMapping))
-            {
-                Visit((ScalarPropertyMapping)propertyMapping);
-            }
-            else
-            {
-                Debug.Fail(
-                    String.Format(
-                        CultureInfo.InvariantCulture, "Found type '{0}', did we add a new type?", propertyMapping.GetType()));
+                // this is a switching node, so no object header and footer will be add for this node,
+                // also this Visit won't add the object to the seen list
+                case ScalarPropertyMapping scalarPropertyMapping:
+                    Visit(scalarPropertyMapping);
+                    break;
+                case ComplexPropertyMapping complexPropertyMapping:
+                    Visit(complexPropertyMapping);
+                    break;
+                case ConditionPropertyMapping conditionPropertyMapping:
+                    Visit(conditionPropertyMapping);
+                    break;
+                default:
+                    Debug.Fail(
+                        string.Format(
+                            CultureInfo.InvariantCulture, "Found type '{0}', did we add a new type?", propertyMapping.GetType()));
+                    break;
             }
         }
 
