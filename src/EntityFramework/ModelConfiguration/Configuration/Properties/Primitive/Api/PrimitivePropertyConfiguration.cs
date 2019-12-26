@@ -130,6 +130,17 @@ namespace System.Data.Entity.ModelConfiguration.Configuration
         }
 
         /// <summary>
+        /// Configures default value of database column
+        /// </summary>
+        /// <param name="defaultValue">The default value</param>
+        public PrimitivePropertyConfiguration HasDefaultValue(object defaultValue)
+        {
+            Configuration.DefaultValue = defaultValue;
+
+            return this;
+        }
+
+        /// <summary>
         /// Sets an annotation in the model for the database column used to store the property. The annotation
         /// value can later be used when processing the column such as when creating migrations.
         /// </summary>

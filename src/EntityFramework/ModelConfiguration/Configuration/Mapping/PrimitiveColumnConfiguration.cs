@@ -53,6 +53,16 @@ namespace System.Data.Entity.ModelConfiguration.Configuration
             return this;
         }
 
+        /// <summary>
+        /// Configures default value of primitive column in DB store
+        /// </summary>
+        /// <param name="defaultValue">The default value</param>
+        public PrimitiveColumnConfiguration HasDefaultValue(object defaultValue)
+        {
+            Configuration.DefaultValue = defaultValue;
+            return this;
+        }
+
         /// <summary>Configures the order of the primitive column used to store the property. This method is also used to specify key ordering when an entity type has a composite key.</summary>
         /// <returns>The same <see cref="T:System.Data.Entity.ModelConfiguration.Configuration.PrimitiveColumnConfiguration" /> instance so that multiple calls can be chained.</returns>
         /// <param name="columnOrder">The order that this column should appear in the database table.</param>

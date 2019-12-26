@@ -705,6 +705,19 @@ namespace System.Data.Entity.Core.Metadata.Edm
                     XmlConstants.StoreGeneratedPattern, XmlConstants.AnnotationNamespace,
                     metadataProperty.Value.ToString());
             }
+
+            if (property.DefaultValue != null)
+            {
+                WriteDefaultValue(property.DefaultValue);
+            }
+        }
+
+        private void WriteDefaultValue(object defaultValue)
+        {
+            if (defaultValue is bool b)
+                _xmlWriter.WriteAttributeString(XmlConstants.DefaultValueAttribute, b ? "true" : "false");
+            else
+                _xmlWriter.WriteAttributeString(XmlConstants.DefaultValueAttribute, defaultValue.ToString());
         }
 
         private static string GetTypeReferenceName(EdmProperty property)
