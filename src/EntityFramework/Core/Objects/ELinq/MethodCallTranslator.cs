@@ -14,9 +14,11 @@ namespace System.Data.Entity.Core.Objects.ELinq
     using System.Data.Entity.Utilities;
     using System.Diagnostics;
     using System.Diagnostics.CodeAnalysis;
+    using System.Globalization;
     using System.Linq;
     using System.Linq.Expressions;
     using System.Reflection;
+    using System.Threading;
     using CqtExpression = System.Data.Entity.Core.Common.CommandTrees.DbExpression;
     using LinqExpression = System.Linq.Expressions.Expression;
 
@@ -58,6 +60,12 @@ namespace System.Data.Entity.Core.Objects.ELinq
                     {
                         return builderTranslator.Translate(parent, linq);
                     }
+                }
+
+                // check if this is a dynamic sql method
+                if (DynamicSqlTranslator.IsCandidateMethod(linq.Method))
+                {
+                    return DynamicSqlTranslator.Translate(parent, linq);
                 }
 
                 if (TableHintTranslator.IsCandidateMethod(linq.Method))
@@ -3781,6 +3789,118 @@ namespace System.Data.Entity.Core.Objects.ELinq
                 return retVal;
             }
         }
+
+		private static class DynamicSqlTranslator
+		{
+			const string DynamicEntityTypeNamespace = "DynamicNamespace";
+			private static long _entitySetKey;
+
+			public static bool IsCandidateMethod(MethodInfo method)
+			{
+				return method.DeclaringType == typeof(DynamicSqlUtilities);
+			}
+
+			public static DbExpression Translate(ExpressionConverter parent, MethodCallExpression linq)
+			{
+				if (linq.Method.Name == "DynamicSql")
+				{
+					return TranslateDynamicSql(parent, linq);
+				}
+				throw new NotSupportedException(string.Format(CultureInfo.InvariantCulture, 
+					"Method {0} of class {1} is not supported.", linq.Method.Name, typeof(DynamicSqlUtilities).Name));
+			}
+
+            [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
+            private static DbExpression TranslateDynamicSql(ExpressionConverter parent, MethodCallExpression call)
+			{
+				var scanType = call.Method.GetGenericArguments()[0];
+				var argSql = call.Arguments[0] as ConstantExpression;
+				var argOptions = call.Arguments[1] as ConstantExpression;
+
+				if (scanType == null)
+					throw new InvalidOperationException();
+				if (argSql == null)
+					throw new InvalidOperationException("Text of Dynamic SQL must be a string constant.");
+				if (argOptions == null)
+					throw new InvalidOperationException("Mapped properties must be a list constant.");
+
+				var sql = argSql.Value as string;
+				if (sql == null)
+					throw new InvalidOperationException("Text of Dynamic SQL must be a string constant.");
+
+				var options = argOptions.Value as DynamicEntitySetOptions;
+				if (options == null)
+					throw new InvalidOperationException("Mapped properties must be a list constant.");
+
+				var lstEdmProperties = options.Columns.Select(option => CreateEdmProperty(parent, option)).ToList();
+				if (lstEdmProperties.Count == 0)
+					throw new InvalidOperationException("No any property is mapped.");
+                
+				var col = parent._funcletizer.RootContext.MetadataWorkspace.GetItemCollection(DataSpace.SSpace, true);
+
+				var container = col.GetItems<EntityContainer>().FirstOrDefault();
+				if (container == null)
+					throw new InvalidOperationException("Can't get container.");
+
+				var entitySetName = options.UniqueSetName;
+				if (entitySetName == null)
+				{
+					var nextId = Interlocked.Increment(ref _entitySetKey);
+					entitySetName = "DynamicEntitySet_" + nextId.ToString(CultureInfo.InvariantCulture);
+					parent._recompileRequired = () => true;
+				}
+				
+                string schemaName = null;
+				string tableName = null;
+                string database = null;
+
+                if (sql.StartsWith("TABLE:", StringComparison.Ordinal))
+                {
+                    tableName = sql.Substring(6);
+                    var pointPos = tableName.LastIndexOf('.');
+                    if (pointPos > 0)
+                    {
+                        schemaName = tableName.Substring(0, pointPos);
+                        tableName = tableName.Substring(pointPos + 1);
+
+                        pointPos = schemaName.LastIndexOf('.');
+                        if (pointPos > 0)
+                        {
+                            database = schemaName.Substring(0, pointPos);
+                            schemaName = schemaName.Substring(pointPos + 1);
+                        }
+                    }
+                    sql = null;
+                }
+
+				var entityTypeName = "Dyn_" + scanType.Name;
+
+				var et = new EntityType(entityTypeName, DynamicEntityTypeNamespace, DataSpace.CSpace, options.KeyMemberNames, lstEdmProperties);
+				var es = new EntitySet(entitySetName, schemaName, tableName, sql, et) {Database = database};
+                es.DynamicEntitySetMapper = new DynamicEntitySetMapper(es, options, scanType);
+				es.ChangeEntityContainerWithoutCollectionFixup(container);
+				es.SetReadOnly();
+                et.DynamicEntitySet = es;
+
+				return es.Scan(parent._scopedHints ?? options.DefaultTableHints);
+			}
+
+			private static EdmProperty CreateEdmProperty(ExpressionConverter parent, ColumnOption option)
+			{
+				var tu = parent.GetValueLayerType(option.Property.PropertyType);
+				return new EdmProperty(option.ColumnName, tu);
+			}
+
+			public static bool TryGetMember(StructuralType structuralType, string name, out EdmMember member)
+			{
+				member = null;
+				var et = structuralType as EntityType;
+				if (et == null || et.NamespaceName != DynamicEntityTypeNamespace)
+					return false;
+				member = et.Properties.FirstOrDefault(e => e.Name == name);
+				return member != null;
+			}
+		}
 
     }
 }

@@ -167,7 +167,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
             nodeInfo.Definitions.Or(op.Table.ReferencedColumns);
 
             // get table's keys - but only if the key columns have been referenced
-            if (op.Table.ReferencedColumns.Subsumes(op.Table.Keys))
+            if (!op.Table.Keys.IsEmpty && op.Table.ReferencedColumns.Subsumes(op.Table.Keys))
             {
                 nodeInfo.Keys.InitFrom(op.Table.Keys);
             }
@@ -202,7 +202,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
             // Process keys if it's a TVF with inferred keys, otherwise - no keys.
             if (n.Child0.Op.OpType == OpType.VarDef
                 && n.Child0.Child0.Op.OpType == OpType.Function
-                && op.Table.Keys.Count > 0)
+                && !op.Table.Keys.IsEmpty)
             {
                 // This is a TVF case. 
                 // Get table's keys - but only if they have been referenced.

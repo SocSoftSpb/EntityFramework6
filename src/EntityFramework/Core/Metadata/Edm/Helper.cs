@@ -227,6 +227,11 @@ namespace System.Data.Entity.Core.Metadata.Edm
             return (BuiltInTypeKind.CollectionType == item.BuiltInTypeKind);
         }
 
+        internal static bool IsDynamicType(EdmType type)
+        {
+            return IsEntityType(type) && ((EntityType)type).DynamicEntitySet != null;
+        }
+
         internal static bool IsEntityType(EdmType type)
         {
             return (BuiltInTypeKind.EntityType == type.BuiltInTypeKind);

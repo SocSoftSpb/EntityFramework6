@@ -5,6 +5,7 @@ namespace System.Data.Entity.Core.Objects
     using System.Collections;
     using System.ComponentModel;
     using System.Data.Entity.Core.Common;
+    using System.Data.Entity.Core.EntityClient.Internal;
     using System.Data.Entity.Core.Metadata.Edm;
     using System.Data.Entity.Core.Objects.ELinq;
     using System.Data.Entity.Core.Objects.Internal;
@@ -312,6 +313,26 @@ namespace System.Data.Entity.Core.Objects
             return ExecuteInternalAsync(mergeOption, cancellationToken);
         }
 
+        /// <summary>
+        /// Get mapping of projection
+        /// </summary>
+        /// <returns></returns>
+        public ObjectQueryColumnMap[] GetProjectionMapping()
+        {
+            var plan = QueryState.GetExecutionPlan(null);
+            var commandDefinition = (EntityCommandDefinition)(plan.CommandDefinition);
+
+            return commandDefinition.GetProjectionMapping();
+        }
+
+        /// <summary>
+        /// Execute Query as Non-Query and wrap command text between <paramref name="sqlTextBefore"/> and <paramref name="sqlTextAfter"/>
+        /// </summary>
+        /// <param name="sqlTextBefore"></param>
+        /// <param name="sqlTextAfter"></param>
+        /// <remarks>Used for make INSERT INTO ... FROM [SELECT_ORIGINAL_QUERY]</remarks>
+        public abstract void WrapCommandAndExecuteNonQuery(string sqlTextBefore, string sqlTextAfter);
+
 #endif
 
         #region IListSource implementation
@@ -415,5 +436,36 @@ namespace System.Data.Entity.Core.Objects
         internal abstract ObjectResult ExecuteInternal(MergeOption mergeOption);
 
         #endregion
+    }
+
+    /// <summary>
+    /// Mapping for ObjectQuery Column (Result DataReader Command -> Result CLR Projection)
+    /// </summary>
+    public sealed class ObjectQueryColumnMap
+    {
+        internal ObjectQueryColumnMap(EdmProperty sourceProperty, int sourceOrdinal, string targetName, TypeUsage targetType)
+        {
+            SourceProperty = sourceProperty;
+            SourceOrdinal = sourceOrdinal;
+            TargetName = targetName;
+            TargetType = targetType;
+        }
+
+        /// <summary>
+        /// Property of source projection
+        /// </summary>
+        public EdmProperty SourceProperty { get; }
+        /// <summary>
+        /// Ordinal position in source projection
+        /// </summary>
+        public int SourceOrdinal { get; }
+        /// <summary>
+        /// Name of projected CLR property
+        /// </summary>
+        public string TargetName { get; }
+        /// <summary>
+        /// Type of projected CLR property
+        /// </summary>
+        public TypeUsage TargetType { get; }
     }
 }
