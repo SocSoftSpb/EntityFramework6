@@ -625,6 +625,64 @@ namespace System.Data.Entity.Core.Metadata.Edm.Provider
 
             #endregion
 
+            #region Window Functions
+
+            functions.AddWindow(PrimitiveTypeKind.Int64, "W_" + nameof(WindowFunction.RowNumber));
+            functions.AddWindow(PrimitiveTypeKind.Int64, "W_" + nameof(WindowFunction.Rank));
+            functions.AddWindow(PrimitiveTypeKind.Int64, "W_" + nameof(WindowFunction.DenseRank));
+            functions.AddWindow(PrimitiveTypeKind.Int64, "W_" + nameof(WindowFunction.NTile), PrimitiveTypeKind.Int64, "groupCount");
+            
+
+            functions.AddWindow(PrimitiveTypeKind.Int32, "W_" + nameof(WindowFunction.Count));
+            functions.AddWindow(PrimitiveTypeKind.Int32, "W_" + nameof(WindowFunction.LongCount));
+
+            parameterTypes = new[] {
+                PrimitiveTypeKind.Boolean,
+                PrimitiveTypeKind.Byte,
+                PrimitiveTypeKind.DateTime,
+                PrimitiveTypeKind.Decimal,
+                PrimitiveTypeKind.Double,
+                PrimitiveTypeKind.Int16,
+                PrimitiveTypeKind.Int32,
+                PrimitiveTypeKind.Int64,
+                PrimitiveTypeKind.Single,
+                PrimitiveTypeKind.String,
+                PrimitiveTypeKind.Guid
+            };
+
+            EdmProviderManifestFunctionBuilder.ForTypes(parameterTypes, type => functions.AddWindow(PrimitiveTypeKind.Int32, "W_" + nameof(WindowFunction.Count), type, "arg"));
+            EdmProviderManifestFunctionBuilder.ForTypes(parameterTypes, type => functions.AddWindow(PrimitiveTypeKind.Int64, "W_" + nameof(WindowFunction.LongCount), type, "arg"));
+
+            // Avg, Sum
+            parameterTypes = new[] {
+                PrimitiveTypeKind.Decimal,
+                PrimitiveTypeKind.Double,
+                PrimitiveTypeKind.Int32,
+                PrimitiveTypeKind.Int64
+            };
+            EdmProviderManifestFunctionBuilder.ForTypes(parameterTypes, type => functions.AddWindow(type, "W_" + nameof(WindowFunction.Avg), type, "arg"));
+            EdmProviderManifestFunctionBuilder.ForTypes(parameterTypes, type => functions.AddWindow(type, "W_" + nameof(WindowFunction.Sum), type, "arg"));
+
+            // Max, Min
+            parameterTypes = new[] {
+                PrimitiveTypeKind.Byte,
+                PrimitiveTypeKind.DateTime,
+                PrimitiveTypeKind.Decimal,
+                PrimitiveTypeKind.Double,
+                PrimitiveTypeKind.Int16,
+                PrimitiveTypeKind.Int32,
+                PrimitiveTypeKind.Int64,
+                PrimitiveTypeKind.Single,
+                PrimitiveTypeKind.String,
+                PrimitiveTypeKind.Binary,
+                PrimitiveTypeKind.DateTimeOffset
+            };
+
+            EdmProviderManifestFunctionBuilder.ForTypes(parameterTypes, type => functions.AddWindow(type, "W_" + nameof(WindowFunction.Max), type, "arg"));
+            EdmProviderManifestFunctionBuilder.ForTypes(parameterTypes, type => functions.AddWindow(type, "W_" + nameof(WindowFunction.Min), type, "arg"));
+
+            #endregion
+
             #region String Functions
 
             functions.AddFunction(PrimitiveTypeKind.String, "Trim", PrimitiveTypeKind.String, "stringArgument");

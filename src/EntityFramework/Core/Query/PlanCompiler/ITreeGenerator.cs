@@ -1174,7 +1174,34 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
                     argNodes.Add(BuildSoftCast(VisitExprAsScalar(e.Arguments[idx]), e.Function.Parameters[idx].TypeUsage));
                 }
 
-                retNode = _iqtCommand.CreateNode(_iqtCommand.CreateFunctionOp(e.Function), argNodes);
+                var functionOp = _iqtCommand.CreateFunctionOp(e.Function);
+
+                if (e.Function.WindowAttribute)
+                {
+                    if (e.Partitions != null
+                        && e.Partitions.Count > 0)
+                    {
+                        functionOp.PartitionCount = e.Partitions.Count;
+                        foreach (var dbExpression in e.Partitions)
+                        {
+                            argNodes.Add(VisitExprAsScalar(dbExpression));
+                        }
+                    }
+                    if (e.SortOrder != null
+                        && e.SortOrder.Count > 0)
+                    {
+                        functionOp.Orders = new List<bool>(e.SortOrder.Count);
+
+                        for (var i = 0; i < e.SortOrder.Count; i++)
+                        {
+                            var srt = e.SortOrder[i];
+                            functionOp.Orders.Add(srt.Ascending);
+                            argNodes.Add(VisitExprAsScalar(srt.Expression));
+                        }
+                    }
+                }
+
+                retNode = _iqtCommand.CreateNode(functionOp, argNodes);
             }
 
             return retNode;

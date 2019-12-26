@@ -173,6 +173,57 @@ namespace System.Data.Entity.Core.Query.InternalTrees
             }
         }
 
+        public override void Visit(FunctionOp op, Node n)
+        {
+            using (new AutoString(this, op))
+            {
+                WriteString(op.Function.FullName);
+                WriteString("(");
+                var separator = string.Empty;
+                var iPartition = int.MaxValue;
+                var iOrder = int.MaxValue;
+                var iArgs = op.Function.Parameters.Count;
+
+                if (op.Function.WindowAttribute)
+                {
+                    if (op.PartitionCount > 0)
+                    {
+                        iPartition = iArgs;
+                    }
+                    if (op.Orders != null
+                        && op.Orders.Count > 0)
+                    {
+                        iOrder = iArgs + op.PartitionCount;
+                    }
+                }
+
+                for (var i = 0; i < n.Children.Count; i++)
+                {
+                    if (i == iArgs)
+                    {
+                        WriteString(") OVER (");
+                    }
+                    if (i == iPartition)
+                    {
+                        WriteString("PARTITION BY");
+                        separator = " ";
+                    }
+                    if (i == iOrder)
+                    {
+                        if (iPartition != int.MaxValue)
+                            WriteString(" ");
+                        WriteString("ORDER BY");
+                        separator = " ";
+                    }
+                    var chi = n.Children[i];
+                    WriteString(separator);
+                    VisitNode(chi);
+                    separator = ",";
+                }
+                WriteString(")");
+            }
+        }
+
         protected override void VisitScalarOpDefault(ScalarOp op, Node n)
         {
             using (new AutoString(this, op))

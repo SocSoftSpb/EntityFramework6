@@ -280,6 +280,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
             _xmlWriter.WriteStartElement(XmlConstants.Function);
             _xmlWriter.WriteAttributeString(XmlConstants.Name, function.Name);
             _xmlWriter.WriteAttributeString(XmlConstants.AggregateAttribute, GetLowerCaseStringFromBoolValue(function.AggregateAttribute));
+            _xmlWriter.WriteAttributeString(XmlConstants.WindowAttribute, GetLowerCaseStringFromBoolValue(function.WindowAttribute));
             _xmlWriter.WriteAttributeString(XmlConstants.BuiltInAttribute, GetLowerCaseStringFromBoolValue(function.BuiltInAttribute));
             _xmlWriter.WriteAttributeString(
                 XmlConstants.NiladicFunction, GetLowerCaseStringFromBoolValue(function.NiladicFunctionAttribute));

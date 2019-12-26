@@ -90,6 +90,40 @@ namespace System.Data.Entity.Core.Metadata.Edm.Provider
             functions.Add(function);
         }
 
+        internal void AddWindow(PrimitiveTypeKind returnTypeKind, string windowFunctionName)
+        {
+            AddWindow(returnTypeKind, windowFunctionName, new KeyValuePair<string, PrimitiveTypeKind>[0]);
+        }
+
+        internal void AddWindow(PrimitiveTypeKind returnTypeKind, string windowFunctionName, PrimitiveTypeKind argumentTypeKind, string argumentName)
+        {
+            AddWindow(returnTypeKind, windowFunctionName, new [] {new KeyValuePair<string, PrimitiveTypeKind>(argumentName, argumentTypeKind)});
+        }
+
+        private void AddWindow(
+            PrimitiveTypeKind returnType, string functionName, KeyValuePair<string, PrimitiveTypeKind>[] parameterDefinitions)
+        {
+            var returnParameter = CreateReturnParameter(returnType);
+            var parameters = parameterDefinitions.Select(paramDef => CreateParameter(paramDef.Value, paramDef.Key)).ToArray();
+
+            var function = new EdmFunction(
+                functionName,
+                EdmConstants.EdmNamespace,
+                DataSpace.CSpace,
+                new EdmFunctionPayload
+                {
+                    IsWindow               = true,
+                    IsBuiltIn              = true,
+                    ReturnParameters       = new[] { returnParameter },
+                    Parameters             = parameters,
+                    IsFromProviderManifest = true,
+                });
+
+            function.SetReadOnly();
+
+            functions.Add(function);
+        }
+
         internal void AddFunction(PrimitiveTypeKind returnType, string functionName)
         {
             AddFunction(returnType, functionName, new KeyValuePair<string, PrimitiveTypeKind>[] { });

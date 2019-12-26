@@ -30,6 +30,7 @@ namespace System.Data.Entity.SqlServer.SqlGen
 
         private static readonly Dictionary<string, FunctionHandler> _storeFunctionHandlers = InitializeStoreFunctionHandlers();
         private static readonly Dictionary<string, FunctionHandler> _canonicalFunctionHandlers = InitializeCanonicalFunctionHandlers();
+        private static readonly Dictionary<string, FunctionHandler> _windowFunctionHandlers = InitializeWindowFunctionHandlers();
         private static readonly Dictionary<string, string> _functionNameToOperatorDictionary = InitializeFunctionNameToOperatorDictionary();
 
         private static readonly Dictionary<string, string> _dateAddFunctionNameToDatepartDictionary =
@@ -288,6 +289,28 @@ namespace System.Data.Entity.SqlServer.SqlGen
             functionHandlers.Add("BitwiseNot", HandleCanonicalFunctionBitwise);
             functionHandlers.Add("BitwiseOr", HandleCanonicalFunctionBitwise);
             functionHandlers.Add("BitwiseXor", HandleCanonicalFunctionBitwise);
+
+            return functionHandlers;
+        }
+
+        // <summary>
+        // All window analytic canonical functions and their handlers
+        // </summary>
+        private static Dictionary<string, FunctionHandler> InitializeWindowFunctionHandlers()
+        {
+            var functionHandlers = new Dictionary<string, FunctionHandler>(16, StringComparer.Ordinal);
+
+            functionHandlers.Add("W_" + nameof(WindowFunction.RowNumber), HandleWindowFunctionRowNumber);
+            functionHandlers.Add("W_" + nameof(WindowFunction.Rank), HandleWindowFunctionRank);
+            functionHandlers.Add("W_" + nameof(WindowFunction.DenseRank), HandleWindowFunctionDenseRank);
+            functionHandlers.Add("W_" + nameof(WindowFunction.NTile), HandleWindowFunctionNTile);
+
+            functionHandlers.Add("W_" + nameof(WindowFunction.Count), HandleWindowFunctionCount);
+            functionHandlers.Add("W_" + nameof(WindowFunction.LongCount), HandleWindowFunctionCount);
+            functionHandlers.Add("W_" + nameof(WindowFunction.Avg), HandleWindowFunctionAggregateDefault);
+            functionHandlers.Add("W_" + nameof(WindowFunction.Max), HandleWindowFunctionAggregateDefault);
+            functionHandlers.Add("W_" + nameof(WindowFunction.Min), HandleWindowFunctionAggregateDefault);
+            functionHandlers.Add("W_" + nameof(WindowFunction.Sum), HandleWindowFunctionAggregateDefault);
 
             return functionHandlers;
         }
@@ -677,6 +700,10 @@ namespace System.Data.Entity.SqlServer.SqlGen
 
         internal static ISqlFragment GenerateFunctionCallSql(SqlGenerator sqlgen, DbFunctionExpression functionExpression)
         {
+            if (IsWindowFunction(functionExpression))
+            {
+                return HandleWindowFunction(sqlgen, functionExpression);
+            }
             //
             // check if function requires special case processing, if so, delegates to it
             //
@@ -702,6 +729,11 @@ namespace System.Data.Entity.SqlServer.SqlGen
             }
 
             return HandleFunctionDefault(sqlgen, functionExpression);
+        }
+
+        private static bool IsWindowFunction(DbFunctionExpression e)
+        {
+            return e.Function.WindowAttribute && _windowFunctionHandlers.ContainsKey(e.Function.Name);
         }
 
         // <summary>
@@ -943,6 +975,14 @@ namespace System.Data.Entity.SqlServer.SqlGen
         private static ISqlFragment HandleSpecialCanonicalFunction(SqlGenerator sqlgen, DbFunctionExpression e)
         {
             return HandleSpecialFunction(_canonicalFunctionHandlers, sqlgen, e);
+        }
+
+        // <summary>
+        // Handler for window analytic functions
+        // </summary>
+        private static ISqlFragment HandleWindowFunction(SqlGenerator sqlgen, DbFunctionExpression e)
+        {
+            return HandleSpecialFunction(_windowFunctionHandlers, sqlgen, e);
         }
 
         // <summary>
@@ -1829,6 +1869,94 @@ namespace System.Data.Entity.SqlServer.SqlGen
                 result.Append(")) = 1");
             }
             return result;
+        }
+
+        private static ISqlFragment HandleWindowFunctionAggregateDefault(SqlGenerator sqlgen, DbFunctionExpression e)
+        {
+            var result = new SqlBuilder();
+            result.Append(e.Function.Name.Substring(2).ToUpperInvariant());
+            WriteFunctionArguments(sqlgen, e.Arguments, result);
+            return AppendOverClause(sqlgen, e, result);
+        }
+
+        private static ISqlFragment HandleWindowFunctionCount(SqlGenerator sqlgen, DbFunctionExpression e)
+        {
+            var result = new SqlBuilder();
+            result.Append(e.Function.Name == "W_" + nameof(WindowFunction.LongCount) ? "COUNT_BIG" : "COUNT");
+            if (e.Arguments.Count == 0)
+            {
+                result.Append("(*)");
+            }
+            else
+            {
+                WriteFunctionArguments(sqlgen, e.Arguments, result);
+            }
+            return AppendOverClause(sqlgen, e, result);
+        }
+
+        private static ISqlFragment HandleWindowFunctionRowNumber(SqlGenerator sqlgen, DbFunctionExpression e)
+        {
+            return HandleWindowFunctionRanking(sqlgen, e, "ROW_NUMBER");
+        }
+
+        private static ISqlFragment HandleWindowFunctionRank(SqlGenerator sqlgen, DbFunctionExpression e)
+        {
+            return HandleWindowFunctionRanking(sqlgen, e, "RANK");
+        }
+
+        private static ISqlFragment HandleWindowFunctionDenseRank(SqlGenerator sqlgen, DbFunctionExpression e)
+        {
+            return HandleWindowFunctionRanking(sqlgen, e, "DENSE_RANK");
+        }
+
+        private static ISqlFragment HandleWindowFunctionNTile(SqlGenerator sqlgen, DbFunctionExpression e)
+        {
+            return HandleWindowFunctionRanking(sqlgen, e, "NTILE");
+        }
+
+        private static ISqlFragment HandleWindowFunctionRanking(SqlGenerator sqlgen, DbFunctionExpression e, string functionName)
+        {
+            var result = new SqlBuilder();
+            result.Append(functionName);
+
+            WriteFunctionArguments(sqlgen, e.Arguments, result);
+
+            return AppendOverClause(sqlgen, e, result);
+        }
+        
+        private static SqlBuilder AppendOverClause(SqlGenerator sqlgen, DbFunctionExpression e, SqlBuilder sqlBuilder)
+        {
+            sqlBuilder.Append(" OVER (");
+            var hasClause = false;
+            if (e.Partitions != null
+                && e.Partitions.Count > 0)
+            {
+                hasClause = true;
+                sqlBuilder.Append("PARTITION BY ");
+                for (var i = 0; i < e.Partitions.Count; i++)
+                {
+                    if (i > 0)
+                        sqlBuilder.Append(", ");
+                    sqlBuilder.Append(e.Partitions[i].Accept(sqlgen));
+                }
+            }
+
+            if (e.SortOrder != null
+                && e.SortOrder.Count > 0)
+            {
+                if (hasClause)
+                    sqlBuilder.Append(" ");
+                sqlBuilder.Append("ORDER BY ");
+                for (var i = 0; i < e.SortOrder.Count; i++)
+                {
+                    if (i > 0)
+                        sqlBuilder.Append(", ");
+                    sqlBuilder.Append(e.SortOrder[i].Expression.Accept(sqlgen));
+                    sqlBuilder.Append(e.SortOrder[i].Ascending ? " ASC" : " DESC");
+                }
+            }
+            sqlBuilder.Append(")");
+            return sqlBuilder;
         }
 
         // <summary>

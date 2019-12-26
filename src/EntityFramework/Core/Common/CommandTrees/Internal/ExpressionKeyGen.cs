@@ -138,6 +138,11 @@ namespace System.Data.Entity.Core.Common.CommandTrees.Internal
 
         private void VisitFunction(EdmFunction func, IList<DbExpression> args)
         {
+            VisitFunction(func, args, null, null);
+        }
+
+        private void VisitFunction(EdmFunction func, IList<DbExpression> args, IList<DbExpression> parts, IList<DbSortClause> sorts)
+        {
             _key.Append("FUNC<");
             _key.Append(func.Identity);
             _key.Append(">:ARGS(");
@@ -148,6 +153,29 @@ namespace System.Data.Entity.Core.Common.CommandTrees.Internal
                 _key.Append(')');
             }
             _key.Append(')');
+            if (func.WindowAttribute)
+            {
+                _key.Append(":OVER(");
+                if (parts != null
+                    && parts.Count > 0)
+                {
+                    _key.Append(":PART(");
+                    foreach (var a in parts)
+                    {
+                        _key.Append('(');
+                        a.Accept(this);
+                        _key.Append(')');
+                    }
+                    _key.Append(')');
+                }
+                if (sorts != null
+                    && sorts.Count > 0)
+                {
+                    _key.Append(":");
+                    VisitSortOrder(sorts);
+                }
+                _key.Append(')');
+            }
         }
 
         private void VisitExprKind(DbExpressionKind kind)
@@ -343,7 +371,7 @@ namespace System.Data.Entity.Core.Common.CommandTrees.Internal
         {
             Check.NotNull(e, "e");
 
-            VisitFunction(e.Function, e.Arguments);
+            VisitFunction(e.Function, e.Arguments, e.Partitions, e.SortOrder);
         }
 
         public override void Visit(DbLambdaExpression expression)

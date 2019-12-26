@@ -56,6 +56,10 @@ namespace System.Data.Entity.Core.Metadata.Edm
             {
                 SetFunctionAttribute(ref _functionAttributes, FunctionAttributes.Aggregate, payload.IsAggregate.Value);
             }
+            if (payload.IsWindow.HasValue)
+            {
+                SetFunctionAttribute(ref _functionAttributes, FunctionAttributes.Window, payload.IsWindow.Value);
+            }
             if (payload.IsBuiltIn.HasValue)
             {
                 SetFunctionAttribute(ref _functionAttributes, FunctionAttributes.BuiltIn, payload.IsBuiltIn.Value);
@@ -292,6 +296,13 @@ namespace System.Data.Entity.Core.Metadata.Edm
             get { return GetFunctionAttribute(FunctionAttributes.Aggregate); }
         }
 
+        /// <summary>Gets the window attribute of this function.</summary>
+        [MetadataProperty(PrimitiveTypeKind.Boolean, false)]
+        public bool WindowAttribute
+        {
+            get { return GetFunctionAttribute(FunctionAttributes.Window); }
+        }
+
         /// <summary>
         /// Gets a value indicating whether built in attribute is present on this function.
         /// </summary>
@@ -504,6 +515,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
             IsFromProviderManifest = 16,
             IsCachedStoreFunction = 32,
             IsFunctionImport = 64,
+            Window = 128,
             Default = IsComposable,
         }
 

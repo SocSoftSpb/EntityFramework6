@@ -2,6 +2,7 @@
 
 namespace System.Data.Entity.Core.Query.InternalTrees
 {
+    using System.Collections.Generic;
     using System.Data.Entity.Core.Metadata.Edm;
     using System.Diagnostics;
 
@@ -54,8 +55,31 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         internal override bool IsEquivalent(Op other)
         {
             var otherFunctionOp = other as FunctionOp;
-            return (otherFunctionOp != null && otherFunctionOp.Function.EdmEquals(Function));
+            return (otherFunctionOp != null && otherFunctionOp.Function.EdmEquals(Function) 
+                                            && OrdersEquals(Orders, otherFunctionOp.Orders)
+                                            && PartitionCount == otherFunctionOp.PartitionCount);
         }
+
+        private static bool OrdersEquals(List<bool> thisOrders, List<bool> otherOrders)
+        {
+            if (thisOrders == null && otherOrders == null)
+                return true;
+            if (thisOrders == null || otherOrders == null)
+                return false;
+            if (thisOrders.Count != otherOrders.Count)
+                return false;
+
+            for (var i = 0; i < thisOrders.Count; i++)
+            {
+                if (thisOrders[i] != otherOrders[i])
+                    return false;
+            }
+
+            return true;
+        }
+
+        internal int        PartitionCount { get; set; }
+        internal List<bool> Orders         { get; set; }
 
         // <summary>
         // Visitor pattern method

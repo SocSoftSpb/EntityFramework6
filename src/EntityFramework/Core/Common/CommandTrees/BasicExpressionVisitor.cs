@@ -288,6 +288,15 @@ namespace System.Data.Entity.Core.Common.CommandTrees
             Check.NotNull(expression, "expression");
 
             VisitExpressionList(expression.Arguments);
+
+            if (expression.Function.WindowAttribute)
+            {
+                VisitExpressionList(expression.Partitions);
+                for (var idx = 0; idx < expression.SortOrder.Count; idx++)
+                {
+                    VisitExpression(expression.SortOrder[idx].Expression);
+                }
+            }
         }
 
         /// <summary>

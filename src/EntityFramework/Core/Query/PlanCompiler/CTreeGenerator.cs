@@ -779,7 +779,37 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             // FunctionOp becomes DbFunctionExpression that references the same EdmFunction metadata and
             // with argument Expressions produced by converting the child nodes of the FunctionOp's Node
             //
-            return op.Function.Invoke(VisitChildren(n));
+
+            var allExpressions = VisitChildren(n);
+            if (!op.Function.WindowAttribute)
+                return op.Function.Invoke(allExpressions);
+
+            var argCount = op.Function.Parameters.Count;
+
+            var args = new DbExpression[argCount];
+
+            var needPartition = op.PartitionCount;
+            var iPartition = 0;
+            var partitions = new DbExpression[needPartition];
+            var needOrders = op.Orders == null ? 0 : op.Orders.Count;
+            var iOrder = 0;
+            var sorts = new DbSortClause[needOrders];
+            for (var i = 0; i < allExpressions.Count; i++)
+            {
+                if (i < argCount)
+                    args[i] = allExpressions[i];
+                else if (iPartition < needPartition)
+                {
+                    partitions[iPartition++] = allExpressions[i];
+                }
+                else if (iOrder < needOrders)
+                {
+                    sorts[iOrder] = op.Orders[iOrder] ? allExpressions[i].ToSortClause() : allExpressions[i].ToSortClauseDescending();
+                    iOrder++;
+                }
+            }
+
+            return op.Function.InvokeWindow(args, partitions, sorts);
         }
 
         public override DbExpression Visit(PropertyOp op, Node n)

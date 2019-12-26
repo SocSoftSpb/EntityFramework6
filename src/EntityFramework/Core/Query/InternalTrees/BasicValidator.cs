@@ -309,10 +309,19 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         public override void Visit(FunctionOp op, Node n)
         {
             VisitScalarOpDefault(op, n);
+
+            var argCount = n.Children.Count;
+            if (op.Function.WindowAttribute)
+            {
+                argCount -= op.PartitionCount;
+                if (op.Orders != null)
+                    argCount -= op.Orders.Count;
+            }
+
             Assert(
-                op.Function.Parameters.Count == n.Children.Count, "FunctionOp: Argument count ({0}) does not match parameter count ({1})",
-                n.Children.Count, op.Function.Parameters.Count);
-            for (var idx = 0; idx < n.Children.Count; idx++)
+                op.Function.Parameters.Count == argCount, "FunctionOp: Argument count ({0}) does not match parameter count ({1})",
+                argCount, op.Function.Parameters.Count);
+            for (var idx = 0; idx < argCount; idx++)
             {
                 AssertEqualTypes(n.Children[idx].Op.Type, op.Function.Parameters[idx].TypeUsage);
             }

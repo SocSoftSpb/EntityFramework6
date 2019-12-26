@@ -270,6 +270,12 @@ namespace System.Data.Entity.Core.Common.CommandTrees.Internal
 
             internal TreeNode VisitFunction(EdmFunction func, IList<DbExpression> args)
             {
+                return VisitFunction(func, args, null, null);
+            }
+
+            [SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters")]
+            private TreeNode VisitFunction(EdmFunction func, IList<DbExpression> args, IList<DbExpression> ePartitions, IList<DbSortClause> eSortOrder)
+            {
                 var funcInfo = new TreeNode();
                 AppendFullName(funcInfo.Text, func);
 
@@ -277,6 +283,27 @@ namespace System.Data.Entity.Core.Common.CommandTrees.Internal
                 if (args != null)
                 {
                     AppendArguments(funcInfo, func.Parameters.Select(fp => fp.Name).ToArray(), args);
+                }
+
+                if (func.WindowAttribute)
+                {
+                    var overNode = new TreeNode("OVER");
+                    if (ePartitions != null
+                        && ePartitions.Count > 0)
+                    {
+                        var partNode = new TreeNode("PARTITION BY");
+                        for (var i = 0; i < ePartitions.Count; i++)
+                        {
+                            partNode.Children.Add(Visit("Key" + i.ToString(CultureInfo.InvariantCulture), ePartitions[i]));
+                        }
+                        overNode.Children.Add(partNode);
+                    }
+                    if (eSortOrder != null
+                        && eSortOrder.Count > 0)
+                    {
+                        overNode.Children.Add(VisitSortOrder(eSortOrder, "ORDER BY"));
+                    }
+                    funcInfo.Children.Add(overNode);
                 }
 
                 return funcInfo;
@@ -563,7 +590,7 @@ namespace System.Data.Entity.Core.Common.CommandTrees.Internal
             {
                 Check.NotNull(e, "e");
 
-                var funcInfo = VisitFunction(e.Function, e.Arguments);
+                var funcInfo = VisitFunction(e.Function, e.Arguments, e.Partitions, e.SortOrder);
                 return funcInfo;
             }
 
@@ -1124,9 +1151,9 @@ namespace System.Data.Entity.Core.Common.CommandTrees.Internal
             [SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters",
                 MessageId =
                     "System.Data.Entity.Core.Common.Utils.TreeNode.#ctor(System.String,System.Data.Entity.Core.Common.Utils.TreeNode[])")]
-            private TreeNode VisitSortOrder(IList<DbSortClause> sortOrder)
+            private TreeNode VisitSortOrder(IList<DbSortClause> sortOrder, string nodeName = "SortOrder")
             {
-                var keyInfo = new TreeNode("SortOrder");
+                var keyInfo = new TreeNode(nodeName);
                 foreach (var clause in sortOrder)
                 {
                     var key = Visit((clause.Ascending ? "Asc" : "Desc"), clause.Expression);

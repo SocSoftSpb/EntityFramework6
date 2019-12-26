@@ -3,6 +3,7 @@
 namespace System.Data.Entity.Core.Common.CommandTrees
 {
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.Data.Entity.Core.Common.CommandTrees.Internal;
     using System.Data.Entity.Core.Metadata.Edm;
     using System.Data.Entity.Utilities;
@@ -14,6 +15,8 @@ namespace System.Data.Entity.Core.Common.CommandTrees
     {
         private readonly EdmFunction _functionInfo;
         private readonly DbExpressionList _arguments;
+        private readonly DbExpressionList _partitions;
+        private readonly ReadOnlyCollection<DbSortClause> _orders;
 
         internal DbFunctionExpression()
         {
@@ -30,6 +33,19 @@ namespace System.Data.Entity.Core.Common.CommandTrees
 
             _functionInfo = function;
             _arguments = arguments;
+        }
+
+        internal DbFunctionExpression(TypeUsage resultType, EdmFunction function, DbExpressionList arguments, DbExpressionList patitions, ReadOnlyCollection<DbSortClause> orders)
+            : this(resultType, function, arguments)
+        {
+            DebugCheck.NotNull(patitions);
+            DebugCheck.NotNull(orders);
+            Debug.Assert(
+                function.WindowAttribute,
+                "partitions and orders is only for Window Functions");
+
+            _partitions = patitions;
+            _orders     = orders;
         }
 
         /// <summary>Gets the metadata for the function to invoke.</summary>
@@ -49,6 +65,28 @@ namespace System.Data.Entity.Core.Common.CommandTrees
         public virtual IList<DbExpression> Arguments
         {
             get { return _arguments; }
+        }
+
+        /// <summary>
+        /// Gets an <see cref="T:System.Data.Entity.Core.Common.CommandTrees.DbExpression" /> list that provides the partition arguments to the window function.
+        /// </summary>
+        /// <returns>
+        /// An <see cref="T:System.Data.Entity.Core.Common.CommandTrees.DbExpression" /> list that provides the partition arguments to the window function.
+        /// </returns>
+        public virtual IList<DbExpression> Partitions
+        {
+            get { return _partitions; }
+        }
+
+        /// <summary>
+        /// Gets an <see cref="T:System.Data.Entity.Core.Common.CommandTrees.DbSortClause" /> list that provides the order arguments to the window function.
+        /// </summary>
+        /// <returns>
+        /// An <see cref="T:System.Data.Entity.Core.Common.CommandTrees.DbSortClause" /> list that provides the order arguments to the window function.
+        /// </returns>
+        public virtual IList<DbSortClause> SortOrder
+        {
+            get { return _orders; }
         }
 
         /// <summary>Implements the visitor pattern for expressions that do not produce a result value.</summary>

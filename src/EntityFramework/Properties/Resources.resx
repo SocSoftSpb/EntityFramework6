@@ -5589,4 +5589,25 @@
     <value>IndexAttributes with identity '{0}' and name '{1}' cannot be merged because they ambiguously match multiple, conflicting IndexAttributes.</value>
     <comment>## ExceptionType=InvalidOperationException</comment>
   </data>
+  <data name="ELinq_WindowFunctionWithoutOver" xml:space="preserve">
+    <value>Window function '{0}' called without Over() clause.</value>
+  </data>
+  <data name="ELinq_WindowPartitionOrderDirectlyCall" xml:space="preserve">
+    <value>Window function {0} directly call is not supported.</value>
+  </data>
+  <data name="ELinq_WindowFunctionInvalid" xml:space="preserve">
+    <value>Invalid window function call.</value>
+  </data>
+  <data name="ELinq_WindowPartitionInvalidExpression" xml:space="preserve">
+    <value>Window function partition must be a call of Partition.By or Partition.ThenBy methods.</value>
+  </data>
+  <data name="ELinq_WindowOrderInvalidExpression" xml:space="preserve">
+    <value>Window function order must be a call of Order.By, Order.ByDescending, Order.ThenBy, Order.ThenByDescending methods.</value>
+  </data>
+  <data name="ELinq_WindowOrderRequired" xml:space="preserve">
+    <value>Window function {0} requires order clause.</value>
+  </data>
+  <data name="ELinq_WindowOrderNotSupported" xml:space="preserve">
+    <value>Window function {0} not supported order clause.</value>
+  </data>
 </root>

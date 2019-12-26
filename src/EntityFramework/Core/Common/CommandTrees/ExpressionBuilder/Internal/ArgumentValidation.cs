@@ -291,6 +291,48 @@ namespace System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder.Internal
             }
         }
 
+        internal static DbExpressionList ValidatePartitionBy(IEnumerable<DbExpression> keys)
+        {
+            var keyValidator = CreateValidator(
+                keys, "keys",
+                (keyInfo, index) =>
+                {
+                    // The result Type of an expression used as a group key must be equality comparable
+                    if (!TypeHelpers.IsValidGroupKeyType(keyInfo.ResultType))
+                    {
+                        throw new ArgumentException(Strings.Cqt_GroupBy_KeyNotEqualityComparable(keyInfo.ResultType.Identity));
+                    }
+
+                    return keyInfo;
+                },
+                expList => new DbExpressionList(expList)
+            );
+            keyValidator.AllowEmpty = true;
+            return keyValidator.Validate();
+        }
+
+
+        // <summary>
+        // Validates the input and sort key arguments to both DbSkipExpression and DbSortExpression.
+        // </summary>
+        // <param name="sortOrder"> A list of SortClauses that specifies the sort order to apply to the input collection </param>
+        private static ReadOnlyCollection<DbSortClause> ValidateWindowSortArguments(IEnumerable<DbSortClause> sortOrder)
+        {
+            var ev = CreateValidator(
+                sortOrder, "sortOrder",
+                (key, idx) => key,
+                keyList => NewReadOnlyCollection(keyList)
+            );
+            ev.AllowEmpty = true;
+            return ev.Validate();
+        }
+
+        internal static ReadOnlyCollection<DbSortClause> ValidateWindowSort(IEnumerable<DbSortClause> sortOrder)
+        {
+            // Validate the input expression binding and sort keys
+            return ValidateWindowSortArguments(sortOrder);
+        }
+
         #endregion
 
         #region DbLambda

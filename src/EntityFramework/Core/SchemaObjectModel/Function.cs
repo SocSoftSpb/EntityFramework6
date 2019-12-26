@@ -22,6 +22,7 @@ namespace System.Data.Entity.Core.SchemaObjectModel
 
         // if adding properties also add to InitializeObject()!
         private bool _isAggregate;
+        private bool _isWindow;
         private bool _isBuiltIn;
         private bool _isNiladicFunction;
         protected bool _isComposable = true;
@@ -109,6 +110,12 @@ namespace System.Data.Entity.Core.SchemaObjectModel
         {
             get { return _isAggregate; }
             internal set { _isAggregate = value; }
+        }
+
+        public bool IsWindow
+        {
+            get { return _isWindow; }
+            internal set { _isWindow = value; }
         }
 
         public bool IsBuiltIn
@@ -304,6 +311,11 @@ namespace System.Data.Entity.Core.SchemaObjectModel
             else if (CanHandleAttribute(reader, XmlConstants.AggregateAttribute))
             {
                 HandleAggregateAttribute(reader);
+                return true;
+            }
+            else if (CanHandleAttribute(reader, XmlConstants.WindowAttribute))
+            {
+                HandleWindowAttribute(reader);
                 return true;
             }
             else if (CanHandleAttribute(reader, XmlConstants.BuiltInAttribute))
@@ -585,6 +597,18 @@ namespace System.Data.Entity.Core.SchemaObjectModel
             var isAggregate = false;
             HandleBoolAttribute(reader, ref isAggregate);
             IsAggregate = isAggregate;
+        }
+
+        // <summary>
+        // Handler for the Window attribute
+        // </summary>
+        // <param name="reader"> xml reader currently positioned at Version attribute </param>
+        private void HandleWindowAttribute(XmlReader reader)
+        {
+            DebugCheck.NotNull(reader);
+            var isWindow = false;
+            HandleBoolAttribute(reader, ref isWindow);
+            IsWindow = isWindow;
         }
 
         // <summary>
