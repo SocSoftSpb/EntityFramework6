@@ -62,6 +62,97 @@ namespace System.Data.Entity.ViewGeneration
             }
         }
 
+        public abstract class AddressBase1
+        {
+            public int Id { get; set; }
+            public string Street { get; set; }
+        }
+
+        public abstract class AddressBase2 : AddressBase1
+        {
+            
+        }
+
+        public class AddressHuman : AddressBase1
+        {
+            
+        }
+
+        public class AddressDepartment : AddressBase2
+        {
+            public int DepartmentId { get; set; }
+            public Department Department { get; set; }
+        }
+
+        public class Human
+        {
+            public int Id { get; set; }
+            public string Name { get; set; }
+            public int AddressId { get; set; }
+            public AddressHuman Address { get; set; }
+        }
+
+        public class Department
+        {
+            public int Id { get; set; }
+            public string Name { get; set; }
+            public ICollection<AddressDepartment> AddressCollection { get; set; }
+        }
+
+
+        public class MixedTptTphInheritanceContext : DbContext
+        {
+            static MixedTptTphInheritanceContext()
+            {
+                Database.SetInitializer<MixedTptTphInheritanceContext>(null);
+            }
+
+            protected override void OnModelCreating(DbModelBuilder modelBuilder)
+            {
+                modelBuilder.Entity<AddressBase1>().ToTable("Address");
+                modelBuilder.Entity<AddressBase2>()
+                    .Map(e => e.Requires("Discriminator").HasValue((byte)1))
+                    .ToTable("Address");
+
+                modelBuilder.Entity<AddressHuman>()
+                    .Map(e => e.Requires("Discriminator").HasValue((byte)2))
+                    .ToTable("Address");
+
+                modelBuilder.Entity<AddressDepartment>()
+                    .ToTable("AddressDepartment");
+                modelBuilder.Entity<AddressDepartment>()
+                    .HasRequired(e => e.Department).WithMany(e => e.AddressCollection).HasForeignKey(e => e.DepartmentId);
+
+                modelBuilder.Entity<Department>().ToTable("Department");
+
+                modelBuilder.Entity<Human>().ToTable("Human");
+
+                base.OnModelCreating(modelBuilder);
+            }
+        }
+
+        [Fact]
+        public void Bug_XXXX_mixed_tph_tpt_inheritance_causing_view_gen_validation_errors()
+        {
+            using (var ctx = new MixedTptTphInheritanceContext())
+            {
+                var storageMappingItemCollection
+                    = (StorageMappingItemCollection)((IObjectContextAdapter)ctx).ObjectContext
+                    .MetadataWorkspace.GetItemCollection(DataSpace.CSSpace);
+
+                var errors = new List<EdmSchemaError>();
+
+                // Bug cause this error:
+                // Problem in mapping fragments starting at lines 6, 18:
+                // EntityTypes System.Data.Entity.ViewGeneration.AddressDepartment, System.Data.Entity.ViewGeneration.AddressHuman
+                // are being mapped to the same rows in table AddressBase1.
+                // Mapping conditions can be used to distinguish the rows that these types are mapped to.
+                storageMappingItemCollection.GenerateViews(errors);
+
+                Assert.Empty(errors);
+            }
+        }
+
         [Fact]
         public void Bug_1611_table_splitting_causing_view_gen_validation_errors()
         {
