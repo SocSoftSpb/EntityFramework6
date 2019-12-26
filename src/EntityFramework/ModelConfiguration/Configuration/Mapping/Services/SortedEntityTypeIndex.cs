@@ -84,7 +84,7 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Mapping
             return _entityTypes.Keys;
         }
 
-        public IEnumerable<EntityType> GetEntityTypes(EntitySet entitySet)
+        public ICollection<EntityType> GetEntityTypes(EntitySet entitySet)
         {
             List<EntityType> entityTypes;
             if (_entityTypes.TryGetValue(entitySet, out entityTypes))

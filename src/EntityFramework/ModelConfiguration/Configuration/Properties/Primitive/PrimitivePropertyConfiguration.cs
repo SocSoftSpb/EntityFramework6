@@ -24,6 +24,8 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Properties.Primiti
     internal class PrimitivePropertyConfiguration : PropertyConfiguration
     {
         private readonly IDictionary<string, object> _annotations = new Dictionary<string, object>();
+        private object _defaultValue;
+        private bool _isDefaultValueConfigured;
 
         // <summary>
         // Initializes a new instance of the PrimitivePropertyConfiguration class.
@@ -51,6 +53,8 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Properties.Primiti
             ColumnName = source.ColumnName;
             ParameterName = source.ParameterName;
             ColumnOrder = source.ColumnOrder;
+            _isDefaultValueConfigured = source._isDefaultValueConfigured;
+            _defaultValue = source._defaultValue;
             OverridableConfigurationParts = source.OverridableConfigurationParts;
 
             foreach (var annotation in source._annotations)
@@ -79,6 +83,19 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Properties.Primiti
         // property.
         // </summary>
         public DatabaseGeneratedOption? DatabaseGeneratedOption { get; set; }
+
+        // <summary>
+        // Gets or sets the Default Value for Property
+        // </summary>
+        public object DefaultValue
+        {
+            get => _defaultValue;
+            set
+            {
+                _defaultValue             = value;
+                _isDefaultValueConfigured = true;
+            }
+        }
 
         // <summary>
         // Gets or sets the type of the database column used to store the property.
@@ -316,6 +333,11 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Properties.Primiti
                 column.SetOrder(ColumnOrder.Value);
             }
 
+            if (_isDefaultValueConfigured)
+            {
+                column.DefaultValue = DefaultValue;
+            }
+
             var storeType
                 = providerManifest.GetStoreTypes()
                                   .SingleOrDefault(t => t.Name.Equals(column.TypeName, StringComparison.OrdinalIgnoreCase));
@@ -392,6 +414,8 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Properties.Primiti
             DatabaseGeneratedOption = other.DatabaseGeneratedOption;
             IsNullable = other.IsNullable;
             OverridableConfigurationParts = other.OverridableConfigurationParts;
+            _isDefaultValueConfigured = other._isDefaultValueConfigured;
+            _defaultValue = other._defaultValue;
 
             _annotations.Clear();
             foreach (var annotation in other._annotations)
@@ -449,6 +473,12 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Properties.Primiti
                 if (ColumnType == null)
                 {
                     ColumnType = other.ColumnType;
+                }
+
+                if (!_isDefaultValueConfigured && other._isDefaultValueConfigured)
+                {
+                    _isDefaultValueConfigured = true;
+                    _defaultValue = other._defaultValue;
                 }
 
                 foreach (var annotation in other._annotations)
@@ -516,6 +546,11 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Properties.Primiti
                 {
                     ColumnType = null;
                 }
+                if (other._isDefaultValueConfigured)
+                {
+                    _isDefaultValueConfigured = false;
+                    _defaultValue = null;
+                }
 
                 foreach (var annotationName in other._annotations.Keys)
                 {
@@ -550,6 +585,7 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Properties.Primiti
             var columnOrderIsCompatible = inCSpace || IsCompatible(c => c.ColumnOrder, other, ref errorMessage);
             var columnTypeIsCompatible = inCSpace || IsCompatible(c => c.ColumnType, other, ref errorMessage);
             var annotationsAreCompatible = inCSpace || AnnotationsAreCompatible(other, ref errorMessage);
+            var defaultValueIsCompatible = inCSpace || IsCompatibleDefaultValue(other, ref errorMessage);
 
             return isNullableIsCompatible &&
                    concurrencyModeIsCompatible &&
@@ -558,7 +594,8 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Properties.Primiti
                    parameterNameIsCompatible &&
                    columnOrderIsCompatible &&
                    columnTypeIsCompatible &&
-                   annotationsAreCompatible;
+                   annotationsAreCompatible &&
+                   defaultValueIsCompatible;
         }
 
         private bool AnnotationsAreCompatible(PrimitivePropertyConfiguration other, ref string errorMessage)
@@ -695,6 +732,30 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Properties.Primiti
                 }
 
                 return true;
+            }
+
+            return true;
+        }
+
+        private bool IsCompatibleDefaultValue(PrimitivePropertyConfiguration other, ref string errorMessage)
+        {
+            if (IsCompatibleDefaultValue(other))
+                return true;
+            
+            errorMessage += Environment.NewLine + "\t" +
+                            Strings.ConflictingConfigurationValue(
+                                nameof(DefaultValue), _defaultValue, nameof(DefaultValue), other._defaultValue);
+            return false;
+        }
+
+        private bool IsCompatibleDefaultValue(PrimitivePropertyConfiguration other)
+        {
+            if (_isDefaultValueConfigured)
+            {
+                if (other._isDefaultValueConfigured)
+                {
+                    return Equals(_defaultValue, other._defaultValue);
+                }
             }
 
             return true;
