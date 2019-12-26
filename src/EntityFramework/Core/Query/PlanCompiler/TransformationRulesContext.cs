@@ -593,6 +593,13 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
                 return false;
             }
 
+            if (node.Op.OpType == OpType.Function)
+            {
+                var functionOp = (FunctionOp)node.Op;
+                if (functionOp.Function.WindowAttribute)
+                    return false;
+            }
+
             if (node.HasChild0)
             {
                 nonLeafNodeCount++;

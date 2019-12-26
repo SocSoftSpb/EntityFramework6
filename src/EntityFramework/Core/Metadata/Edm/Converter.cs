@@ -1061,6 +1061,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
                         CommandText = somFunction.CommandText,
                         EntitySets = entitySets,
                         IsAggregate = somFunction.IsAggregate,
+                        IsWindow = somFunction.IsWindow,
                         IsBuiltIn = somFunction.IsBuiltIn,
                         IsNiladic = somFunction.IsNiladicFunction,
                         IsComposable = somFunction.IsComposable,

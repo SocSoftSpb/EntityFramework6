@@ -216,6 +216,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
         internal const string DestinationTypeAttribute = "DestinationType";
         internal const string PrimitiveTypeKindAttribute = "PrimitiveTypeKind";
         internal const string AggregateAttribute = "Aggregate";
+        internal const string WindowAttribute = "Window";
         internal const string BuiltInAttribute = "BuiltIn";
         internal const string NameAttribute = "Name";
         internal const string IgnoreFacetsAttribute = "IgnoreFacets";

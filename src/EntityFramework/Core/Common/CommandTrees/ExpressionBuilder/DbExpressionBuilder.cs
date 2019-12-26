@@ -2020,6 +2020,34 @@ namespace System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder
         }
 
         /// <summary>
+        /// Creates a new <see cref="T:System.Data.Entity.Core.Common.CommandTrees.DbFunctionExpression" /> representing the invocation of the specified function with the given arguments.
+        /// </summary>
+        /// <returns>A new DbFunctionExpression representing the function invocation.</returns>
+        /// <param name="function">Metadata for the function to invoke.</param>
+        /// <param name="arguments">Expressions that provide the arguments to the function.</param>
+        /// <param name="partitions">Partitions for window function</param>
+        /// <param name="orders">Order for window function</param>
+        /// <exception cref="T:System.ArgumentNullException">function is null, or arguments is null or contains null.</exception>
+        /// <exception cref="T:System.ArgumentException">The count of arguments does not equal the number of parameters declared by function, or arguments contains an expression that has a result type that is not equal or promotable to the corresponding function parameter type.</exception>
+        public static DbFunctionExpression InvokeWindow(this EdmFunction function, IEnumerable<DbExpression> arguments, IEnumerable<DbExpression> partitions, IEnumerable<DbSortClause> orders)
+        {
+            Check.NotNull(function, "function");
+
+            return InvokeWindowFunction(function, arguments, partitions, orders);
+        }
+
+        private static DbFunctionExpression InvokeWindowFunction(EdmFunction function, IEnumerable<DbExpression> arguments, IEnumerable<DbExpression> partitions, IEnumerable<DbSortClause> orders)
+        {
+            Debug.Assert(function.WindowAttribute, "Must be a window function call");
+
+            DbExpressionList validArguments;
+            var resultType = ArgumentValidation.ValidateFunction(function, arguments, out validArguments);
+            var sort = orders == null ? new ReadOnlyCollection<DbSortClause>(new DbSortClause[0]) : ArgumentValidation.ValidateWindowSort(orders);
+            var part = partitions == null ? new DbExpressionList(new DbExpression[0]) : ArgumentValidation.ValidatePartitionBy(partitions);
+            return new DbFunctionExpression(resultType, function, validArguments, part, sort);
+        }
+
+        /// <summary>
         /// Creates a new <see cref="T:System.Data.Entity.Core.Common.CommandTrees.DbLambdaExpression" /> representing the application of the specified Lambda function to the given arguments.
         /// </summary>
         /// <returns>A new Expression representing the Lambda function application.</returns>

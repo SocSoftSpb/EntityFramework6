@@ -39,6 +39,10 @@ namespace System.Data.Entity.Core.Metadata.Edm
         /// <returns>true if this is an aggregate function; otherwise, false.</returns>
         public bool? IsAggregate { get; set; }
 
+        /// <summary>Gets a value that indicates whether this is an window function.</summary>
+        /// <returns>true if this is an window function; otherwise, false.</returns>
+        public bool? IsWindow { get; set; }
+
         /// <summary>Gets or sets whether this function is a built-in function.</summary>
         /// <returns>true if this function is a built-in function; otherwise, false.</returns>
         public bool? IsBuiltIn { get; set; }

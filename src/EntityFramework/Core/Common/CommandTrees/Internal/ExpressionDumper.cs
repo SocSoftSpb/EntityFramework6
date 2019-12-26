@@ -467,6 +467,11 @@ namespace System.Data.Entity.Core.Common.CommandTrees.Internal
             Begin(e);
             Dump(e.Function);
             Dump(e.Arguments, "Arguments", "Argument");
+            if (e.Function.WindowAttribute)
+            {
+                Dump(e.Partitions, "Partitions", "Partition");
+                Dump(e.SortOrder);
+            }
             End(e);
         }
 

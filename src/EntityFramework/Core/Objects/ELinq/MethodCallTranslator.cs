@@ -62,6 +62,11 @@ namespace System.Data.Entity.Core.Objects.ELinq
                     }
                 }
 
+                if (WindowFunctionTranslator.IsCandidateMethod(linq.Method))
+                {
+                    return WindowFunctionTranslator.Translate(parent, linq);
+                }
+
                 // check if this is a dynamic sql method
                 if (DynamicSqlTranslator.IsCandidateMethod(linq.Method))
                 {
@@ -3902,5 +3907,218 @@ namespace System.Data.Entity.Core.Objects.ELinq
 			}
 		}
 
+        internal static class WindowFunctionTranslator
+        {
+            public static bool IsCandidateMethod(MethodInfo method)
+            {
+                var declaringType = method.DeclaringType;
+                if (declaringType != null && declaringType.IsGenericType && !declaringType.IsGenericTypeDefinition)
+                    declaringType = declaringType.GetGenericTypeDefinition();
+                return declaringType == typeof(WindowFunction<>) 
+                    || declaringType == typeof(WindowFunction) 
+                    || declaringType == typeof(Partition) 
+                    || declaringType == typeof(Order);
+            }
+
+            public static DbExpression Translate(ExpressionConverter parent, MethodCallExpression linq)
+            {
+                if (linq.Method.Name == nameof(WindowFunction<int>.Over))
+                    return TranslateOver(parent, linq);
+                throw Unsupported(linq);
+            }
+
+            private static Exception Unsupported(MethodCallExpression linq)
+            {
+                var method = linq.Method;
+                if (method.DeclaringType == typeof(WindowFunction))
+                    return new NotSupportedException(Strings.ELinq_WindowFunctionWithoutOver(linq.Method.Name));
+                return new NotSupportedException(Strings.ELinq_WindowPartitionOrderDirectlyCall(method.DeclaringType.Name));
+            }
+
+            private static DbExpression TranslateOver(ExpressionConverter parent, MethodCallExpression over)
+            {
+                MethodCallExpression windowFunctionCall;
+                if (!TryExtractWindowFunction(over, out windowFunctionCall))
+                    throw new NotSupportedException(Strings.ELinq_WindowFunctionInvalid);
+                
+                MethodCallExpression partitionCall;
+                MethodCallExpression orderCall;
+                string errorMessage;
+                if (!TryExtractPartitionOrder(over, out partitionCall, out orderCall, out errorMessage))
+                    throw new NotSupportedException(errorMessage);
+                
+                if (!TryValidateOverClauses(windowFunctionCall.Method, orderCall, out errorMessage))
+                    throw new NotSupportedException(errorMessage);
+
+                TypeUsage[] argTypes;
+                var args = TranslateArgs(parent, windowFunctionCall, out argTypes);
+                var fnk = parent.FindCanonicalFunction("W_" + windowFunctionCall.Method.Name, argTypes, false, windowFunctionCall);
+
+                var partitionList = TranslatePartition(parent, partitionCall);
+                var orderList = TranslateOrder(parent, orderCall);
+
+                return fnk.InvokeWindow(args, partitionList, orderList);
+            }
+
+            private static IList<DbExpression> TranslateArgs(ExpressionConverter parent, MethodCallExpression windowFunctionCall, out TypeUsage[] argTypes)
+            {
+                var argumentsCount = windowFunctionCall.Arguments.Count;
+                var retVal = new DbExpression[argumentsCount];
+                argTypes = new TypeUsage[argumentsCount];
+
+                for (var i = 0; i < windowFunctionCall.Arguments.Count; i++)
+                {
+                    var expression = windowFunctionCall.Arguments[i];
+                    var dbExp = parent.TranslateExpression(expression);
+                    retVal[i] = dbExp;
+                    argTypes[i] = dbExp.ResultType;
+                }
+                return retVal;
+            }
+
+            private static IList<DbExpression> TranslatePartition(ExpressionConverter parent, MethodCallExpression partitionCall)
+            {
+                if (partitionCall == null)
+                    return null;
+                var lst = new List<DbExpression>();
+                TranslatePartitionRecursive(parent, partitionCall, lst);
+                return lst;
+            }
+
+            private static IList<DbSortClause> TranslateOrder(ExpressionConverter parent, MethodCallExpression orderCall)
+            {
+                if (orderCall == null)
+                    return null;
+                var lst = new List<DbSortClause>();
+                TranslateOrderRecursive(parent, orderCall, lst);
+                return lst;
+            }
+
+            private static void TranslateOrderRecursive(ExpressionConverter parent, MethodCallExpression orderCall, List<DbSortClause> lst)
+            {
+                var arg = orderCall.Arguments[0];
+                var dbExpressionArg = parent.TranslateExpression(arg);
+                var isDesc = orderCall.Method.Name.EndsWith("Descending", StringComparison.Ordinal);
+                if (!orderCall.Method.IsStatic)
+                {
+                    MethodCallExpression prevOrder;
+                    string errorMessage;
+                    if (!TryExtractOrder(orderCall.Object, out prevOrder, out errorMessage))
+                        throw new NotSupportedException(errorMessage);
+                    TranslateOrderRecursive(parent, prevOrder, lst);
+                }
+                lst.Add(isDesc ? dbExpressionArg.ToSortClauseDescending() : dbExpressionArg.ToSortClause());
+            }
+
+            private static void TranslatePartitionRecursive(ExpressionConverter parent, MethodCallExpression partitionCall, List<DbExpression> lst)
+            {
+                var arg = partitionCall.Arguments[0];
+                var dbExpressionArg = parent.TranslateExpression(arg);
+                if (!partitionCall.Method.IsStatic)
+                {
+                    MethodCallExpression prevPartition;
+                    string errorMessage;
+                    if (!TryExtractPartition(partitionCall.Object, out prevPartition, out errorMessage))
+                        throw new NotSupportedException(errorMessage);
+                    TranslatePartitionRecursive(parent, prevPartition, lst);
+                }
+                lst.Add(dbExpressionArg);
+            }
+
+            [SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity")]
+            private static bool TryValidateOverClauses(MethodInfo method, MethodCallExpression orderCall, out string errorMessage)
+            {
+                errorMessage = null;
+                switch (method.Name)
+                {
+                    case nameof(WindowFunction.RowNumber):
+                    case nameof(WindowFunction.Rank):
+                    case nameof(WindowFunction.DenseRank):
+                    case nameof(WindowFunction.NTile):
+                        if (orderCall == null)
+                            errorMessage = Strings.ELinq_WindowOrderRequired(method.Name);
+                        break;
+
+                    case nameof(WindowFunction.Count):
+                    case nameof(WindowFunction.LongCount):
+                    case nameof(WindowFunction.Avg):
+                    case nameof(WindowFunction.Max):
+                    case nameof(WindowFunction.Min):
+                    case nameof(WindowFunction.Sum):
+                        if (orderCall != null)
+                            errorMessage = Strings.ELinq_WindowOrderNotSupported(method.Name);
+                        break;
+                }
+                return errorMessage == null;
+            }
+
+            private static bool TryExtractPartitionOrder(MethodCallExpression over, out MethodCallExpression partitionCall, out MethodCallExpression orderCall, out string errorMessage)
+            {
+                partitionCall = null;
+                orderCall = null;
+                var method = over.Method;
+                var prms = method.GetParameters();
+
+                for (var iParam = 0; iParam < prms.Length; iParam++)
+                {
+                    var parameterInfo = prms[iParam];
+                    if (parameterInfo.ParameterType == typeof(Partition)
+                        && !TryExtractPartition(over.Arguments[iParam], out partitionCall, out errorMessage))
+                        return false;
+                    if (parameterInfo.ParameterType == typeof(Order)
+                        && !TryExtractOrder(over.Arguments[iParam], out orderCall, out errorMessage))
+                        return false;
+                }
+                errorMessage = null;
+                return true;
+            }
+
+            private static bool TryExtractOrder(Expression overArgument, out MethodCallExpression orderCall, out string errorMessage)
+            {
+                if (TryExtractOverArgument(overArgument, typeof(Order), out orderCall))
+                {
+                    errorMessage = null;
+                    return true;
+                }
+                errorMessage = Strings.ELinq_WindowOrderInvalidExpression;
+                return false;
+            }
+
+            private static bool TryExtractPartition(Expression overArgument, out MethodCallExpression partitionCall, out string errorMessage)
+            {
+                if (TryExtractOverArgument(overArgument, typeof(Partition), out partitionCall))
+                {
+                    errorMessage = null;
+                    return true;
+                }
+                errorMessage = Strings.ELinq_WindowPartitionInvalidExpression;
+                return false;
+            }
+
+            private static bool TryExtractOverArgument(Expression overArgument, Type declaringType, out MethodCallExpression orderCall)
+            {
+                orderCall = null;
+                if (overArgument.NodeType != ExpressionType.Call)
+                    return false;
+
+                orderCall = (MethodCallExpression)overArgument;
+                if (orderCall.Method.DeclaringType != declaringType)
+                    return false;
+
+                return true;
+            }
+
+            private static bool TryExtractWindowFunction(MethodCallExpression over, out MethodCallExpression windowFunctionCall)
+            {
+                windowFunctionCall = null;
+                var wndExp = over.Object;
+                if (wndExp == null
+                    || wndExp.NodeType != ExpressionType.Call)
+                    return false;
+                windowFunctionCall = (MethodCallExpression)wndExp;
+                return true;
+            }
+
+        }
     }
 }

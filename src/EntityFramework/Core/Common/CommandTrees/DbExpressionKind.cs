@@ -309,7 +309,12 @@ namespace System.Data.Entity.Core.Common.CommandTrees
         /// <summary>
         /// In.
         /// </summary>
-        In = 58
+        In = 58,
+
+        /// <summary>
+        /// Window function.
+        /// </summary>
+        WindowFunction = 59,
     }
 
     internal static class DbExpressionKindHelper
@@ -317,6 +322,6 @@ namespace System.Data.Entity.Core.Common.CommandTrees
         // <summary>
         // The last value in the DbExpressionKind enumeration.
         // </summary>
-        public static readonly DbExpressionKind Last = DbExpressionKind.In;
+        public static readonly DbExpressionKind Last = DbExpressionKind.WindowFunction;
     }
 }

@@ -375,7 +375,14 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <returns> A copy of the original Node that references a copy of the original Op </returns>
         public override Node Visit(FunctionOp op, Node n)
         {
-            return CopyDefault(m_destCmd.CreateFunctionOp(op.Function), n);
+            var functionOp = m_destCmd.CreateFunctionOp(op.Function);
+            if (op.Function.WindowAttribute)
+            {
+                if (op.Orders != null)
+                    functionOp.Orders = new List<bool>(op.Orders);
+                functionOp.PartitionCount = op.PartitionCount;
+            }
+            return CopyDefault(functionOp, n);
         }
 
         // <summary>

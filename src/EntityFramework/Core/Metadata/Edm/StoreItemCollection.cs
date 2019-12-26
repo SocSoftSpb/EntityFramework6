@@ -433,6 +433,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
                         StoreFunctionName = sTypeFunction.StoreFunctionNameAttribute,
                         CommandText = sTypeFunction.CommandTextAttribute,
                         IsAggregate = sTypeFunction.AggregateAttribute,
+                        IsWindow = sTypeFunction.WindowAttribute,
                         IsBuiltIn = sTypeFunction.BuiltInAttribute,
                         IsNiladic = sTypeFunction.NiladicFunctionAttribute,
                         IsComposable = sTypeFunction.IsComposableAttribute,

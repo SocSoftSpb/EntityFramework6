@@ -94,6 +94,7 @@
         </xs:choice>
         <xs:attribute name="Name" type="xs:string" use="required" />
         <xs:attribute name="Aggregate" type="xs:boolean" use="optional" />
+        <xs:attribute name="Window" type="xs:boolean" use="optional" />
         <xs:attribute name="BuiltIn" type="xs:boolean" use="optional" />
         <xs:attribute name="StoreFunctionName" type="xs:string" use="optional" />
         <xs:attribute name="NiladicFunction" type="xs:boolean" use="optional" />

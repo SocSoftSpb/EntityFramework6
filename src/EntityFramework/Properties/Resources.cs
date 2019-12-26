@@ -14061,6 +14061,62 @@ namespace System.Data.Entity.Resources
         {
             return EntityRes.GetString(EntityRes.ConflictingIndexAttributeMatches, p0, p1);
         }
+
+        // <summary>
+        // A string like "Window function '{0}' called without Over() clause."
+        // </summary>
+        internal static string ELinq_WindowFunctionWithoutOver(object p0)
+        {
+            return EntityRes.GetString(EntityRes.ELinq_WindowFunctionWithoutOver, p0);
+        }
+
+        // <summary>
+        // A string like "Window function {0} directly call is not supported."
+        // </summary>
+        internal static string ELinq_WindowPartitionOrderDirectlyCall(object p0)
+        {
+            return EntityRes.GetString(EntityRes.ELinq_WindowPartitionOrderDirectlyCall, p0);
+        }
+
+        // <summary>
+        // A string like "Invalid window function call."
+        // </summary>
+        internal static string ELinq_WindowFunctionInvalid
+        {
+            get { return EntityRes.GetString(EntityRes.ELinq_WindowFunctionInvalid); }
+        }
+
+        // <summary>
+        // A string like "Window function partition must be a call of Partition.By or Partition.ThenBy methods."
+        // </summary>
+        internal static string ELinq_WindowPartitionInvalidExpression
+        {
+            get { return EntityRes.GetString(EntityRes.ELinq_WindowPartitionInvalidExpression); }
+        }
+
+        // <summary>
+        // A string like "Window function order must be a call of Order.By, Order.ByDescending, Order.ThenBy, Order.ThenByDescending methods."
+        // </summary>
+        internal static string ELinq_WindowOrderInvalidExpression
+        {
+            get { return EntityRes.GetString(EntityRes.ELinq_WindowOrderInvalidExpression); }
+        }
+
+        // <summary>
+        // A string like "Window function {0} requires order clause."
+        // </summary>
+        internal static string ELinq_WindowOrderRequired(object p0)
+        {
+            return EntityRes.GetString(EntityRes.ELinq_WindowOrderRequired, p0);
+        }
+
+        // <summary>
+        // A string like "Window function {0} not supported order clause."
+        // </summary>
+        internal static string ELinq_WindowOrderNotSupported(object p0)
+        {
+            return EntityRes.GetString(EntityRes.ELinq_WindowOrderNotSupported, p0);
+        }
     }
 
     // <summary>
@@ -17490,6 +17546,13 @@ namespace System.Data.Entity.Resources
         internal const string ProviderDoesNotSupportEscapingLikeArgument = "ProviderDoesNotSupportEscapingLikeArgument";
         internal const string IndexPropertyNotFound = "IndexPropertyNotFound";
         internal const string ConflictingIndexAttributeMatches = "ConflictingIndexAttributeMatches";
+        internal const string ELinq_WindowFunctionWithoutOver = "ELinq_WindowFunctionWithoutOver";
+        internal const string ELinq_WindowPartitionOrderDirectlyCall = "ELinq_WindowPartitionOrderDirectlyCall";
+        internal const string ELinq_WindowFunctionInvalid = "ELinq_WindowFunctionInvalid";
+        internal const string ELinq_WindowPartitionInvalidExpression = "ELinq_WindowPartitionInvalidExpression";
+        internal const string ELinq_WindowOrderInvalidExpression = "ELinq_WindowOrderInvalidExpression";
+        internal const string ELinq_WindowOrderRequired = "ELinq_WindowOrderRequired";
+        internal const string ELinq_WindowOrderNotSupported = "ELinq_WindowOrderNotSupported";
 
         private static EntityRes loader;
         private readonly ResourceManager resources;

@@ -14,6 +14,8 @@ namespace FunctionalTests
     using ConcurrencyModel;
     using Xunit;
 
+    using Order = System.Data.Entity.Migrations.Order;
+
     public class FunctionsScenarioTests
     {
         [ComplexType]

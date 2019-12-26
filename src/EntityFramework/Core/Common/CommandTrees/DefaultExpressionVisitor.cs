@@ -524,13 +524,30 @@ namespace System.Data.Entity.Core.Common.CommandTrees
             Check.NotNull(expression, "expression");
 
             DbExpression result = expression;
+
             var newArguments = VisitExpressionList(expression.Arguments);
             var newFunction = VisitFunction(expression.Function);
-            if (!ReferenceEquals(expression.Arguments, newArguments)
-                ||
-                !ReferenceEquals(expression.Function, newFunction))
+
+            if (expression.Function.WindowAttribute)
             {
-                result = CqtBuilder.Invoke(newFunction, newArguments);
+                var newPart = VisitExpressionList(expression.Partitions);
+                var newSort = VisitSortOrder(expression.SortOrder);
+                if (!ReferenceEquals(expression.Arguments, newArguments)
+                    || !ReferenceEquals(expression.Function, newFunction)
+                    || !ReferenceEquals(expression.Partitions, newPart)
+                    || !ReferenceEquals(expression.SortOrder, newSort))
+                {
+                    result = CqtBuilder.InvokeWindow(newFunction, newArguments, newPart, newSort);
+                }
+
+            }
+            else
+            {
+                if (!ReferenceEquals(expression.Arguments, newArguments)
+                    || !ReferenceEquals(expression.Function, newFunction))
+                {
+                    result = CqtBuilder.Invoke(newFunction, newArguments);
+                }
             }
 
             NotifyIfChanged(expression, result);
