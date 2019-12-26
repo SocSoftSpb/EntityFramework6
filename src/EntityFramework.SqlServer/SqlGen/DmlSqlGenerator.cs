@@ -709,13 +709,15 @@ namespace System.Data.Entity.SqlServer.SqlGen
             {
                 Check.NotNull(expression, "expression");
 
+                /*
                 var parameter
                     = CreateParameter(
                         DBNull.Value,
                         expression.ResultType,
                         "@" + expression.ParameterName);
+                */
 
-                _commandText.Append(parameter.ParameterName);
+                _commandText.Append("@" + expression.ParameterName);
             }
 
             public override void Visit(DbScanExpression expression)
