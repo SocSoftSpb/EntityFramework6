@@ -665,8 +665,8 @@ namespace System.Data.Entity.Core.Common.CommandTrees
                 ||
                 !ReferenceEquals(expression.Limit, newLimit))
             {
-                Debug.Assert(!expression.WithTies, "Limit.WithTies == true?");
-                result = CqtBuilder.Limit(newArgument, newLimit);
+                //Debug.Assert(!expression.WithTies, "Limit.WithTies == true?");
+                result = CqtBuilder.Limit(newArgument, newLimit, expression.WithTies);
             }
             NotifyIfChanged(expression, result);
             return result;

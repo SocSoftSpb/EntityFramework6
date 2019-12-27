@@ -58,10 +58,10 @@ namespace System.Data.Entity.Core.Objects.ELinq
                 return lifter.Skip(skipCount);
             }
 
-            internal DbExpression Limit(DbExpression argument, DbExpression limit)
+            internal DbExpression Limit(DbExpression argument, DbExpression limit, bool withTies)
             {
                 var lifter = GetLifter(argument);
-                return lifter.Limit(limit);
+                return lifter.Limit(limit, withTies);
             }
 
             #endregion
@@ -191,7 +191,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
                     return project;
                 }
 
-                internal abstract DbExpression Limit(DbExpression k);
+                internal abstract DbExpression Limit(DbExpression k, bool withTies);
                 internal abstract DbExpression Skip(DbExpression k);
 
                 #endregion
@@ -250,7 +250,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
                 {
                     // source.Limit(k).Limit(k2) -> source.Limit(Min(k, k2))
                     var newCount = CombineIntegers(limit.Limit, k, Math.Min);
-                    return input.Limit(newCount);
+                    return input.Limit(newCount, limit.WithTies);
                 }
 
                 private static DbExpression CombineIntegers(
@@ -345,20 +345,22 @@ namespace System.Data.Entity.Core.Objects.ELinq
                     return project;
                 }
 
-                internal override DbExpression Limit(DbExpression k)
+                internal override DbExpression Limit(DbExpression k, bool withTies)
                 {
                     // source.Skip(k, o).Limit(k2).Limit(k3) ->
                     // source.Skip(k, o).Limit(Min(k2, k3)) where k2 and k3 are constants
                     // otherwise source.Skip(k, o).Limit(k2).Sort(o).Limit(k3)
                     if (_limit.Limit.ExpressionKind == DbExpressionKind.Constant
                         &&
-                        k.ExpressionKind == DbExpressionKind.Constant)
+                        k.ExpressionKind == DbExpressionKind.Constant
+                        &&
+                        _limit.WithTies == withTies)
                     {
                         return MinimumLimit(_skip, _limit, k);
                     }
                     else
                     {
-                        return ApplySkipOrderToSort(_limit, _skip).Limit(k);
+                        return ApplySkipOrderToSort(_limit, _skip).Limit(k, withTies);
                     }
                 }
 
@@ -397,19 +399,21 @@ namespace System.Data.Entity.Core.Objects.ELinq
                     return project;
                 }
 
-                internal override DbExpression Limit(DbExpression k)
+                internal override DbExpression Limit(DbExpression k, bool withTies)
                 {
                     // source.Sort(o).Limit(k).Limit(k2) -> source.Sort(o).Limit(Min(k, k2)) when k and k2 are constants
                     // otherwise -> source.Sort(o).Limit(k).Sort(o).Limit(k2)
                     if (_limit.Limit.ExpressionKind == DbExpressionKind.Constant
                         &&
-                        k.ExpressionKind == DbExpressionKind.Constant)
+                        k.ExpressionKind == DbExpressionKind.Constant
+                        && 
+                        _limit.WithTies == withTies)
                     {
                         return MinimumLimit(_sort, _limit, k);
                     }
                     else
                     {
-                        return RebindSort(_limit, _sort).Limit(k);
+                        return RebindSort(_limit, _sort).Limit(k, withTies);
                     }
                 }
 
@@ -452,7 +456,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
                     return RebindProject(
                         ApplySkipOrderToSort(
                             ComposeFilter(
-                                _skip.Limit(_limit.Limit),
+                                _skip.Limit(_limit.Limit, _limit.WithTies),
                                 _project,
                                 filter),
                             _skip),
@@ -464,19 +468,21 @@ namespace System.Data.Entity.Core.Objects.ELinq
                     // source.Skip(k, o).Limit(k2).Project(p).Project(p2) -> 
                     // source.Skip(k, o).Limit(k2).Project(e => p2(p(e)))
                     return ComposeProject(
-                        _skip.Limit(_limit.Limit),
+                        _skip.Limit(_limit.Limit, _limit.WithTies),
                         _project,
                         project);
                 }
 
-                internal override DbExpression Limit(DbExpression k)
+                internal override DbExpression Limit(DbExpression k, bool withTies)
                 {
                     // source.Skip(k, o).Limit(k2).Project(p).Limit(k3) ->
                     // source.Skip(k, o).Limit(Min(k2, k3)).Project(p) where k2 and k2 are constants
                     // otherwise -> source.Skip(k, o).Limit(k2).Sort(o).Limit(k3).Project(p)
                     if (_limit.Limit.ExpressionKind == DbExpressionKind.Constant
                         &&
-                        k.ExpressionKind == DbExpressionKind.Constant)
+                        k.ExpressionKind == DbExpressionKind.Constant
+                        &&
+                        _limit.WithTies == withTies)
                     {
                         return RebindProject(
                             MinimumLimit(_skip, _limit, k),
@@ -486,8 +492,8 @@ namespace System.Data.Entity.Core.Objects.ELinq
                     {
                         return RebindProject(
                             ApplySkipOrderToSort(
-                                _skip.Limit(_limit.Limit),
-                                _skip).Limit(k),
+                                _skip.Limit(_limit.Limit, _limit.WithTies),
+                                _skip).Limit(k, withTies),
                             _project);
                     }
                 }
@@ -500,6 +506,8 @@ namespace System.Data.Entity.Core.Objects.ELinq
                     if (_skip.Count.ExpressionKind == DbExpressionKind.Constant
                         &&
                         _limit.Limit.ExpressionKind == DbExpressionKind.Constant
+                        &&
+                        !_limit.WithTies
                         &&
                         k.ExpressionKind == DbExpressionKind.Constant)
                     {
@@ -514,7 +522,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
                     {
                         return RebindProject(
                             RebindSkip(
-                                _skip.Limit(_limit.Limit),
+                                _skip.Limit(_limit.Limit, _limit.WithTies),
                                 _skip,
                                 k),
                             _project);
@@ -551,7 +559,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
                     return RebindProject(
                         RebindSort(
                             ComposeFilter(
-                                _sort.Limit(_limit.Limit),
+                                _sort.Limit(_limit.Limit, _limit.WithTies),
                                 _project,
                                 filter),
                             _sort),
@@ -562,18 +570,20 @@ namespace System.Data.Entity.Core.Objects.ELinq
                 {
                     // source.Sort(o).Limit(k).Project(p).Project(p2) -> source.Sort(o).Limit(k).Project(e => p2(p(e)))
                     return ComposeProject(
-                        _sort.Limit(_limit.Limit),
+                        _sort.Limit(_limit.Limit, _limit.WithTies),
                         _project,
                         project);
                 }
 
-                internal override DbExpression Limit(DbExpression k)
+                internal override DbExpression Limit(DbExpression k, bool withTies)
                 {
                     // source.Sort(o).Limit(k).Project(p).Limit(k2) -> source.Sort(o).Limit(Min(k, k2)).Project(p) where k and k2 are constants
                     // otherwise -> source.Sort(o).Limit(k).Sort(o).Limit(k2).Project(p) 
                     if (_limit.Limit.ExpressionKind == DbExpressionKind.Constant
                         &&
-                        k.ExpressionKind == DbExpressionKind.Constant)
+                        k.ExpressionKind == DbExpressionKind.Constant
+                        &&
+                        _limit.WithTies == withTies)
                     {
                         return RebindProject(
                             MinimumLimit(_sort, _limit, k),
@@ -583,8 +593,8 @@ namespace System.Data.Entity.Core.Objects.ELinq
                     {
                         return RebindProject(
                             RebindSort(
-                                _sort.Limit(_limit.Limit),
-                                _sort).Limit(k),
+                                _sort.Limit(_limit.Limit, _limit.WithTies),
+                                _sort).Limit(k, withTies),
                             _project);
                     }
                 }
@@ -594,7 +604,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
                     // source.Sort(o).Limit(k).Project(p).Skip(k2) -> source.Sort(o).Limit(k).Skip(k2, o).Project(p)
                     return RebindProject(
                         ApplySortOrderToSkip(
-                            _sort.Limit(_limit.Limit),
+                            _sort.Limit(_limit.Limit, _limit.WithTies),
                             _sort,
                             k),
                         _project);
@@ -628,10 +638,10 @@ namespace System.Data.Entity.Core.Objects.ELinq
                         _project);
                 }
 
-                internal override DbExpression Limit(DbExpression k)
+                internal override DbExpression Limit(DbExpression k, bool withTies)
                 {
                     // the result is already ordered (no compensation is required)
-                    return _root.Limit(k);
+                    return _root.Limit(k, withTies);
                 }
 
                 internal override DbExpression Project(DbProjectExpression project)
@@ -684,10 +694,10 @@ namespace System.Data.Entity.Core.Objects.ELinq
                     return project;
                 }
 
-                internal override DbExpression Limit(DbExpression k)
+                internal override DbExpression Limit(DbExpression k, bool withTies)
                 {
                     // the result is already ordered (no compensation is required)
-                    return _root.Limit(k);
+                    return _root.Limit(k, withTies);
                 }
 
                 internal override DbExpression Skip(DbExpression k)
@@ -740,10 +750,10 @@ namespace System.Data.Entity.Core.Objects.ELinq
                         _project);
                 }
 
-                internal override DbExpression Limit(DbExpression k)
+                internal override DbExpression Limit(DbExpression k, bool withTies)
                 {
                     // the result is already ordered (no compensation is required)
-                    return _root.Limit(k);
+                    return _root.Limit(k, withTies);
                 }
 
                 internal override DbExpression Skip(DbExpression k)
@@ -780,10 +790,10 @@ namespace System.Data.Entity.Core.Objects.ELinq
                     return RebindSort(RebindFilter(_source, filter), _sort);
                 }
 
-                internal override DbExpression Limit(DbExpression k)
+                internal override DbExpression Limit(DbExpression k, bool withTies)
                 {
                     // the result is already ordered (no compensation is required)
-                    return _root.Limit(k);
+                    return _root.Limit(k, withTies);
                 }
 
                 internal override DbExpression Skip(DbExpression k)
@@ -818,9 +828,9 @@ namespace System.Data.Entity.Core.Objects.ELinq
                     return _root.OfType(type);
                 }
 
-                internal override DbExpression Limit(DbExpression k)
+                internal override DbExpression Limit(DbExpression k, bool withTies)
                 {
-                    return _root.Limit(k);
+                    return _root.Limit(k, withTies);
                 }
 
                 internal override DbExpression Skip(DbExpression k)

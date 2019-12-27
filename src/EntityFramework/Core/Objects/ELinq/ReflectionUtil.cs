@@ -469,6 +469,9 @@ namespace System.Data.Entity.Core.Objects.ELinq
             // DO NOT MODIFY CODE ABOVE THIS LINE: CODE GEN TOOL RELIES ON ENDREGION TAG
             //
 
+            map.Add(@"TakeWithTies(IQueryable`1<T0>, Int32)->IQueryable`1<T0>", SequenceMethod.TakeWithTies);
+            map.Add(@"TakeWithTies(IEnumerable`1<T0>, Int32)->IEnumerable`1<T0>", SequenceMethod.TakeWithTies);
+            
             // by redirection through canonical method names, determine sequence enum value
             // for all know LINQ operators
             _methodMap = new Dictionary<MethodInfo, SequenceMethod>();
@@ -646,7 +649,9 @@ namespace System.Data.Entity.Core.Objects.ELinq
 
         private static IEnumerable<MethodInfo> GetAllLinqOperators()
         {
-            return typeof(Queryable).GetDeclaredMethods().Concat(typeof(Enumerable).GetDeclaredMethods());
+            return typeof(Queryable).GetDeclaredMethods()
+                .Concat(typeof(Enumerable).GetDeclaredMethods())
+                .Concat(typeof(EntityEnumerableExtensions).GetDeclaredMethods());
         }
     }
 }

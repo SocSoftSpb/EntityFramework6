@@ -523,9 +523,9 @@ namespace System.Data.Entity.Core.Objects.ELinq
             return retExpr;
         }
 
-        private DbExpression Limit(DbExpression argument, DbExpression limit)
+        private DbExpression Limit(DbExpression argument, DbExpression limit, bool withTies)
         {
-            var retExpr = _orderByLifter.Limit(argument, limit);
+            var retExpr = _orderByLifter.Limit(argument, limit, withTies);
             ApplySpanMapping(argument, retExpr);
             return retExpr;
         }
