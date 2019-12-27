@@ -280,6 +280,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
                 yield return new FirstOrDefaultTranslator();
                 yield return new FirstOrDefaultPredicateTranslator();
                 yield return new TakeTranslator();
+                yield return new TakeWithTiesTranslator();
                 yield return new SkipTranslator();
                 yield return new SingleTranslator();
                 yield return new SinglePredicateTranslator();
@@ -1920,7 +1921,24 @@ namespace System.Data.Entity.Core.Objects.ELinq
                 {
                     var constant = count as DbConstantExpression;
                     return constant == null || !constant.Value.Equals(0)
-                        ? parent.Limit(operand, count)
+                        ? parent.Limit(operand, count, withTies:false)
+                        : parent.Filter(operand.BindAs(parent.AliasGenerator.Next()), DbExpressionBuilder.False);
+                }
+            }
+
+            private sealed class TakeWithTiesTranslator : PagingTranslator
+            {
+                internal TakeWithTiesTranslator()
+                    : base(SequenceMethod.TakeWithTies)
+                {
+                }
+
+                protected override CqtExpression TranslatePagingOperator(
+                    ExpressionConverter parent, CqtExpression operand, CqtExpression count)
+                {
+                    var constant = count as DbConstantExpression;
+                    return constant == null || !constant.Value.Equals(0)
+                        ? parent.Limit(operand, count, withTies:true)
                         : parent.Filter(operand.BindAs(parent.AliasGenerator.Next()), DbExpressionBuilder.False);
                 }
             }
@@ -2843,7 +2861,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
                 protected virtual CqtExpression LimitResult(ExpressionConverter parent, CqtExpression expression)
                 {
                     // Only need the first result.
-                    return parent.Limit(expression, DbExpressionBuilder.Constant(1));
+                    return parent.Limit(expression, DbExpressionBuilder.Constant(1), withTies:false);
                 }
 
                 protected override CqtExpression TranslateUnary(
@@ -2941,7 +2959,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
                 protected override CqtExpression LimitResult(ExpressionConverter parent, CqtExpression expression)
                 {
                     // Only need two results - one to return as the actual result and another so we can throw if there is more than one
-                    return parent.Limit(expression, DbExpressionBuilder.Constant(2));
+                    return parent.Limit(expression, DbExpressionBuilder.Constant(2), withTies:false);
                 }
             }
 
@@ -2971,7 +2989,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
                 protected virtual CqtExpression RestrictResult(ExpressionConverter parent, CqtExpression expression)
                 {
                     // Only need the first result.
-                    return parent.Limit(expression, DbExpressionBuilder.Constant(1));
+                    return parent.Limit(expression, DbExpressionBuilder.Constant(1), withTies:false);
                 }
 
                 internal override CqtExpression Translate(ExpressionConverter parent, MethodCallExpression call)
@@ -3057,7 +3075,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
                 protected override CqtExpression RestrictResult(ExpressionConverter parent, CqtExpression expression)
                 {
                     // Only need two results - one to return and another to see if it wasn't alone to throw.
-                    return parent.Limit(expression, DbExpressionBuilder.Constant(2));
+                    return parent.Limit(expression, DbExpressionBuilder.Constant(2), withTies:false);
                 }
             }
 

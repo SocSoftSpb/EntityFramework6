@@ -1925,6 +1925,20 @@ namespace System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder
         /// <exception cref="T:System.ArgumentException">argument does not have a collection result type, or count does not have a result type that is equal or promotable to a 64-bit integer type.</exception>
         public static DbLimitExpression Limit(this DbExpression argument, DbExpression count)
         {
+            return argument.Limit(count, false);
+        }
+        
+        /// <summary>
+        /// Creates a new <see cref="T:System.Data.Entity.Core.Common.CommandTrees.DbLimitExpression" /> that restricts the number of elements in the Argument collection to the specified count Limit value. Tied results are not included in the output.
+        /// </summary>
+        /// <returns>A new DbLimitExpression with the specified argument and count limit values that does not include tied results.</returns>
+        /// <param name="argument">An expression that specifies the input collection.</param>
+        /// <param name="count">An expression that specifies the limit value.</param>
+        /// <param name="withTies">Specifies whether the limit operation will include tied results. Including tied results might produce more results than specified by the <paramref name="count"/> parameter.</param>
+        /// <exception cref="T:System.ArgumentNullException">argument or count is null.</exception>
+        /// <exception cref="T:System.ArgumentException">argument does not have a collection result type, or count does not have a result type that is equal or promotable to a 64-bit integer type.</exception>
+        public static DbLimitExpression Limit(this DbExpression argument, DbExpression count, bool withTies)
+        {
             Check.NotNull(argument, "argument");
             Check.NotNull(count, "count");
 
@@ -1952,7 +1966,7 @@ namespace System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder
                 throw new ArgumentException(Strings.Cqt_Limit_NonNegativeLimitRequired, "count");
             }
 
-            return new DbLimitExpression(argument.ResultType, argument, count, false);
+            return new DbLimitExpression(argument.ResultType, argument, count, withTies);
         }
 
         #endregion

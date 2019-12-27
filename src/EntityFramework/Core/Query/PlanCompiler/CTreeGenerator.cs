@@ -1745,8 +1745,8 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             MessageId = "System.Data.Entity.Core.Query.PlanCompiler.PlanCompiler.Assert(System.Boolean,System.String)")]
         private static DbExpression CreateLimitExpression(DbExpression argument, DbExpression limit, bool withTies)
         {
-            PlanCompiler.Assert(!withTies, "Limit with Ties is not currently supported");
-            return argument.Limit(limit);
+            //PlanCompiler.Assert(!withTies, "Limit with Ties is not currently supported");
+            return argument.Limit(limit, withTies);
         }
 
         [SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "SortKeys")]
