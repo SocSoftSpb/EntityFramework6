@@ -94,7 +94,22 @@ namespace System.Data.Entity.Core.Objects
         public EntityState State
         {
             get { return _state; }
-            internal set { _state = value; }
+            internal set
+            {
+                if (_state != value)
+                {
+                    if (_cache != null && Entity != null)
+                    {
+                        var oldState = _state;
+                        _state = value;
+                        _cache.RaiseEntityStateChanged(this, oldState, value);
+                    }
+                    else
+                    {
+                        _state = value;
+                    }
+                }
+            }
         }
 
         /// <summary>Gets the entity object.</summary>

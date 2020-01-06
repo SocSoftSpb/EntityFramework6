@@ -53,6 +53,7 @@ namespace System.Data.Entity.Core.Objects
         // delegate for notifying changes in collection
         private CollectionChangeEventHandler onObjectStateManagerChangedDelegate;
         private CollectionChangeEventHandler onEntityDeletedDelegate;
+        private EventHandler<EntityStateChangedEventArgs> onEntityStateChangedDelegate;
 
         // Flag to indicate if we are in the middle of relationship fixup.
         // This is set and cleared only during ResetEntityKey, because only in that case
@@ -164,6 +165,13 @@ namespace System.Data.Entity.Core.Objects
             remove { onObjectStateManagerChangedDelegate -= value; }
         }
 
+        /// <summary>Occurs when State of entity are changed in the state manager only.</summary>
+        public event EventHandler<EntityStateChangedEventArgs> EntityStateChanged
+        {
+            add { onEntityStateChangedDelegate += value; }
+            remove { onEntityStateChangedDelegate -= value; }
+        }
+
         internal event CollectionChangeEventHandler EntityDeleted
         {
             add { onEntityDeletedDelegate += value; }
@@ -177,6 +185,11 @@ namespace System.Data.Entity.Core.Objects
             {
                 onObjectStateManagerChangedDelegate(this, new CollectionChangeEventArgs(action, entity));
             }
+        }
+
+        internal void RaiseEntityStateChanged(ObjectStateEntry stateEntry, EntityState oldState, EntityState newState)
+        {
+            onEntityStateChangedDelegate?.Invoke(this, new EntityStateChangedEventArgs(stateEntry.Entity, oldState, newState));
         }
 
         private void OnEntityDeleted(CollectionChangeAction action, object entity)
