@@ -397,7 +397,7 @@ namespace System.Data.Entity.Core.Common.CommandTrees
         {
             var argument = DbExpressionBuilder.Constant("TestString");
             var pattern = DbExpressionBuilder.Constant("%stStr%");
-            var expression = DbExpressionBuilder.Like(argument, pattern);
+            var expression = DbExpressionBuilder.Like(argument, false, pattern);
 
             Assert.NotNull(expression);
             Assert.IsType<DbLikeExpression>(expression);
@@ -413,7 +413,7 @@ namespace System.Data.Entity.Core.Common.CommandTrees
             var argument = DbExpressionBuilder.Constant("TestString");
             var pattern = DbExpressionBuilder.Constant("%stStr%");
             var escape = DbExpressionBuilder.Constant("%");
-            var expression = DbExpressionBuilder.Like(argument, pattern, escape);
+            var expression = DbExpressionBuilder.Like(argument, false, pattern, escape);
 
             Assert.NotNull(expression);
             Assert.IsType<DbLikeExpression>(expression);
@@ -2529,8 +2529,8 @@ namespace System.Data.Entity.Core.Common.CommandTrees
             Assert.Throws<ArgumentNullException>(() => DbExpressionBuilder.Union(DbExpressionBuilder.True, null));
             Assert.Throws<ArgumentNullException>(() => DbExpressionBuilder.UnionAll(null, DbExpressionBuilder.True));
             Assert.Throws<ArgumentNullException>(() => DbExpressionBuilder.UnionAll(DbExpressionBuilder.True, null));
-            Assert.Throws<ArgumentNullException>(() => DbExpressionBuilder.Like(null, DbExpressionBuilder.True));
-            Assert.Throws<ArgumentNullException>(() => DbExpressionBuilder.Like(DbExpressionBuilder.True, null));
+            Assert.Throws<ArgumentNullException>(() => DbExpressionBuilder.Like(null, false, DbExpressionBuilder.True));
+            Assert.Throws<ArgumentNullException>(() => DbExpressionBuilder.Like(DbExpressionBuilder.True, false, null));
             Assert.Throws<ArgumentNullException>(() => DbExpressionBuilder.Limit(null, DbExpressionBuilder.True));
             Assert.Throws<ArgumentNullException>(() => DbExpressionBuilder.Limit(DbExpressionBuilder.True, null));
             Assert.Throws<ArgumentNullException>(() => DbExpressionBuilder.Take(null, DbExpressionBuilder.True));

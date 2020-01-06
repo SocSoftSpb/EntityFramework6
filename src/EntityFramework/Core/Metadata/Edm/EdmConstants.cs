@@ -11,7 +11,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
         internal const string TransientNamespace = "Transient";
 
         // max number of primitive types
-        internal const int NumPrimitiveTypes = (int)Edm.PrimitiveTypeKind.HierarchyId + 1;
+        internal const int NumPrimitiveTypes = (int)Edm.PrimitiveTypeKind.DbLikePattern + 1;
 
         // max number of primitive types
         internal const int NumBuiltInTypes = (int)BuiltInTypeKind.TypeUsage + 1;
@@ -147,6 +147,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
         internal const string GeographyCollection = "GeographyCollection";
         internal const string Guid = "Guid";
         internal const string HierarchyId = "HierarchyId";
+        internal const string DbLikePattern = "DbLikePattern";
         internal const string Single = "Single";
         internal const string SByte = "SByte";
         internal const string Int16 = "Int16";

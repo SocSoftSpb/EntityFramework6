@@ -791,9 +791,9 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // Creates a new LikeOp
         // </summary>
         // <returns> The new LikeOp </returns>
-        internal virtual LikeOp CreateLikeOp()
+        internal virtual LikeOp CreateLikeOp(bool isCommon)
         {
-            return new LikeOp(BooleanType);
+            return new LikeOp(BooleanType, isCommon);
         }
 
         // <summary>

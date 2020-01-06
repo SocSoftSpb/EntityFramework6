@@ -940,6 +940,8 @@ namespace System.Data.Entity.Core.Objects.ELinq
                         typeof(DbFunctions).GetDeclaredMethod(Like, typeof(string), typeof(string));
                     yield return
                         typeof(DbFunctions).GetDeclaredMethod(Like, typeof(string), typeof(string), typeof(string));
+                    yield return
+                        typeof(DbFunctions).GetDeclaredMethod(LikeCommon, typeof(string), typeof(DbLikePattern));
 #pragma warning disable 612,618
                     yield return
                         typeof(EntityFunctions).GetDeclaredMethod(Like, typeof(string), typeof(string));
@@ -953,6 +955,8 @@ namespace System.Data.Entity.Core.Objects.ELinq
                 //      object like likeExpression [escape escapeCharacter]
                 internal override CqtExpression Translate(ExpressionConverter parent, MethodCallExpression call)
                 {
+                    if (call.Method.Name == nameof(DbFunctions.LikeCommon))
+                        return parent.TranslateLikeCommon(call);
                     return parent.TranslateLike(call);
                 }
             }

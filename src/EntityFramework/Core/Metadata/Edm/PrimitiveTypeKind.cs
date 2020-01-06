@@ -179,6 +179,11 @@ namespace System.Data.Entity.Core.Metadata.Edm
         /// </summary>
         HierarchyId = 31,
 
+        /// <summary>
+        /// Like pattern
+        /// </summary>
+        DbLikePattern = 32,
+
         //
         //If you add anything below this, make sure you update the variable NumPrimitiveTypes in EdmConstants
         //

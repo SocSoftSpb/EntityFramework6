@@ -173,6 +173,14 @@ namespace System.Data.Entity.SqlServer
                 return text;
             }
             var sb = new StringBuilder(text.Length);
+            AppendEscapedLikeText(sb, text, out usedEscapeChar);
+            return sb.ToString();
+        }
+
+        internal static void AppendEscapedLikeText(StringBuilder sb, string text, out bool usedEscapeChar)
+        {
+            usedEscapeChar = false;
+
             foreach (var c in text)
             {
                 if (c == '%'
@@ -186,7 +194,6 @@ namespace System.Data.Entity.SqlServer
                 }
                 sb.Append(c);
             }
-            return sb.ToString();
         }
 
         #endregion
@@ -761,6 +768,34 @@ namespace System.Data.Entity.SqlServer
 
             bool usedEscapeCharacter;
             return EscapeLikeText(argument, true, out usedEscapeCharacter);
+        }
+
+        public override string PrepareCommonLikePattern(DbLikePattern patternValue)
+        {
+            Check.NotNull(patternValue, nameof(patternValue));
+
+            var sb = new StringBuilder(128);
+
+            foreach (var fragment in patternValue.Fragments)
+            {
+                switch (fragment.Type)
+                {
+                    case DbLikePatternType.AnyString:
+                        sb.Append('%');
+                        break;
+                    case DbLikePatternType.AnyChar:
+                        sb.Append('_');
+                        break;
+                    case DbLikePatternType.Charset:
+                        sb.Append('[').Append(fragment.Value).Append(']');
+                        break;
+                    case DbLikePatternType.PlainText:
+                        AppendEscapedLikeText(sb, fragment.Value, out _);
+                        break;
+                }
+            }
+
+            return sb.ToString();
         }
 
         /// <summary>

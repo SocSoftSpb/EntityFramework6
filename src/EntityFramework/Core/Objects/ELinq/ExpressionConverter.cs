@@ -29,7 +29,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
         #region Fields
 
         private readonly Funcletizer _funcletizer;
-        private readonly Perspective _perspective;
+        private readonly ClrPerspective _perspective;
         private readonly Expression _expression;
         private readonly BindingContext _bindingContext;
         private Func<bool> _recompileRequired;
@@ -113,6 +113,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
         #region Additional Entity function names
 
         private const string Like = "Like";
+        private const string LikeCommon = "LikeCommon";
         private const string AsUnicode = "AsUnicode";
         private const string AsNonUnicode = "AsNonUnicode";
 
@@ -1540,8 +1541,8 @@ namespace System.Data.Entity.Core.Objects.ELinq
             var translatedInputExpression = TranslateExpression(inputExpression);
 
             return escapeExpression != null ?
-                translatedInputExpression.Like(translatedPatternExpression, translatedEscapeExpression) :
-                translatedInputExpression.Like(translatedPatternExpression);
+                translatedInputExpression.Like(false, translatedPatternExpression, translatedEscapeExpression) :
+                translatedInputExpression.Like(false, translatedPatternExpression);
         }
 
         // <summary>
@@ -1619,11 +1620,11 @@ namespace System.Data.Entity.Core.Objects.ELinq
                     var escapeExpression =
                         EdmProviderManifest.Instance.GetCanonicalModelTypeUsage(PrimitiveTypeKind.String).Constant(
                             new String(new[] { escapeChar }));
-                    result = translatedInputExpression.Like(translatedPatternExpression, escapeExpression);
+                    result = translatedInputExpression.Like(false, translatedPatternExpression, escapeExpression);
                 }
                 else
                 {
-                    result = translatedInputExpression.Like(translatedPatternExpression);
+                    result = translatedInputExpression.Like(false, translatedPatternExpression);
                 }
             }
             else
@@ -1632,6 +1633,45 @@ namespace System.Data.Entity.Core.Objects.ELinq
             }
 
             return result;
+        }
+
+        [SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "LikeCommon")]
+        private DbExpression TranslateLikeCommon(MethodCallExpression call)
+        {
+            var inputExpression = call.Arguments[0];
+            var patternExpression = call.Arguments[1];
+
+            DbExpression translatedPatternExpression;
+
+            if (patternExpression is QueryParameterExpression queryParameterExpression)
+            {
+                var methodInfo = typeof(ExpressionConverter).GetMethod(nameof(PrepareCommonLikePattern), BindingFlags.Static | BindingFlags.NonPublic);
+
+                var inputPrm = Expression.Parameter(typeof(DbLikePattern), "patternValue");
+                var preparePatternFunc = Expression.Lambda<Func<DbLikePattern, string>>(
+                    Expression.Call(
+                        methodInfo, 
+                        inputPrm, 
+                        Expression.Constant(ProviderManifest)),
+                    inputPrm);
+
+                patternExpression = queryParameterExpression.EscapeParameterForLikeCommon(preparePatternFunc, _perspective);
+
+                translatedPatternExpression = TranslateExpression(patternExpression);
+            }
+            else if (patternExpression is ConstantExpression constantExpression)
+            {
+                var preparedPattern = PrepareCommonLikePattern((DbLikePattern)constantExpression.Value, ProviderManifest);
+                translatedPatternExpression = DbExpression.FromString(preparedPattern);
+            }
+            else
+            {
+                throw new NotSupportedException("LikeCommon supports only constant patterns.");
+            }
+            
+            var translatedInputExpression = TranslateExpression(inputExpression);
+
+            return translatedInputExpression.Like(true, translatedPatternExpression);
         }
 
         // <summary>
@@ -1668,6 +1708,11 @@ namespace System.Data.Entity.Core.Objects.ELinq
             }
 
             return new Tuple<string, bool>(patternBuilder.ToString(), specifyEscape);
+        }
+
+        private static string PrepareCommonLikePattern(DbLikePattern patternValue, DbProviderManifest providerManifest)
+        {
+            return providerManifest.PrepareCommonLikePattern(patternValue);
         }
 
         // <summary>

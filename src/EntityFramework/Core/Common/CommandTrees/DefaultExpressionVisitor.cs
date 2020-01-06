@@ -643,7 +643,7 @@ namespace System.Data.Entity.Core.Common.CommandTrees
                 ||
                 !ReferenceEquals(expression.Escape, newEscape))
             {
-                result = CqtBuilder.Like(newArgument, newPattern, newEscape);
+                result = CqtBuilder.Like(newArgument, expression.IsCommon, newPattern, newEscape);
             }
             NotifyIfChanged(expression, result);
             return result;

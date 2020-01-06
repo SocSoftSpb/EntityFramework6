@@ -5825,11 +5825,11 @@ namespace System.Data.Entity.Core.Common.EntitySql
                                 throw EntitySqlException.Create(errCtx, message, null);
                             }
 
-                            likeExpr = matchExpr.Like(patternExpr, escapeExpr);
+                            likeExpr = matchExpr.Like(false, patternExpr, escapeExpr);
                         }
                         else
                         {
-                            likeExpr = matchExpr.Like(patternExpr);
+                            likeExpr = matchExpr.Like(false, patternExpr);
                         }
 
                         return likeExpr;

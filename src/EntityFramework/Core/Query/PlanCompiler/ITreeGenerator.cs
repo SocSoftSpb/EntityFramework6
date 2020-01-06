@@ -1480,7 +1480,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             Check.NotNull(e, "e");
 
             return _iqtCommand.CreateNode(
-                _iqtCommand.CreateLikeOp(),
+                _iqtCommand.CreateLikeOp(e.IsCommon),
                 VisitExpr(e.Argument),
                 VisitExpr(e.Pattern),
                 VisitExpr(e.Escape)

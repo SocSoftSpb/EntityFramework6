@@ -200,6 +200,17 @@ namespace System.Data.Entity.Core.Common
         }
 
         /// <summary>
+        /// Create value for pattern
+        /// </summary>
+        /// <param name="patternValue">pattern to prepare</param>
+        /// <returns>string with escape</returns>
+        [SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "PrepareCommonLikePattern")]
+        public virtual string PrepareCommonLikePattern(DbLikePattern patternValue)
+        {
+            throw new ProviderIncompatibleException("Provider Should Override PrepareCommonLikePattern.");
+        }
+
+        /// <summary>
         /// Returns a boolean that specifies whether the provider can handle expression trees
         /// containing instances of DbInExpression.
         /// The default implementation returns <c>false</c> for backwards compatibility. Derived classes can override this method.

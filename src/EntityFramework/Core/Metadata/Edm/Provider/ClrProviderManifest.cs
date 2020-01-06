@@ -141,6 +141,10 @@ namespace System.Data.Entity.Core.Metadata.Edm.Provider
                             {
                                 primitiveTypeKind = PrimitiveTypeKind.HierarchyId;
                             }
+                            else if (typeof(DbLikePattern) == clrType)
+                            {
+                                primitiveTypeKind = PrimitiveTypeKind.DbLikePattern;
+                            }
                             else if (typeof(TimeSpan) == clrType)
                             {
                                 primitiveTypeKind = PrimitiveTypeKind.Time;
@@ -213,6 +217,7 @@ namespace System.Data.Entity.Core.Metadata.Edm.Provider
             primitiveTypes[(int)PrimitiveTypeKind.Geometry] = CreatePrimitiveType(typeof(DbGeometry), PrimitiveTypeKind.Geometry);
             primitiveTypes[(int)PrimitiveTypeKind.Guid] = CreatePrimitiveType(typeof(Guid), PrimitiveTypeKind.Guid);
             primitiveTypes[(int)PrimitiveTypeKind.HierarchyId] = CreatePrimitiveType(typeof(HierarchyId), PrimitiveTypeKind.HierarchyId);
+            primitiveTypes[(int)PrimitiveTypeKind.DbLikePattern] = CreatePrimitiveType(typeof(DbLikePattern), PrimitiveTypeKind.DbLikePattern);
             primitiveTypes[(int)PrimitiveTypeKind.Int16] = CreatePrimitiveType(typeof(Int16), PrimitiveTypeKind.Int16);
             primitiveTypes[(int)PrimitiveTypeKind.Int32] = CreatePrimitiveType(typeof(Int32), PrimitiveTypeKind.Int32);
             primitiveTypes[(int)PrimitiveTypeKind.Int64] = CreatePrimitiveType(typeof(Int64), PrimitiveTypeKind.Int64);

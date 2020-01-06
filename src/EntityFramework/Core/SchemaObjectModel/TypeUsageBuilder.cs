@@ -241,6 +241,7 @@ namespace System.Data.Entity.Core.SchemaObjectModel
                     case PrimitiveTypeKind.Double:
                     case PrimitiveTypeKind.Guid:
                     case PrimitiveTypeKind.HierarchyId:
+                    case PrimitiveTypeKind.DbLikePattern:
                     case PrimitiveTypeKind.Single:
                         break;
                     case PrimitiveTypeKind.Geography:
