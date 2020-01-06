@@ -287,6 +287,18 @@ namespace System.Data.Entity.Core.Common.CommandTrees.Internal
                     }
                     break;
 
+                case PrimitiveTypeKind.DbLikePattern:
+                    var pattern = e.Value as DbLikePattern;
+                    if (pattern != null)
+                    {
+                        _key.Append(pattern);
+                    }
+                    else
+                    {
+                        throw new NotSupportedException();
+                    }
+                    break;
+
                 case PrimitiveTypeKind.DateTime:
                     _key.Append(((DateTime)e.Value).ToString("o", CultureInfo.InvariantCulture));
                     break;

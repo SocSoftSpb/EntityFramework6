@@ -4,6 +4,8 @@ namespace System.Data.Entity.Core.Objects.ELinq
 {
     using System.Collections.Generic;
     using System.Data.Entity.Core.Common.CommandTrees;
+    using System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder;
+    using System.Data.Entity.Core.Metadata.Edm;
     using System.Data.Entity.Utilities;
     using System.Linq;
     using System.Linq.Expressions;
@@ -80,6 +82,14 @@ namespace System.Data.Entity.Core.Objects.ELinq
         {
             Expression wrappedExpression = Expression.Property(Invoke(method, _funcletizedExpression), "Item1");
             return new QueryParameterExpression(_parameterReference, wrappedExpression, _compiledQueryParameters);
+        }
+
+        internal QueryParameterExpression EscapeParameterForLikeCommon(Expression<Func<DbLikePattern, string>> method, ClrPerspective perspective)
+        {
+            Expression wrappedExpression = Invoke(method, _funcletizedExpression);
+            perspective.TryGetType(typeof(string), out var stringType);
+            var parameterReference = stringType.Parameter(_parameterReference.ParameterName);
+            return new QueryParameterExpression(parameterReference, wrappedExpression, _compiledQueryParameters);
         }
 
         // <summary>

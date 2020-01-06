@@ -1339,17 +1339,18 @@ namespace System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder
         /// </summary>
         /// <returns>A new DbLikeExpression with the specified input, pattern and a null escape.</returns>
         /// <param name="argument">An expression that specifies the input string.</param>
+        /// <param name="isCommon">Is "Common" Like, Supports '%', '_' and '[]' patterns.</param>
         /// <param name="pattern">An expression that specifies the pattern string.</param>
         /// <exception cref="T:System.ArgumentNullException">Argument or pattern is null.</exception>
         /// <exception cref="T:System.ArgumentException">Argument or pattern does not have a string result type.</exception>
-        public static DbLikeExpression Like(this DbExpression argument, DbExpression pattern)
+        public static DbLikeExpression Like(this DbExpression argument, bool isCommon, DbExpression pattern)
         {
             Check.NotNull(argument, "argument");
             Check.NotNull(pattern, "pattern");
 
             ValidateLike(argument, pattern);
             DbExpression escape = pattern.ResultType.Null();
-            return new DbLikeExpression(_booleanType, argument, pattern, escape);
+            return new DbLikeExpression(_booleanType, argument, pattern, escape, isCommon);
         }
 
         /// <summary>
@@ -1357,18 +1358,19 @@ namespace System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder
         /// </summary>
         /// <returns>A new DbLikeExpression with the specified input, pattern and escape.</returns>
         /// <param name="argument">An expression that specifies the input string.</param>
+        /// <param name="isCommon">Is "Common" Like, Supports '%', '_' and '[]' patterns.</param>
         /// <param name="pattern">An expression that specifies the pattern string.</param>
         /// <param name="escape">An optional expression that specifies the escape string.</param>
         /// <exception cref="T:System.ArgumentNullException">argument,  pattern or escape is null.</exception>
         /// <exception cref="T:System.ArgumentException">argument,  pattern or escape does not have a string result type.</exception>
-        public static DbLikeExpression Like(this DbExpression argument, DbExpression pattern, DbExpression escape)
+        public static DbLikeExpression Like(this DbExpression argument, bool isCommon, DbExpression pattern, DbExpression escape)
         {
             Check.NotNull(argument, "argument");
             Check.NotNull(pattern, "pattern");
             Check.NotNull(escape, "escape");
 
             ValidateLike(argument, pattern, escape);
-            return new DbLikeExpression(_booleanType, argument, pattern, escape);
+            return new DbLikeExpression(_booleanType, argument, pattern, escape, isCommon);
         }
 
         private static void ValidateLike(DbExpression argument, DbExpression pattern, DbExpression escape)

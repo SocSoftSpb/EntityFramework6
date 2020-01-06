@@ -10,11 +10,18 @@ namespace System.Data.Entity.Core.Query.InternalTrees
     // </summary>
     internal sealed class LikeOp : ScalarOp
     {
+        #region Fields
+
+        private bool _isCommon;
+        
+        #endregion
+
         #region constructors
 
-        internal LikeOp(TypeUsage boolType)
+        internal LikeOp(TypeUsage boolType, bool isCommon)
             : base(OpType.Like, boolType)
         {
+            _isCommon = isCommon;
         }
 
         private LikeOp()
@@ -37,6 +44,14 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         internal override int Arity
         {
             get { return 3; }
+        }
+
+        /// <summary>
+        /// Is "Common" Like
+        /// </summary>
+        internal bool IsCommon
+        {
+            get { return _isCommon; }
         }
 
         // <summary>

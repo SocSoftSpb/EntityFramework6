@@ -3043,7 +3043,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
                 else
                 {
                     var typeIdConstantNode = CreateTypeIdConstantForPrefixMatch(typeInfo);
-                    var likeOp = m_command.CreateLikeOp();
+                    var likeOp = m_command.CreateLikeOp(false);
                     newNode = m_command.CreateNode(likeOp, typeIdProperty, typeIdConstantNode, CreateNullConstantNode(DefaultTypeIdType));
                 }
             }

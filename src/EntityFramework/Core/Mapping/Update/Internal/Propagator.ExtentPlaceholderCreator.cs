@@ -52,6 +52,7 @@ namespace System.Data.Entity.Core.Mapping.Update.Internal
                 typeDefaultMap[PrimitiveTypeKind.SByte] = default(SByte);
                 typeDefaultMap[PrimitiveTypeKind.String] = String.Empty;
                 typeDefaultMap[PrimitiveTypeKind.HierarchyId] = HierarchyId.GetRoot();
+                typeDefaultMap[PrimitiveTypeKind.DbLikePattern] = new DbLikePattern();
 
 #if DEBUG
                 foreach (var o in typeDefaultMap.Values)

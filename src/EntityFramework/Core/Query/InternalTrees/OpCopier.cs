@@ -437,7 +437,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <returns> A copy of the original Node that references a copy of the original Op </returns>
         public override Node Visit(LikeOp op, Node n)
         {
-            return CopyDefault(m_destCmd.CreateLikeOp(), n);
+            return CopyDefault(m_destCmd.CreateLikeOp(op.IsCommon), n);
         }
 
         // <summary>

@@ -202,6 +202,8 @@ namespace System.Data.Entity.Core.Metadata.Edm
                         return typeof(Guid);
                     case PrimitiveTypeKind.HierarchyId:
                         return typeof(HierarchyId);
+                    case PrimitiveTypeKind.DbLikePattern:
+                        return typeof(DbLikePattern);
                     case PrimitiveTypeKind.Single:
                         return typeof(Single);
                     case PrimitiveTypeKind.SByte:

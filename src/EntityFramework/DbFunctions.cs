@@ -1759,6 +1759,24 @@ namespace System.Data.Entity
         }
 
         /// <summary>
+        /// When used as part of a LINQ to Entities query, this method invokes the canonical Like EDM operator to match an expression.
+        /// </summary>
+        /// <remarks>
+        /// You cannot call this function directly. This function can only appear within a LINQ to Entities query.
+        /// This function is translated to a corresponding function in the database.
+        /// </remarks>
+        /// <param name="searchString"> The string to search. </param>
+        /// <param name="pattern"> The expression to match against. </param>
+        /// <returns> True if the searched string matches the expression; otherwise false. </returns>
+        [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "searchString")]
+        [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "pattern")]
+        [SuppressMessage("Microsoft.Naming", "CA1720:IdentifiersShouldNotContainTypeNames", MessageId = "string")]
+        public static bool LikeCommon(string searchString, DbLikePattern pattern)
+        {
+            throw new NotSupportedException(Strings.ELinq_DbFunctionDirectCall);
+        }
+
+        /// <summary>
         /// When used as part of a LINQ to Entities query, this method acts as an operator that ensures the input
         /// is treated as a Unicode string.
         /// </summary>

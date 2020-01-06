@@ -12,8 +12,9 @@ namespace System.Data.Entity.Core.Common.CommandTrees
         private readonly DbExpression _argument;
         private readonly DbExpression _pattern;
         private readonly DbExpression _escape;
+        private readonly bool _isCommon;
 
-        internal DbLikeExpression(TypeUsage booleanResultType, DbExpression input, DbExpression pattern, DbExpression escape)
+        internal DbLikeExpression(TypeUsage booleanResultType, DbExpression input, DbExpression pattern, DbExpression escape, bool isCommon)
             : base(DbExpressionKind.Like, booleanResultType)
         {
             DebugCheck.NotNull(input);
@@ -33,6 +34,7 @@ namespace System.Data.Entity.Core.Common.CommandTrees
             _argument = input;
             _pattern = pattern;
             _escape = escape;
+            _isCommon = isCommon;
         }
 
         /// <summary>Gets an expression that specifies the string to compare against the given pattern.</summary>
@@ -75,6 +77,14 @@ namespace System.Data.Entity.Core.Common.CommandTrees
         public DbExpression Escape
         {
             get { return _escape; }
+        }
+
+        /// <summary>
+        /// Is "Common" Like, Supports '%', '_' and '[]' patterns
+        /// </summary>
+        public bool IsCommon
+        {
+            get { return _isCommon; }
         }
 
         /// <summary>Implements the visitor pattern for expressions that do not produce a result value.</summary>

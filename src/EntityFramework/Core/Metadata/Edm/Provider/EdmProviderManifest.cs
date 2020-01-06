@@ -128,6 +128,7 @@ namespace System.Data.Entity.Core.Metadata.Edm.Provider
             primitiveTypes[(int)PrimitiveTypeKind.Single] = new PrimitiveType();
             primitiveTypes[(int)PrimitiveTypeKind.Guid] = new PrimitiveType();
             primitiveTypes[(int)PrimitiveTypeKind.HierarchyId] = new PrimitiveType();
+            primitiveTypes[(int)PrimitiveTypeKind.DbLikePattern] = new PrimitiveType();
             primitiveTypes[(int)PrimitiveTypeKind.Int16] = new PrimitiveType();
             primitiveTypes[(int)PrimitiveTypeKind.Int32] = new PrimitiveType();
             primitiveTypes[(int)PrimitiveTypeKind.Int64] = new PrimitiveType();
@@ -169,6 +170,9 @@ namespace System.Data.Entity.Core.Metadata.Edm.Provider
             InitializePrimitiveType(
                 primitiveTypes[(int)PrimitiveTypeKind.HierarchyId], PrimitiveTypeKind.HierarchyId, EdmConstants.HierarchyId,
                 typeof(HierarchyId));
+            InitializePrimitiveType(
+                primitiveTypes[(int)PrimitiveTypeKind.DbLikePattern], PrimitiveTypeKind.DbLikePattern, EdmConstants.DbLikePattern,
+                typeof(DbLikePattern));
             InitializePrimitiveType(
                 primitiveTypes[(int)PrimitiveTypeKind.Int16], PrimitiveTypeKind.Int16, EdmConstants.Int16, typeof(Int16));
             InitializePrimitiveType(

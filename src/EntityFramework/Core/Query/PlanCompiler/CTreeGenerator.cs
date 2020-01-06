@@ -1099,7 +1099,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             // Node's first, second and third child nodes providing the
             // Input, Pattern and Escape expressions.
             //
-            return VisitChild(n, 0).Like(
+            return VisitChild(n, 0).Like(op.IsCommon,
                 VisitChild(n, 1),
                 VisitChild(n, 2)
                 );
