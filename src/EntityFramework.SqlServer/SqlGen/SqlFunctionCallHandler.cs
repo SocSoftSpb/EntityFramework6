@@ -119,7 +119,8 @@ namespace System.Data.Entity.SqlServer.SqlGen
                       "SqlServer.DATALENGTH",
                       "SqlServer.CHARINDEX",
                       "Edm.IndexOf",
-                      "Edm.Length"
+                      "Edm.Length",
+                      "Edm.DataLength"
                   };
 
         private static readonly ISet<string> _functionRequiresReturnTypeCastToInt16
@@ -233,6 +234,7 @@ namespace System.Data.Entity.SqlServer.SqlGen
             var functionHandlers = new Dictionary<string, FunctionHandler>(16, StringComparer.Ordinal);
             functionHandlers.Add("IndexOf", HandleCanonicalFunctionIndexOf);
             functionHandlers.Add("Length", HandleCanonicalFunctionLength);
+            functionHandlers.Add("DataLength", HandleCanonicalFunctionDataLength);
             functionHandlers.Add("NewGuid", HandleCanonicalFunctionNewGuid);
             functionHandlers.Add("Round", HandleCanonicalFunctionRound);
             functionHandlers.Add("Truncate", HandleCanonicalFunctionTruncate);
@@ -289,6 +291,8 @@ namespace System.Data.Entity.SqlServer.SqlGen
             functionHandlers.Add("BitwiseNot", HandleCanonicalFunctionBitwise);
             functionHandlers.Add("BitwiseOr", HandleCanonicalFunctionBitwise);
             functionHandlers.Add("BitwiseXor", HandleCanonicalFunctionBitwise);
+
+            functionHandlers.Add("IsNumeric", HandleCanonicalFunctionIsNumeric);
 
             return functionHandlers;
         }
@@ -1588,6 +1592,14 @@ namespace System.Data.Entity.SqlServer.SqlGen
         }
 
         // <summary>
+        // IsNumeric -> ISNUMERIC
+        // </summary>
+        private static ISqlFragment HandleCanonicalFunctionIsNumeric(SqlGenerator sqlgen, DbFunctionExpression e)
+        {
+            return HandleFunctionDefaultCastReturnValue(sqlgen, e, "ISNUMERIC", "BIT");
+        }
+
+        // <summary>
         // Function rename Length -> LEN
         // </summary>
         private static ISqlFragment HandleCanonicalFunctionLength(SqlGenerator sqlgen, DbFunctionExpression e)
@@ -1597,6 +1609,14 @@ namespace System.Data.Entity.SqlServer.SqlGen
             // Once SQL Server implements a function that computes Length correctly, we'll use it here instead of LEN,
             // and we'll drop the disclaimer. 
             return HandleFunctionDefaultGivenName(sqlgen, e, "LEN");
+        }
+
+        // <summary>
+        // Function DataLength -> DATALENGTH
+        // </summary>
+        private static ISqlFragment HandleCanonicalFunctionDataLength(SqlGenerator sqlgen, DbFunctionExpression e)
+        {
+            return HandleFunctionDefaultGivenName(sqlgen, e, "DATALENGTH");
         }
 
         // <summary>

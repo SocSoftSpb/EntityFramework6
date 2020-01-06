@@ -115,6 +115,9 @@ namespace System.Data.Entity.Core.Objects.ELinq
             private static readonly FunctionCallTranslator _functionCallTranslator = new FunctionCallTranslator();
             private static readonly Dictionary<MethodInfo, CallTranslator> _methodTranslators = InitializeMethodTranslators();
 
+            private static readonly Type _dbConvertType = typeof(DbConvert);
+            private static readonly CallTranslator _dbConvertTranslator = new DbConvertTranslator();
+
             private static readonly Dictionary<SequenceMethod, SequenceMethodTranslator> _sequenceTranslators =
                 InitializeSequenceMethodTranslators();
 
@@ -177,8 +180,17 @@ namespace System.Data.Entity.Core.Objects.ELinq
                 {
                     return true;
                 }
+
+                var declaringType = methodInfo.DeclaringType;
+
+                if (declaringType == _dbConvertType)
+                {
+                    callTranslator = _dbConvertTranslator;
+                    return true;
+                }
+
                 // check if this is the visual basic assembly
-                if (s_visualBasicAssemblyFullName == methodInfo.DeclaringType.Assembly().FullName)
+                if (s_visualBasicAssemblyFullName == declaringType.Assembly().FullName)
                 {
                     lock (_vbInitializerLock)
                     {
@@ -242,6 +254,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
                         new HierarchyIdMethodCallTranslator(),
                         new HasFlagTranslator(),
                         new ToStringTranslator(),
+                        new DbDateFunctionsTranslator()
                     };
             }
 
@@ -944,6 +957,23 @@ namespace System.Data.Entity.Core.Objects.ELinq
                 }
             }
 
+            internal sealed class DbDateFunctionsTranslator : CallTranslator
+            {
+                public DbDateFunctionsTranslator() : base(GetMethods())
+                {
+                }
+
+                private static MethodInfo[] GetMethods()
+                {
+                    return typeof(DbDateFunctions).GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.InvokeMethod);
+                }
+
+                internal override CqtExpression Translate(ExpressionConverter parent, MethodCallExpression call)
+                {
+                    return parent.TranslateIntoCanonicalFunction(call.Method.Name, call, call.Arguments[0]);
+                }
+            }
+
             internal abstract class AsUnicodeNonUnicodeBaseFunctionTranslator : CallTranslator
             {
                 private readonly bool _isUnicode;
@@ -1556,6 +1586,16 @@ namespace System.Data.Entity.Core.Objects.ELinq
                     }
 
                     return StringTranslatorUtil.ConcatArgs(parent, call, args);
+                }
+            }
+
+            internal sealed class DbConvertTranslator : CallTranslator
+            {
+                internal override DbExpression Translate(ExpressionConverter parent, MethodCallExpression call)
+                {
+                    var expression = parent.TranslateExpression(call.Arguments[0]);
+
+                    return expression.CastTo(parent.GetValueLayerType(call.Method.ReturnType));
                 }
             }
 

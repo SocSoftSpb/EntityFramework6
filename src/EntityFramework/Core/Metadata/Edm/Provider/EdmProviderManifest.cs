@@ -951,6 +951,9 @@ namespace System.Data.Entity.Core.Metadata.Edm.Provider
             #region Misc Functions
 
             functions.AddFunction(PrimitiveTypeKind.Guid, "NewGuid");
+            functions.AddFunction(PrimitiveTypeKind.Int32, "DataLength", PrimitiveTypeKind.String, "stringArgument");
+            functions.AddFunction(PrimitiveTypeKind.Int32, "DataLength", PrimitiveTypeKind.Binary, "bytesArgument");
+            functions.AddFunction(PrimitiveTypeKind.Boolean, "IsNumeric", PrimitiveTypeKind.String, "value");
 
             #endregion // Misc Functions
 
@@ -963,6 +966,39 @@ namespace System.Data.Entity.Core.Metadata.Edm.Provider
             #region HierarchyId Functions
 
             EdmProviderManifestHierarchyIdFunctions.AddFunctions(functions);
+
+            #endregion
+
+            #region IsNull, NullIf Functions
+
+            parameterTypes = new[]
+            {
+                PrimitiveTypeKind.Boolean,
+                PrimitiveTypeKind.Byte,
+                PrimitiveTypeKind.Int16,
+                PrimitiveTypeKind.Int32,
+                PrimitiveTypeKind.Int64,
+                PrimitiveTypeKind.Decimal,
+                PrimitiveTypeKind.Double,
+                PrimitiveTypeKind.Single,
+                PrimitiveTypeKind.DateTime,
+                PrimitiveTypeKind.DateTimeOffset,
+                PrimitiveTypeKind.Guid,
+                PrimitiveTypeKind.String,
+                PrimitiveTypeKind.Binary,
+            };
+            
+            EdmProviderManifestFunctionBuilder.ForTypes(
+                parameterTypes,
+                type =>
+                    functions.AddFunction(
+                        type, "IsNull", type, "value", type, "defaultValue"));
+
+            EdmProviderManifestFunctionBuilder.ForTypes(
+                parameterTypes,
+                type =>
+                    functions.AddFunction(
+                        type, "NullIf", type, "value", type, "defaultValue"));
 
             #endregion
 
