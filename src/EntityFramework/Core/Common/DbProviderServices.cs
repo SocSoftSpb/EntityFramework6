@@ -9,6 +9,7 @@ namespace System.Data.Entity.Core.Common
     using System.Data.Entity.Core.EntityClient;
     using System.Data.Entity.Core.EntityClient.Internal;
     using System.Data.Entity.Core.Metadata.Edm;
+    using System.Data.Entity.Core.Objects;
     using System.Data.Entity.Infrastructure;
     using System.Data.Entity.Infrastructure.DependencyResolution;
     using System.Data.Entity.Infrastructure.Interception;
@@ -536,6 +537,16 @@ namespace System.Data.Entity.Core.Common
             Check.NotNull(parameterType, "parameterType");
 
             parameter.Value = value;
+        }
+
+        /// <summary>
+        /// Set the parameter value for <see cref="ObjectContext.ExecuteStoreCommand(string,object[])"/> / <see cref="ObjectContext.ExecuteStoreQuery{TElement}(string,object[])"/>.
+        /// </summary>
+        /// <param name="parameter">The parameter.</param>
+        /// <param name="value">The value of the parameter.</param>
+        public virtual void SetParameterValue(DbParameter parameter, object value)
+        {
+            parameter.Value = value ?? DBNull.Value;
         }
 
         /// <summary>Returns providers given a connection.</summary>
