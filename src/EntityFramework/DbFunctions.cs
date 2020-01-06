@@ -6,6 +6,7 @@ namespace System.Data.Entity
     using System.Data.Entity.Core.Objects;
     using System.Data.Entity.Resources;
     using System.Diagnostics.CodeAnalysis;
+    using System.Globalization;
     using System.Linq;
     using System.Linq.Expressions;
     using System.Reflection;
@@ -601,6 +602,28 @@ namespace System.Data.Entity
         [DbFunction("Edm", "Reverse")]
         [SuppressMessage("Microsoft.Naming", "CA1720:IdentifiersShouldNotContainTypeNames", MessageId = "string")]
         public static String Reverse(String stringArgument)
+        {
+            throw new NotSupportedException(Strings.ELinq_DbFunctionDirectCall);
+        }
+
+        /// <summary>Returns the number of bytes used to represent any expression.</summary>
+        /// <returns>The number of bytes in the input value.</returns>
+        /// <param name="stringArgument">The value to be examined for data length.</param>
+        [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "stringArgument")]
+        [DbFunction("Edm", "DataLength")]
+        [SuppressMessage("Microsoft.Naming", "CA1720:IdentifiersShouldNotContainTypeNames", MessageId = "string")]
+        public static int? DataLength(string stringArgument)
+        {
+            throw new NotSupportedException(Strings.ELinq_DbFunctionDirectCall);
+        }
+
+        /// <summary>Returns the number of bytes used to represent any expression.</summary>
+        /// <returns>The number of bytes in the input value.</returns>
+        /// <param name="bytesArgument">The value to be examined for data length.</param>
+        [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "bytesArgument")]
+        [DbFunction("Edm", "DataLength")]
+        [SuppressMessage("Microsoft.Naming", "CA1720:IdentifiersShouldNotContainTypeNames", MessageId = "bytes")]
+        public static int? DataLength(byte[] bytesArgument)
         {
             throw new NotSupportedException(Strings.ELinq_DbFunctionDirectCall);
         }
@@ -1763,6 +1786,18 @@ namespace System.Data.Entity
         public static string AsNonUnicode(string value)
         {
             return value;
+        }
+
+        /// <summary>
+        /// Determines whether an expression is a valid numeric type
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns>ISNUMERIC returns <c>true</c> when the input expression evaluates to a valid numeric data type; otherwise it returns <c>false</c></returns>
+        /// <remarks>In PostgreSql requires to create function in Database</remarks>
+        [DbFunction("Edm", "IsNumeric")]
+        public static bool IsNumeric(string value)
+        {
+            return decimal.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out _);
         }
 
         private static TOut BootstrapFunction<TIn, TOut>(Expression<Func<IEnumerable<TIn>, TOut>> methodExpression, IEnumerable<TIn> collection)
