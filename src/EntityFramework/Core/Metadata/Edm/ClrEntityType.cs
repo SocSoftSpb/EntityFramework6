@@ -104,7 +104,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
         {
             using (var sha256HashAlgorithm = MetadataHelper.CreateSHA256HashAlgorithm())
             {
-                var hash = sha256HashAlgorithm.ComputeHash(Encoding.ASCII.GetBytes(BuildEntityTypeDescription()));
+                var hash = sha256HashAlgorithm.ComputeHash(Encoding.Unicode.GetBytes(BuildEntityTypeDescription()));
 
                 // convert num bytes to num hex digits
                 var builder = new StringBuilder(hash.Length * 2);

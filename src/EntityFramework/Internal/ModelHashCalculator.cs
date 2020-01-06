@@ -56,7 +56,7 @@ namespace System.Data.Entity.Internal
 
         private static string ComputeSha256Hash(string input)
         {
-            var hash = GetSha256HashAlgorithm().ComputeHash(Encoding.ASCII.GetBytes(input));
+            var hash = GetSha256HashAlgorithm().ComputeHash(Encoding.Unicode.GetBytes(input));
 
             var builder = new StringBuilder(hash.Length * 2);
             foreach (var bite in hash)
