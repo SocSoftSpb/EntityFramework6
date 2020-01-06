@@ -5035,6 +5035,7 @@ namespace System.Data.Entity.Core.Objects
                 }
                 else if (!parameters.Any(p => p is DbParameter))
                 {
+                    var services = GetStoreItemCollection().ProviderFactory.GetProviderServices();
                     var parameterNames = new string[parameters.Length];
                     var parameterSql = new string[parameters.Length];
                     for (var i = 0; i < parameters.Length; i++)
@@ -5042,7 +5043,7 @@ namespace System.Data.Entity.Core.Objects
                         parameterNames[i] = string.Format(CultureInfo.InvariantCulture, "p{0}", i);
                         dbParameters[i] = command.CreateParameter();
                         dbParameters[i].ParameterName = parameterNames[i];
-                        dbParameters[i].Value = parameters[i] ?? DBNull.Value;
+                        services.SetParameterValue(dbParameters[i], parameters[i]);
 
                         // By default, we attempt to swap in a SQL Server friendly representation of the parameter.
                         // For other providers, users may write:
