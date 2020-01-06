@@ -4,10 +4,10 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Types
 {
     using System.Data.Entity.Core.Metadata.Edm;
 
-    // <summary>
-    // Allows configuration to be performed for a complex type in a model.
-    // </summary>
-    internal class ComplexTypeConfiguration : StructuralTypeConfiguration
+    /// <summary>
+    /// Allows configuration to be performed for a complex type in a model.
+    /// </summary>
+    public class ComplexTypeConfiguration : StructuralTypeConfiguration
     {
         internal ComplexTypeConfiguration(Type structuralType)
             : base(structuralType)

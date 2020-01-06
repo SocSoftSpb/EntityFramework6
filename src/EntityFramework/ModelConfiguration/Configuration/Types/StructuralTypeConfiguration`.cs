@@ -8,12 +8,13 @@ namespace System.Data.Entity.ModelConfiguration.Configuration
     using System.Data.Entity.Spatial;
     using System.Diagnostics.CodeAnalysis;
     using System.Linq.Expressions;
+    using System.Reflection;
 
     /// <summary>
     /// Allows configuration to be performed for a type in a model.
     /// </summary>
     /// <typeparam name="TStructuralType"> The type to be configured. </typeparam>
-    public abstract class StructuralTypeConfiguration<TStructuralType>
+    public abstract class StructuralTypeConfiguration<TStructuralType> : IStructuralTypeConfiguration
         where TStructuralType : class
     {
         /// <summary>
@@ -221,6 +222,73 @@ namespace System.Data.Entity.ModelConfiguration.Configuration
                 Property<Properties.Primitive.DateTimePropertyConfiguration>(propertyExpression));
         }
 
+        #region Weak-typed mapping
+
+        /// <summary>
+        /// Configures a <see cref="T:System.struct" /> property that is defined on this type.
+        /// </summary>
+        /// <param name="propertyInfo"> A property to be configured. </param>
+        /// <returns> A configuration object that can be used to configure the property. </returns>
+        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures")]
+        [SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters")]
+        public PrimitivePropertyConfiguration Property(PropertyInfo propertyInfo)
+        {
+            return new PrimitivePropertyConfiguration(Property<Properties.Primitive.PrimitivePropertyConfiguration>(propertyInfo));
+        }
+
+        /// <summary>
+        /// Configures a <see cref="T:System.string" /> property that is defined on this type.
+        /// </summary>
+        /// <param name="propertyInfo"> A property to be configured. </param>
+        /// <returns> A configuration object that can be used to configure the property. </returns>
+        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures")]
+        [SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters")]
+        public StringPropertyConfiguration PropertyString(PropertyInfo propertyInfo)
+        {
+            return new StringPropertyConfiguration(Property<Properties.Primitive.StringPropertyConfiguration>(propertyInfo));
+        }
+
+        /// <summary>
+        /// Configures a <see cref="T:System.byte[]" /> property that is defined on this type.
+        /// </summary>
+        /// <param name="propertyInfo"> A property to be configured. </param>
+        /// <returns> A configuration object that can be used to configure the property. </returns>
+        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures")]
+        [SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters")]
+        public BinaryPropertyConfiguration PropertyBinary(PropertyInfo propertyInfo)
+        {
+            return new BinaryPropertyConfiguration(Property<Properties.Primitive.BinaryPropertyConfiguration>(propertyInfo));
+        }
+
+        /// <summary>
+        /// Configures a <see cref="T:System.decimal" /> property that is defined on this type.
+        /// </summary>
+        /// <param name="propertyInfo"> A property to be configured. </param>
+        /// <returns> A configuration object that can be used to configure the property. </returns>
+        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures")]
+        [SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters")]
+        public DecimalPropertyConfiguration PropertyDecimal(PropertyInfo propertyInfo)
+        {
+            return new DecimalPropertyConfiguration(Property<Properties.Primitive.DecimalPropertyConfiguration>(propertyInfo));
+        }
+
+        /// <summary>
+        /// Configures a <see cref="T:System.DateTime" /> property that is defined on this type.
+        /// </summary>
+        /// <param name="propertyInfo"> A property to be configured. </param>
+        /// <returns> A configuration object that can be used to configure the property. </returns>
+        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures")]
+        [SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters")]
+        public DateTimePropertyConfiguration PropertyDateTime(PropertyInfo propertyInfo)
+        {
+            return new DateTimePropertyConfiguration(Property<Properties.Primitive.DateTimePropertyConfiguration>(propertyInfo));
+        }
+
+        internal abstract TPrimitivePropertyConfiguration Property<TPrimitivePropertyConfiguration>(PropertyInfo propertyInfo)
+            where TPrimitivePropertyConfiguration : Properties.Primitive.PrimitivePropertyConfiguration, new();
+
+        #endregion
+
         internal abstract StructuralTypeConfiguration Configuration { get; }
 
         internal abstract TPrimitivePropertyConfiguration Property<TPrimitivePropertyConfiguration>(
@@ -258,5 +326,8 @@ namespace System.Data.Entity.ModelConfiguration.Configuration
         {
             return base.GetType();
         }
+
+        /// <inheritdoc />
+        public StructuralTypeConfiguration InternalConfiguration => Configuration;
     }
 }

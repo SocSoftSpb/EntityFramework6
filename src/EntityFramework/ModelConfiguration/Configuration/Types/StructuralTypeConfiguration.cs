@@ -17,10 +17,10 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Types
     using System.Linq;
     using System.Reflection;
 
-    // <summary>
-    // Allows configuration to be performed for a type in a model.
-    // </summary>
-    internal abstract class StructuralTypeConfiguration : ConfigurationBase
+    /// <summary>
+    /// Allows configuration to be performed for a type in a model.
+    /// </summary>
+    public abstract class StructuralTypeConfiguration : ConfigurationBase
     {
         internal static Type GetPropertyConfigurationType(Type propertyType)
         {
@@ -87,12 +87,29 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Types
             _clrType = source._clrType;
         }
 
-        internal virtual IEnumerable<PropertyInfo> ConfiguredProperties
+        /// <summary>
+        /// Get lists of configured primitive properties
+        /// </summary>
+        public virtual IEnumerable<PropertyInfo> ConfiguredProperties
         {
             get { return _primitivePropertyConfigurations.Keys.Select(p => p.Last()); }
         }
 
-        internal IEnumerable<PropertyInfo> IgnoredProperties
+        /// <summary>
+        /// Configured primitive properties
+        /// </summary>
+        public virtual
+#if NET40
+            IDictionary<PropertyPath, PrimitivePropertyConfiguration>
+#else
+            IReadOnlyDictionary<PropertyPath, PrimitivePropertyConfiguration>
+#endif
+        PrimitiveProperties => _primitivePropertyConfigurations;
+
+        /// <summary>
+        /// Ignored (not mapped) properties
+        /// </summary>
+        public ICollection<PropertyInfo> IgnoredProperties
         {
             get { return _ignoredProperties; }
         }
@@ -107,10 +124,10 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Types
             get { return _primitivePropertyConfigurations; }
         }
 
-        // <summary>
-        // Excludes a property from the model so that it will not be mapped to the database.
-        // </summary>
-        // <param name="propertyInfo"> The property to be configured. </param>
+        /// <summary>
+        /// Excludes a property from the model so that it will not be mapped to the database.
+        /// </summary>
+        /// <param name="propertyInfo"> The property to be configured. </param>
         public void Ignore(PropertyInfo propertyInfo)
         {
             Check.NotNull(propertyInfo, "propertyInfo");

@@ -20,11 +20,11 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Types
     using System.Linq;
     using System.Reflection;
 
-    // <summary>
-    // Allows configuration to be performed for an entity type in a model.
-    // </summary>
+    /// <summary>
+    /// Allows configuration to be performed for an entity type in a model.
+    /// </summary>
     [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
-    internal class EntityTypeConfiguration : StructuralTypeConfiguration
+    public class EntityTypeConfiguration : StructuralTypeConfiguration
     {
         private readonly List<PropertyInfo> _keyProperties = new List<PropertyInfo>();
 
@@ -164,10 +164,10 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Types
                 _keyConfiguration = new Properties.Index.IndexConfiguration();
         }
 
-        // <summary>
-        // Configures the primary key property(s) for this entity type.
-        // </summary>
-        // <param name="propertyInfo"> The property to be used as the primary key. If the primary key is made up of multiple properties, call this method once for each of them. </param>
+        /// <summary>
+        /// Configures the primary key property(s) for this entity type.
+        /// </summary>
+        /// <param name="propertyInfo"> The property to be used as the primary key. If the primary key is made up of multiple properties, call this method once for each of them. </param>
         public void Key(PropertyInfo propertyInfo)
         {
             Check.NotNull(propertyInfo, "propertyInfo");
@@ -228,9 +228,9 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Types
             _keyConfiguration = null;
         }
 
-        // <summary>
-        // Gets a value indicating whether the name of the table has been configured.
-        // </summary>
+        /// <summary>
+        /// Gets a value indicating whether the name of the table has been configured.
+        /// </summary>
         public bool IsTableNameConfigured { get; private set; }
 
         // <summary>
@@ -277,9 +277,9 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Types
             }
         }
 
-        // <summary>
-        // Gets or sets the entity set name to be used for this entity type.
-        // </summary>
+        /// <summary>
+        /// Gets or sets the entity set name to be used for this entity type.
+        /// </summary>
         public virtual string EntitySetName
         {
             get { return _entitySetName; }
@@ -291,14 +291,17 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Types
             }
         }
 
-        internal override IEnumerable<PropertyInfo> ConfiguredProperties
+        /// <summary>
+        /// Get lists of configured (primitive and navigation) properties
+        /// </summary>
+        public override IEnumerable<PropertyInfo> ConfiguredProperties
         {
             get { return base.ConfiguredProperties.Union(_navigationPropertyConfigurations.Keys); }
         }
 
-        // <summary>
-        // Gets the name of the table that this entity type is mapped to.
-        // </summary>
+        /// <summary>
+        /// Gets the name of the table that this entity type is mapped to.
+        /// </summary>
         public string TableName
         {
             get
@@ -312,9 +315,9 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Types
             }
         }
 
-        // <summary>
-        // Gets the database schema of the table that this entity type is mapped to.
-        // </summary>
+        /// <summary>
+        /// Gets the database schema of the table that this entity type is mapped to.
+        /// </summary>
         public string SchemaName
         {
             get
@@ -338,10 +341,10 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Types
             return _entityMappingConfigurations.First().TableName;
         }
 
-        // <summary>
-        // Configures the table name that this entity type is mapped to.
-        // </summary>
-        // <param name="tableName"> The name of the table. </param>
+        /// <summary>
+        /// Configures the table name that this entity type is mapped to.
+        /// </summary>
+        /// <param name="tableName"> The name of the table. </param>
         public void ToTable(string tableName)
         {
             Check.NotEmpty(tableName, "tableName");
@@ -349,11 +352,11 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Types
             ToTable(tableName, null);
         }
 
-        // <summary>
-        // Configures the table name that this entity type is mapped to.
-        // </summary>
-        // <param name="tableName"> The name of the table. </param>
-        // <param name="schemaName"> The database schema of the table. </param>
+        /// <summary>
+        /// Configures the table name that this entity type is mapped to.
+        /// </summary>
+        /// <param name="tableName"> The name of the table. </param>
+        /// <param name="schemaName"> The database schema of the table. </param>
         public void ToTable(string tableName, string schemaName)
         {
             Check.NotEmpty(tableName, "tableName");
@@ -373,11 +376,20 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Types
             UpdateTableNameForSubTypes();
         }
 
+        /// <summary>
+        /// Gets annotations for this type
+        /// </summary>
         public IDictionary<string, object> Annotations
         {
             get { return _annotations; }
         }
 
+        /// <summary>
+        /// Sets annotation for this type
+        /// </summary>
+        /// <param name="name">Name of annotation</param>
+        /// <param name="value">Annotation value</param>
+        /// <exception cref="ArgumentException"></exception>
         public virtual void SetAnnotation(string name, object value)
         {
             // Technically we could accept some names that are invalid in EDM, but this is not too restrictive
@@ -391,6 +403,12 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Types
             _annotations[name] = value;
         }
 
+        /// <summary>
+        /// Set SSDL annotation
+        /// </summary>
+        /// <param name="name">Name of annotation</param>
+        /// <param name="value">Annotation value</param>
+        /// <exception cref="ArgumentException"></exception>
         public virtual void SetStoreSetAnnotation(string name, object value)
         {
             // Technically we could accept some names that are invalid in EDM, but this is not too restrictive

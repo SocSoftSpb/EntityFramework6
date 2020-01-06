@@ -18,29 +18,29 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Properties.Primiti
     using System.Linq;
     using System.Linq.Expressions;
 
-    // <summary>
-    // Used to configure a primitive property of an entity type or complex type.
-    // </summary>
-    internal class PrimitivePropertyConfiguration : PropertyConfiguration
+    /// <summary>
+    /// Used to configure a primitive property of an entity type or complex type.
+    /// </summary>
+    public class PrimitivePropertyConfiguration : PropertyConfiguration
     {
         private readonly IDictionary<string, object> _annotations = new Dictionary<string, object>();
         private object _defaultValue;
         private bool _isDefaultValueConfigured;
 
-        // <summary>
-        // Initializes a new instance of the PrimitivePropertyConfiguration class.
-        // </summary>
+        /// <summary>
+        /// Initializes a new instance of the PrimitivePropertyConfiguration class.
+        /// </summary>
         public PrimitivePropertyConfiguration()
         {
             OverridableConfigurationParts = OverridableConfigurationParts.OverridableInCSpace |
                                             OverridableConfigurationParts.OverridableInSSpace;
         }
 
-        // <summary>
-        // Initializes a new instance of the <see cref="T:System.Data.Entity.ModelConfiguration.Configuration.Properties.Primitive.PrimitivePropertyConfiguration" /> 
-        // class with the same settings as another configuration.
-        // </summary>
-        // <param name="source">The configuration to copy settings from.</param>
+        /// <summary>
+        /// Initializes a new instance of the <see cref="T:System.Data.Entity.ModelConfiguration.Configuration.Properties.Primitive.PrimitivePropertyConfiguration" /> 
+        /// class with the same settings as another configuration.
+        /// </summary>
+        /// <param name="source">The configuration to copy settings from.</param>
         protected PrimitivePropertyConfiguration(PrimitivePropertyConfiguration source)
         {
             Check.NotNull(source, "source");
@@ -68,25 +68,25 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Properties.Primiti
             return new PrimitivePropertyConfiguration(this);
         }
 
-        // <summary>
-        // Gets a value indicating whether the property is optional.
-        // </summary>
+        /// <summary>
+        /// Gets a value indicating whether the property is optional.
+        /// </summary>
         public bool? IsNullable { get; set; }
 
-        // <summary>
-        // Gets or sets the concurrency mode to use for the property.
-        // </summary>
+        /// <summary>
+        /// Gets or sets the concurrency mode to use for the property.
+        /// </summary>
         public ConcurrencyMode? ConcurrencyMode { get; set; }
 
-        // <summary>
-        // Gets or sets the pattern used to generate values in the database for the
-        // property.
-        // </summary>
+        /// <summary>
+        /// Gets or sets the pattern used to generate values in the database for the
+        /// property.
+        /// </summary>
         public DatabaseGeneratedOption? DatabaseGeneratedOption { get; set; }
 
-        // <summary>
-        // Gets or sets the Default Value for Property
-        // </summary>
+        /// <summary>
+        /// Gets or sets the Default Value for Property
+        /// </summary>
         public object DefaultValue
         {
             get => _defaultValue;
@@ -97,21 +97,29 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Properties.Primiti
             }
         }
 
-        // <summary>
-        // Gets or sets the type of the database column used to store the property.
-        // </summary>
+        /// <summary>
+        /// Gets or sets the type of the database column used to store the property.
+        /// </summary>
         public string ColumnType { get; set; }
 
-        // <summary>
-        // Gets or sets the name of the database column used to store the property.
-        // </summary>
+        /// <summary>
+        /// Gets or sets the name of the database column used to store the property.
+        /// </summary>
         public string ColumnName { get; set; }
 
+        /// <summary>
+        /// Gets annotations for this property
+        /// </summary>
         public IDictionary<string, object> Annotations
         {
             get { return _annotations; }
         }
 
+        /// <summary>
+        /// Set annotation for property
+        /// </summary>
+        /// <param name="name">annotation name</param>
+        /// <param name="value">annotation text</param>
         public virtual void SetAnnotation(string name, object value)
         {
             // Technically we could accept some names that are invalid in EDM, but this is not too restrictive
@@ -125,13 +133,13 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Properties.Primiti
             _annotations[name] = value;
         }
 
-        // <summary>Gets or sets the name of the parameter used in stored procedures for this property.</summary>
-        // <returns>The name of the parameter used in stored procedures for this property.</returns>
+        /// <summary>Gets or sets the name of the parameter used in stored procedures for this property.</summary>
+        /// <returns>The name of the parameter used in stored procedures for this property.</returns>
         public string ParameterName { get; set; }
 
-        // <summary>
-        // Gets or sets the order of the database column used to store the property.
-        // </summary>
+        /// <summary>
+        /// Gets or sets the order of the database column used to store the property.
+        /// </summary>
         public int? ColumnOrder { get; set; }
 
         internal OverridableConfigurationParts OverridableConfigurationParts { get; set; }
@@ -203,6 +211,11 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Properties.Primiti
             }
         }
 
+        /// <summary>
+        /// Configure the property
+        /// </summary>
+        /// <param name="property">Property to configure</param>
+        [SuppressMessage("Microsoft.Naming", "CA1716:IdentifiersShouldNotMatchKeywords")]
         protected virtual void ConfigureProperty(EdmProperty property)
         {
             if (IsNullable != null)
@@ -317,6 +330,12 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Properties.Primiti
             mergedConfiguration.ConfigureColumn(column, table, providerManifest);
         }
 
+        /// <summary>
+        /// Configure column of table
+        /// </summary>
+        /// <param name="column">Table column</param>
+        /// <param name="table">Table</param>
+        /// <param name="providerManifest">Manifest</param>
         protected virtual void ConfigureColumn(EdmProperty column, EntityType table, DbProviderManifest providerManifest)
         {
             ConfigureColumnName(column, table);
@@ -633,13 +652,13 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Properties.Primiti
             return annotationsAreCompatible;
         }
 
-        // <summary>Gets a value that indicates whether the provided model is compatible with the current model provider.</summary>
-        // <returns>true if the provided model is compatible with the current model provider; otherwise, false.</returns>
-        // <param name="propertyExpression">The original property expression that specifies the member and instance.</param>
-        // <param name="other">The property to compare.</param>
-        // <param name="errorMessage">The error message.</param>
-        // <typeparam name="TProperty">The type of the property.</typeparam>
-        // <typeparam name="TConfiguration">The type of the configuration to look for.</typeparam>
+        /// <summary>Gets a value that indicates whether the provided model is compatible with the current model provider.</summary>
+        /// <returns>true if the provided model is compatible with the current model provider; otherwise, false.</returns>
+        /// <param name="propertyExpression">The original property expression that specifies the member and instance.</param>
+        /// <param name="other">The property to compare.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <typeparam name="TProperty">The type of the property.</typeparam>
+        /// <typeparam name="TConfiguration">The type of the configuration to look for.</typeparam>
         [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures")]
         [SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters")]
         [SuppressMessage("Microsoft.Design", "CA1045:DoNotPassTypesByReference", MessageId = "2#")]
@@ -666,12 +685,12 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Properties.Primiti
             return false;
         }
 
-        // <summary>Gets a value that indicates whether the provided model is compatible with the current model provider.</summary>
-        // <returns>true if the provided model is compatible with the current model provider; otherwise, false.</returns>
-        // <param name="propertyExpression">The property expression.</param>
-        // <param name="other">The property to compare.</param>
-        // <param name="errorMessage">The error message.</param>
-        // <typeparam name="TConfiguration">The type of the configuration to look for.</typeparam>
+        /// <summary>Gets a value that indicates whether the provided model is compatible with the current model provider.</summary>
+        /// <returns>true if the provided model is compatible with the current model provider; otherwise, false.</returns>
+        /// <param name="propertyExpression">The property expression.</param>
+        /// <param name="other">The property to compare.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <typeparam name="TConfiguration">The type of the configuration to look for.</typeparam>
         [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures")]
         [SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters")]
         [SuppressMessage("Microsoft.Design", "CA1045:DoNotPassTypesByReference", MessageId = "2#")]
@@ -697,11 +716,11 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Properties.Primiti
             return false;
         }
 
-        // <summary>Gets a value that indicates whether the provided model is compatible with the current model provider.</summary>
-        // <returns>true if the provided model is compatible with the current model provider; otherwise, false.</returns>
-        // <param name="thisConfiguration">The configuration property.</param>
-        // <param name="other">The property to compare</param>
-        // <typeparam name="T">The type property.</typeparam>
+        /// <summary>Gets a value that indicates whether the provided model is compatible with the current model provider.</summary>
+        /// <returns>true if the provided model is compatible with the current model provider; otherwise, false.</returns>
+        /// <param name="thisConfiguration">The configuration property.</param>
+        /// <param name="other">The property to compare</param>
+        /// <typeparam name="T">The type property.</typeparam>
         protected static bool IsCompatible<T>(T? thisConfiguration, T? other)
             where T : struct
         {
@@ -718,10 +737,10 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Properties.Primiti
             return true;
         }
 
-        // <summary>Gets a value that indicates whether the provided model is compatible with the current model provider.</summary>
-        // <returns>true if the provided model is compatible with the current model provider; otherwise, false.</returns>
-        // <param name="thisConfiguration">The configuration property.</param>
-        // <param name="other">The property to compare.</param>
+        /// <summary>Gets a value that indicates whether the provided model is compatible with the current model provider.</summary>
+        /// <returns>true if the provided model is compatible with the current model provider; otherwise, false.</returns>
+        /// <param name="thisConfiguration">The configuration property.</param>
+        /// <param name="other">The property to compare.</param>
         protected static bool IsCompatible(string thisConfiguration, string other)
         {
             if (thisConfiguration != null)
