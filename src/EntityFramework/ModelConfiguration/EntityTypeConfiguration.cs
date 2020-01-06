@@ -13,6 +13,7 @@ namespace System.Data.Entity.ModelConfiguration
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Linq.Expressions;
+    using System.Reflection;
 
     /// <summary>
     /// Allows configuration to be performed for an entity type in a model.
@@ -44,6 +45,16 @@ namespace System.Data.Entity.ModelConfiguration
         internal override StructuralTypeConfiguration Configuration
         {
             get { return _entityTypeConfiguration; }
+        }
+
+        internal override TPrimitivePropertyConfiguration Property<TPrimitivePropertyConfiguration>(PropertyInfo propertyInfo)
+        {
+            return Configuration.Property(
+                new PropertyPath(propertyInfo),
+                () => new TPrimitivePropertyConfiguration
+                {
+                    OverridableConfigurationParts = OverridableConfigurationParts.None
+                });
         }
 
         internal override TPrimitivePropertyConfiguration Property<TPrimitivePropertyConfiguration>(
@@ -98,6 +109,20 @@ namespace System.Data.Entity.ModelConfiguration
         }
 
         /// <summary>
+        /// Configures the primary key property(s) for this entity type.
+        /// </summary>
+        /// <param name="propertyInfo"> The property to be used as the primary key. If the primary key is made up of multiple properties, call this method once for each of them. </param>
+        /// <returns> The same EntityTypeConfiguration instance so that multiple calls can be chained. </returns>
+        public EntityTypeConfiguration<TEntityType> HasKey(System.Reflection.PropertyInfo propertyInfo)
+        {
+            Check.NotNull(propertyInfo, nameof(propertyInfo));
+
+            _entityTypeConfiguration.Key(propertyInfo);
+
+            return this;
+        }
+
+        /// <summary>
         /// Configures index property(s) for this entity type.
         /// </summary>
         /// <typeparam name="TIndex"> The type of the index. </typeparam>
@@ -144,6 +169,22 @@ namespace System.Data.Entity.ModelConfiguration
             Check.NotNull(propertyExpression, "propertyExpression");
 
             Configuration.Ignore(propertyExpression.GetSimplePropertyAccess().Single());
+
+            return this;
+        }
+
+        /// <summary>
+        /// Excludes a property from the model so that it will not be mapped to the database.
+        /// </summary>
+        /// <param name="propertyInfo"> Property to be ignored. </param>
+        /// <returns> The same EntityTypeConfiguration instance so that multiple calls can be chained. </returns>
+        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures")]
+        [SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters")]
+        public EntityTypeConfiguration<TEntityType> Ignore(PropertyInfo propertyInfo)
+        {
+            Check.NotNull(propertyInfo, nameof(propertyInfo));
+
+            Configuration.Ignore(propertyInfo);
 
             return this;
         }
@@ -361,6 +402,22 @@ namespace System.Data.Entity.ModelConfiguration
         }
 
         /// <summary>
+        /// Configures an optional relationship from this entity type.
+        /// Instances of the entity type will be able to be saved to the database without this relationship being specified.
+        /// The foreign key in the database will be nullable.
+        /// </summary>
+        /// <param name="propertyInfo"> A lambda expression representing the navigation property for the relationship. C#: t => t.MyProperty VB.Net: Function(t) t.MyProperty </param>
+        /// <returns> A configuration object that can be used to further configure the relationship. </returns>
+        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures")]
+        [SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters")]
+        public OptionalNavigationPropertyConfiguration HasOptional(PropertyInfo propertyInfo)
+        {
+            Check.NotNull(propertyInfo, nameof(propertyInfo));
+
+            return new OptionalNavigationPropertyConfiguration(_entityTypeConfiguration.Navigation(propertyInfo));
+        }
+
+        /// <summary>
         /// Configures a required relationship from this entity type.
         /// Instances of the entity type will not be able to be saved to the database unless this relationship is specified.
         /// The foreign key in the database will be non-nullable.
@@ -378,6 +435,22 @@ namespace System.Data.Entity.ModelConfiguration
 
             return new RequiredNavigationPropertyConfiguration<TEntityType, TTargetEntity>(
                 _entityTypeConfiguration.Navigation(navigationPropertyExpression.GetSimplePropertyAccess().Single()));
+        }
+
+        /// <summary>
+        /// Configures a required relationship from this entity type.
+        /// Instances of the entity type will not be able to be saved to the database unless this relationship is specified.
+        /// The foreign key in the database will be non-nullable.
+        /// </summary>
+        /// <param name="propertyInfo"> Navigation property for the relationship. </param>
+        /// <returns> A configuration object that can be used to further configure the relationship. </returns>
+        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures")]
+        [SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters")]
+        public RequiredNavigationPropertyConfiguration HasRequired(PropertyInfo propertyInfo)
+        {
+            Check.NotNull(propertyInfo, nameof(propertyInfo));
+
+            return new RequiredNavigationPropertyConfiguration(_entityTypeConfiguration.Navigation(propertyInfo));
         }
 
         /// <summary>

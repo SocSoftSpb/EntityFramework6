@@ -6,10 +6,12 @@ namespace System.Data.Entity.ModelConfiguration
     using System.Data.Entity.ModelConfiguration.Configuration;
     using System.Data.Entity.ModelConfiguration.Configuration.Properties.Primitive;
     using System.Data.Entity.ModelConfiguration.Configuration.Types;
+    using System.Data.Entity.ModelConfiguration.Utilities;
     using System.Data.Entity.Utilities;
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Linq.Expressions;
+    using System.Reflection;
 
     /// <summary>
     /// Allows configuration to be performed for an complex type in a model.
@@ -56,6 +58,16 @@ namespace System.Data.Entity.ModelConfiguration
         internal override StructuralTypeConfiguration Configuration
         {
             get { return _complexTypeConfiguration; }
+        }
+
+        internal override TPrimitivePropertyConfiguration Property<TPrimitivePropertyConfiguration>(PropertyInfo propertyInfo)
+        {
+            return Configuration.Property(
+                new PropertyPath(propertyInfo),
+                () => new TPrimitivePropertyConfiguration
+                {
+                    OverridableConfigurationParts = OverridableConfigurationParts.None
+                });
         }
 
         internal override TPrimitivePropertyConfiguration Property<TPrimitivePropertyConfiguration>(
