@@ -177,7 +177,7 @@ namespace System.Data.Entity.Infrastructure.DependencyResolution
             {
                 var providerTypeName = string.Format(
                     CultureInfo.InvariantCulture,
-                    "System.Data.Entity.SqlServer.SqlProviderServices, EntityFramework.SqlServer, Version={0}, Culture=neutral, PublicKeyToken=b77a5c561934e089",
+                    "System.Data.Entity.SqlServer.SqlProviderServices, EntityFramework.SqlServer, Version={0}, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51",
                     new AssemblyName(typeof(DbContext).Assembly().FullName).Version);
 
                 var mockSqlProvider = new Mock<DbProviderServices>();
@@ -527,7 +527,7 @@ namespace System.Data.Entity.Infrastructure.DependencyResolution
             {
                 var providerTypeName = string.Format(
                     CultureInfo.InvariantCulture,
-                    "System.Data.Entity.SqlServer.SqlProviderServices, EntityFramework.SqlServer, Version={0}, Culture=neutral, PublicKeyToken=b77a5c561934e089",
+                    "System.Data.Entity.SqlServer.SqlProviderServices, EntityFramework.SqlServer, Version={0}, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51",
                     new AssemblyName(typeof(DbContext).Assembly().FullName).Version);
 
                 var mockSqlProvider = new Mock<DbProviderServices>();

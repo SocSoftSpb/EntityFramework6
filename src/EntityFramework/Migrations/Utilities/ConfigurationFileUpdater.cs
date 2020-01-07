@@ -28,7 +28,7 @@ namespace System.Data.Entity.Migrations.Utilities
                         _asm + "assemblyIdentity",
                         new XAttribute("name", "EntityFramework"),
                         new XAttribute("culture", "neutral"),
-                        new XAttribute("publicKeyToken", "b77a5c561934e089")),
+                        new XAttribute("publicKeyToken", "cc7b13ffcd2ddd51")),
                     new XElement(
                         _asm + "codeBase",
                         new XAttribute("version", executingAssemblyName.Version.ToString()),
