@@ -12,9 +12,11 @@ namespace System.Data.Entity.Core.Metadata.Edm
     {
         private const string EcmaPublicKey = "b77a5c561934e089";
         private const string MicrosoftPublicKey = "b03f5f7f11d50a3a";
+        private const string OpenPublicKey = "cc7b13ffcd2ddd51";
 
         private static readonly byte[] _ecmaPublicKeyToken = ScalarType.ConvertToByteArray(EcmaPublicKey);
         private static readonly byte[] _msPublicKeyToken = ScalarType.ConvertToByteArray(MicrosoftPublicKey);
+        private static readonly byte[] _openPublicKeyToken = ScalarType.ConvertToByteArray(OpenPublicKey);
 
         private static readonly Memoizer<Assembly, bool> _filterAssemblyCacheByAssembly =
             new Memoizer<Assembly, bool>(ComputeShouldFilterAssembly, EqualityComparer<Assembly>.Default);
@@ -55,8 +57,10 @@ namespace System.Data.Entity.Core.Metadata.Edm
         // </summary>
         private static bool ShouldFilterAssembly(AssemblyName assemblyName)
         {
-            return (ArePublicKeyTokensEqual(assemblyName.GetPublicKeyToken(), _ecmaPublicKeyToken) ||
-                    ArePublicKeyTokensEqual(assemblyName.GetPublicKeyToken(), _msPublicKeyToken));
+            var publicKeyToken = assemblyName.GetPublicKeyToken();
+            return (ArePublicKeyTokensEqual(publicKeyToken, _ecmaPublicKeyToken) ||
+                    ArePublicKeyTokensEqual(publicKeyToken, _msPublicKeyToken) || 
+                    ArePublicKeyTokensEqual(publicKeyToken, _openPublicKeyToken));
         }
 
         private static bool ArePublicKeyTokensEqual(byte[] left, byte[] right)

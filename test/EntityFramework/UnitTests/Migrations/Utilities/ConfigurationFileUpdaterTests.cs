@@ -37,7 +37,7 @@ namespace System.Data.Entity.Migrations.Utilities
   <runtime>
     <assemblyBinding xmlns=""urn:schemas-microsoft-com:asm.v1"">
       <dependentAssembly>
-        <assemblyIdentity name=""EntityFramework"" culture=""neutral"" publicKeyToken=""b77a5c561934e089"" />
+        <assemblyIdentity name=""EntityFramework"" culture=""neutral"" publicKeyToken=""cc7b13ffcd2ddd51"" />
         <codeBase version=""" + entityFrameworkAssemblyName.Version + @""" href="""
                         + entityFrameworkAssemblyName.CodeBase + @""" />
       </dependentAssembly>
@@ -77,7 +77,7 @@ namespace System.Data.Entity.Migrations.Utilities
   <runtime>
     <assemblyBinding xmlns=""urn:schemas-microsoft-com:asm.v1"">
       <dependentAssembly>
-        <assemblyIdentity name=""EntityFramework"" culture=""neutral"" publicKeyToken=""b77a5c561934e089"" />
+        <assemblyIdentity name=""EntityFramework"" culture=""neutral"" publicKeyToken=""cc7b13ffcd2ddd51"" />
         <codeBase version=""" + entityFrameworkAssemblyName.Version + @""" href="""
                     + entityFrameworkAssemblyName.CodeBase + @""" />
       </dependentAssembly>
