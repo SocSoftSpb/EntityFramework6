@@ -60,14 +60,14 @@ namespace System.Data.Entity.ModelConfiguration.Edm
         {
             DebugCheck.NotNull(associationType);
 
-            return associationType.Annotations.GetConfiguration();
+            return associationType.Configuration;
         }
 
         public static void SetConfiguration(this AssociationType associationType, object configuration)
         {
             DebugCheck.NotNull(associationType);
 
-            associationType.GetMetadataProperties().SetConfiguration(configuration);
+            associationType.Configuration = configuration;
         }
 
         public static bool IsRequiredToMany(this AssociationType associationType)

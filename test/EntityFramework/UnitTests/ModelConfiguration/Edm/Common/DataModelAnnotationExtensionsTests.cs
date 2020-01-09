@@ -8,6 +8,7 @@ namespace System.Data.Entity.ModelConfiguration.Edm.Common
 
     public sealed class DataModelAnnotationExtensionsTests
     {
+        /*
         [Fact]
         public void Can_get_and_set_configuration_facet()
         {
@@ -17,6 +18,7 @@ namespace System.Data.Entity.ModelConfiguration.Edm.Common
 
             Assert.Equal(42, annotations.GetConfiguration());
         }
+        */
 
         [Fact]
         public void Can_get_and_set_clr_type_annotation()

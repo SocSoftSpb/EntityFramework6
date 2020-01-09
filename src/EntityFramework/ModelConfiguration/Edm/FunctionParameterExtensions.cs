@@ -11,14 +11,14 @@ namespace System.Data.Entity.ModelConfiguration.Edm
         {
             DebugCheck.NotNull(functionParameter);
 
-            return functionParameter.Annotations.GetConfiguration();
+            return functionParameter.Configuration;
         }
 
         public static void SetConfiguration(this FunctionParameter functionParameter, object configuration)
         {
             DebugCheck.NotNull(functionParameter);
 
-            functionParameter.GetMetadataProperties().SetConfiguration(configuration);
+            functionParameter.Configuration = configuration;
         }
     }
 }

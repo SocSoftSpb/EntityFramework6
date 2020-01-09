@@ -3,6 +3,7 @@
 namespace System.Data.Entity.Core.Metadata.Edm
 {
     using System.Collections.Generic;
+    using System.Data.Entity.ModelConfiguration.Edm;
     using System.Data.Entity.Utilities;
     using System.Diagnostics;
     using System.Diagnostics.CodeAnalysis;
@@ -17,6 +18,8 @@ namespace System.Data.Entity.Core.Metadata.Edm
     public class EntityType : EntityTypeBase
     {
         private ReadOnlyMetadataCollection<EdmProperty> _properties;
+        private DatabaseName _tableName;
+        private const string TableNameAnnotation = "TableName";
 
         // <summary>
         // Initializes a new instance of Entity Type
@@ -65,6 +68,16 @@ namespace System.Data.Entity.Core.Metadata.Edm
         private RowType _keyRow;
 
         private readonly List<ForeignKeyBuilder> _foreignKeyBuilders = new List<ForeignKeyBuilder>();
+
+        internal DatabaseName TableName
+        {
+            get { return _tableName; }
+            set
+            {
+                _tableName = value;
+                GetMetadataProperties().SetAnnotation(TableNameAnnotation, value);
+            }
+        }
 
         internal IEnumerable<ForeignKeyBuilder> ForeignKeyBuilders
         {

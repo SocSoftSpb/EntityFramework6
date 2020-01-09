@@ -988,27 +988,28 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Mapping
                 entityContainerMappingsIterator < entityContainerMappings.Count;
                 ++entityContainerMappingsIterator)
             {
-                var entitySetMappings = entityContainerMappings[entityContainerMappingsIterator].EntitySetMappings.ToList();
-                for (var entitySetMappingsIterator = 0;
-                    entitySetMappingsIterator < entitySetMappings.Count;
-                    ++entitySetMappingsIterator)
+                foreach (var baseMapping in entityContainerMappings[entityContainerMappingsIterator].EntitySetMaps)
                 {
-                    var entityTypeMappings = entitySetMappings[entitySetMappingsIterator].EntityTypeMappings;
+                    var entitySetMapping = baseMapping as EntitySetMapping;
+                    if (entitySetMapping == null)
+                        continue;
+                    var entityTypeMappings = entitySetMapping.EntityTypeMappings;
                     for (var entityTypeMappingsIterator = 0;
                         entityTypeMappingsIterator < entityTypeMappings.Count;
                         ++entityTypeMappingsIterator)
                     {
                         var entityTypeMapping = entityTypeMappings[entityTypeMappingsIterator];
                         var entityTypeConfig = entityTypeMapping.EntityType.GetConfiguration() as EntityTypeConfiguration;
+                        var mappingFragments = entityTypeMapping.MappingFragments;
                         // ReSharper disable once LoopCanBeConvertedToQuery
                         for (var mappingFragmentsIterator = 0;
-                            mappingFragmentsIterator < entityTypeMapping.MappingFragments.Count;
+                            mappingFragmentsIterator < mappingFragments.Count;
                             ++mappingFragmentsIterator)
                         {
                             var isTableNameConfigured = entityTypeConfig != null
                                                    && entityTypeConfig.IsTableNameConfigured;
 
-                            if ((!isTableNameConfigured && entityTypeMapping.MappingFragments[mappingFragmentsIterator].Table == toTable)
+                            if ((!isTableNameConfigured && mappingFragments[mappingFragmentsIterator].Table == toTable)
                                 || (isTableNameConfigured && IsTableNameEqual(toTable, entityTypeConfig.GetTableName())))
                             {
                                 types.Add(entityTypeMapping);

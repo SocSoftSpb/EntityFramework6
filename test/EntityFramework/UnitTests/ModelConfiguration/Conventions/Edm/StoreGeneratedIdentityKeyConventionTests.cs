@@ -95,12 +95,12 @@ namespace System.Data.Entity.ModelConfiguration.Conventions
 
             var targetConfig = new EntityTypeConfiguration(typeof(object));
             targetConfig.ToTable("SharedTable");
-            entityType.GetMetadataProperties().SetConfiguration(targetConfig);
+            entityType.SetConfiguration(targetConfig);
 
             var sourceEntityType = new EntityType("E", "N", DataSpace.CSpace);
             var sourceConfig = new EntityTypeConfiguration(typeof(object));
             sourceConfig.ToTable("SharedTable");
-            sourceEntityType.GetMetadataProperties().SetConfiguration(sourceConfig);
+            sourceEntityType.SetConfiguration(sourceConfig);
 
             var associationType
                 = model.AddAssociationType(

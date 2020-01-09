@@ -10,8 +10,6 @@ namespace System.Data.Entity.ModelConfiguration.Edm
 
     internal static class EntityTypeExtensions
     {
-        private const string TableNameAnnotation = "TableName";
-
         public static void AddColumn(this EntityType table, EdmProperty column)
         {
             DebugCheck.NotNull(table);
@@ -28,22 +26,17 @@ namespace System.Data.Entity.ModelConfiguration.Edm
             DebugCheck.NotNull(table);
             DebugCheck.NotNull(configuration);
 
-            table.GetMetadataProperties().SetConfiguration(configuration);
+            table.Configuration = configuration;
         }
 
         public static DatabaseName GetTableName(this EntityType table)
         {
-            DebugCheck.NotNull(table);
-
-            return (DatabaseName)table.Annotations.GetAnnotation(TableNameAnnotation);
+            return table.TableName;
         }
 
         public static void SetTableName(this EntityType table, DatabaseName tableName)
         {
-            DebugCheck.NotNull(table);
-            DebugCheck.NotNull(tableName);
-
-            table.GetMetadataProperties().SetAnnotation(TableNameAnnotation, tableName);
+            table.TableName = tableName;
         }
 
         internal static IEnumerable<EntityType> ToHierarchy(this EntityType edmType)
@@ -174,7 +167,7 @@ namespace System.Data.Entity.ModelConfiguration.Edm
         {
             DebugCheck.NotNull(entityType);
 
-            return entityType.Annotations.GetConfiguration();
+            return entityType.Configuration;
         }
 
         public static Type GetClrType(this EntityType entityType)

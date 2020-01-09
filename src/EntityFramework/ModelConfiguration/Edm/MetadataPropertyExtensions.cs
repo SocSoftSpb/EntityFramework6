@@ -16,7 +16,6 @@ namespace System.Data.Entity.ModelConfiguration.Edm
     {
         private const string ClrPropertyInfoAnnotation = "ClrPropertyInfo";
         private const string ClrAttributesAnnotation = "ClrAttributes";
-        private const string ConfiguationAnnotation = "Configuration";
 
         // <summary>
         // Gets the CLR attributes defined on a set of properties.
@@ -93,31 +92,6 @@ namespace System.Data.Entity.ModelConfiguration.Edm
             DebugCheck.NotNull(type);
 
             metadataProperties.SetAnnotation(XmlConstants.ClrTypeAnnotationWithPrefix, type);
-        }
-
-        // <summary>
-        // Gets the configuration for a set of properties.
-        // </summary>
-        // <param name="metadataProperties">The properties to get the configuration for.</param>
-        // <returns>The configuration.</returns>
-        public static object GetConfiguration(this IEnumerable<MetadataProperty> metadataProperties)
-        {
-            DebugCheck.NotNull(metadataProperties);
-
-            return metadataProperties.GetAnnotation(ConfiguationAnnotation);
-        }
-
-        // <summary>
-        // Sets the configuration for a set of properties.
-        // </summary>
-        // <param name="metadataProperties">The properties to set the configuration for.</param>
-        // <param name="configuration">The configuration.</param>
-        public static void SetConfiguration(
-            this ICollection<MetadataProperty> metadataProperties, object configuration)
-        {
-            DebugCheck.NotNull(metadataProperties);
-
-            metadataProperties.SetAnnotation(ConfiguationAnnotation, configuration);
         }
 
         // <summary>

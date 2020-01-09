@@ -113,7 +113,11 @@ namespace System.Data.Entity.Core.Metadata.Edm
 
         internal AssociationEndMember SourceEnd
         {
-            get { return KeyMembers.FirstOrDefault() as AssociationEndMember; }
+            get
+            {
+                var keyMembers = KeyMembers;
+                return keyMembers.Count > 0 ? keyMembers[0] as AssociationEndMember : null;
+            }
             set
             {
                 DebugCheck.NotNull(value);
@@ -132,7 +136,11 @@ namespace System.Data.Entity.Core.Metadata.Edm
 
         internal AssociationEndMember TargetEnd
         {
-            get { return KeyMembers.ElementAtOrDefault(1) as AssociationEndMember; }
+            get
+            {
+                var keyMembers = KeyMembers;
+                return keyMembers.Count > 1 ? keyMembers[1] as AssociationEndMember : null;
+            }
             set
             {
                 DebugCheck.NotNull(value);

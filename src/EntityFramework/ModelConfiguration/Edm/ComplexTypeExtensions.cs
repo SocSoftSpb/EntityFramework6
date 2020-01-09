@@ -30,7 +30,7 @@ namespace System.Data.Entity.ModelConfiguration.Edm
         {
             DebugCheck.NotNull(complexType);
 
-            return complexType.Annotations.GetConfiguration();
+            return complexType.Configuration;
         }
 
         public static Type GetClrType(this ComplexType complexType)
