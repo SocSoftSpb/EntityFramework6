@@ -95,18 +95,6 @@ namespace System.Data.Entity.Core.Metadata.Edm
             if (properties.TryGetValue(name, false, out var p) && p.IsAnnotation)
                 return p.Value;
 
-            /*
-
-            // ReSharper disable once LoopCanBeConvertedToQuery
-            // ReSharper disable once ForCanBeConvertedToForeach
-            for (var index = 0; index < properties.Count; index++)
-            {
-                var metadataProperty = properties[index];
-                if (metadataProperty.IsAnnotation && metadataProperty.Name.Equals(name, StringComparison.Ordinal))
-                    return metadataProperty.Value;
-            }
-            */
-
             return null;
         }
 

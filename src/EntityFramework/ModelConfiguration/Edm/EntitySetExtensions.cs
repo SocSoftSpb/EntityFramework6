@@ -11,14 +11,14 @@ namespace System.Data.Entity.ModelConfiguration.Edm
         {
             DebugCheck.NotNull(entitySet);
 
-            return entitySet.Annotations.GetConfiguration();
+            return entitySet.Configuration;
         }
 
         public static void SetConfiguration(this EntitySet entitySet, object configuration)
         {
             DebugCheck.NotNull(entitySet);
 
-            entitySet.GetMetadataProperties().SetConfiguration(configuration);
+            entitySet.Configuration = configuration;
         }
     }
 }

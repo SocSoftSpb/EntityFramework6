@@ -234,13 +234,13 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Types
         internal void Configure(
             string structuralTypeName,
             IEnumerable<EdmProperty> properties,
-            ICollection<MetadataProperty> dataModelAnnotations)
+            StructuralType structuralType)
         {
             DebugCheck.NotEmpty(structuralTypeName);
             DebugCheck.NotNull(properties);
-            DebugCheck.NotNull(dataModelAnnotations);
+            DebugCheck.NotNull(structuralType);
 
-            dataModelAnnotations.SetConfiguration(this);
+            structuralType.Configuration = this;
 
             foreach (var configuration in _primitivePropertyConfigurations)
             {

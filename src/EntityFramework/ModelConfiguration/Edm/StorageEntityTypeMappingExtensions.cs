@@ -17,7 +17,7 @@ namespace System.Data.Entity.ModelConfiguration.Edm
         {
             DebugCheck.NotNull(entityTypeMapping);
 
-            return entityTypeMapping.Annotations.GetConfiguration();
+            return entityTypeMapping.Configuration;
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode",
@@ -27,7 +27,7 @@ namespace System.Data.Entity.ModelConfiguration.Edm
             DebugCheck.NotNull(entityTypeMapping);
             DebugCheck.NotNull(configuration);
 
-            entityTypeMapping.Annotations.SetConfiguration(configuration);
+            entityTypeMapping.Configuration = configuration;
         }
 
         public static ColumnMappingBuilder GetPropertyMapping(
@@ -76,6 +76,7 @@ namespace System.Data.Entity.ModelConfiguration.Edm
             clone.AddType(entityTypeMapping.EntityType);
 
             entityTypeMapping.Annotations.Copy(clone.Annotations);
+            clone.Configuration = entityTypeMapping.Configuration;
 
             return clone;
         }

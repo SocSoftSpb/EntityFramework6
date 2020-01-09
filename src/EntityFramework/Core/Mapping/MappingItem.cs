@@ -14,6 +14,7 @@ namespace System.Data.Entity.Core.Mapping
     {
         private bool _readOnly;
         private readonly List<MetadataProperty> _annotations = new List<MetadataProperty>();
+        private object _configuration;
 
         internal bool IsReadOnly
         {
@@ -23,6 +24,16 @@ namespace System.Data.Entity.Core.Mapping
         internal IList<MetadataProperty> Annotations
         {
             get { return _annotations; }
+        }
+
+        internal object Configuration
+        {
+            get => _configuration;
+            set
+            {
+                ThrowIfReadOnly();
+                _configuration = value;
+            }
         }
 
         internal virtual void SetReadOnly()

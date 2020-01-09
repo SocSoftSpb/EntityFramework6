@@ -23,14 +23,14 @@ namespace System.Data.Entity.ModelConfiguration.Edm
         {
             DebugCheck.NotNull(associationSetMapping);
 
-            return associationSetMapping.Annotations.GetConfiguration();
+            return associationSetMapping.Configuration;
         }
 
         public static void SetConfiguration(this AssociationSetMapping associationSetMapping, object configuration)
         {
             DebugCheck.NotNull(associationSetMapping);
 
-            associationSetMapping.Annotations.SetConfiguration(configuration);
+            associationSetMapping.Configuration = configuration;
         }
     }
 }

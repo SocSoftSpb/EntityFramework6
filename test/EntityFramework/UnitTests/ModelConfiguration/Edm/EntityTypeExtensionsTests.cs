@@ -47,7 +47,7 @@ namespace System.Data.Entity.ModelConfiguration.Edm
         {
             var entityType = new EntityType("E", "N", DataSpace.CSpace);
 
-            entityType.GetMetadataProperties().SetConfiguration(42);
+            entityType.SetConfiguration(42);
 
             Assert.Equal(42, entityType.GetConfiguration());
         }

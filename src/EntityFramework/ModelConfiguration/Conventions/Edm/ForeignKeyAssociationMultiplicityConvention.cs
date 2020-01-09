@@ -29,7 +29,7 @@ namespace System.Data.Entity.ModelConfiguration.Conventions
             }
 
             var navigationPropertyConfiguration
-                = item.Annotations.GetConfiguration() as NavigationPropertyConfiguration;
+                = item.Configuration as NavigationPropertyConfiguration;
 
             if (constraint.ToProperties.All(p => !p.Nullable))
             {

@@ -205,9 +205,9 @@ namespace System.Data.Entity.Core.Mapping
         // container. In CS mapping, the mapping is done
         // at the extent level as opposed to the type level.
         // </summary>
-        internal ReadOnlyCollection<EntitySetBaseMapping> EntitySetMaps
+        internal Dictionary<string, EntitySetBaseMapping>.ValueCollection EntitySetMaps
         {
-            get { return new ReadOnlyCollection<EntitySetBaseMapping>(new List<EntitySetBaseMapping>(m_entitySetMappings.Values)); }
+            get { return m_entitySetMappings.Values; }
         }
 
         /// <summary>

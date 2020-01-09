@@ -11,14 +11,14 @@ namespace System.Data.Entity.ModelConfiguration.Edm
         {
             DebugCheck.NotNull(navigationProperty);
 
-            return navigationProperty.Annotations.GetConfiguration();
+            return navigationProperty.Configuration;
         }
 
         public static void SetConfiguration(this NavigationProperty navigationProperty, object configuration)
         {
             DebugCheck.NotNull(navigationProperty);
 
-            navigationProperty.GetMetadataProperties().SetConfiguration(configuration);
+            navigationProperty.Configuration = configuration;
         }
 
         public static AssociationEndMember GetFromEnd(this NavigationProperty navProp)

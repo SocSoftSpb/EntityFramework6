@@ -155,14 +155,14 @@ namespace System.Data.Entity.ModelConfiguration.Edm
         {
             DebugCheck.NotNull(property);
 
-            return property.Annotations.GetConfiguration();
+            return property.Configuration;
         }
 
         public static void SetConfiguration(this EdmProperty property, object configuration)
         {
             DebugCheck.NotNull(property);
 
-            property.GetMetadataProperties().SetConfiguration(configuration);
+            property.Configuration = configuration;
         }
 
         public static List<EdmPropertyPath> ToPropertyPathList(this EdmProperty property)
