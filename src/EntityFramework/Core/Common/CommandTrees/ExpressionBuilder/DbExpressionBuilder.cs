@@ -906,7 +906,7 @@ namespace System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder
         /// <param name="targetSet">Metadata for the entity or relationship set to reference.</param>
         /// <param name="hints">Table hint for scan operation.</param>
         /// <exception cref="T:System.ArgumentNullException">targetSet is null.</exception>
-        public static DbScanExpression Scan(this EntitySetBase targetSet, TableHints? hints)
+        public static DbScanExpression Scan(this EntitySetBase targetSet, TableHints hints)
         {
             Check.NotNull(targetSet, "targetSet");
 

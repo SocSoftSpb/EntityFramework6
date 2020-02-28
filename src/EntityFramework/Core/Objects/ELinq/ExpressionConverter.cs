@@ -248,7 +248,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
 
         internal QueryOptions QueryOptions => _queryOptions;
 
-        internal TableHints? _scopedHints;
+        internal TableHints _scopedHints;
 
         internal Func<bool> RecompileRequired
         {
@@ -787,7 +787,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
 
             if (_scopedHints != null)
             {
-                resultExpression = ScanHintsSetter.SetScanHints(resultExpression, _scopedHints.Value);
+                resultExpression = ScanHintsSetter.SetScanHints(resultExpression, _scopedHints);
             }
 
             return resultExpression;
@@ -1071,16 +1071,23 @@ namespace System.Data.Entity.Core.Objects.ELinq
                 _hintsForType = new Dictionary<string, TableHints>();
             if (type != null)
             {
-                EdmType modelEdmType;
-                var metadataWorkspace = _funcletizer.RootContext.MetadataWorkspace;
-                if (!metadataWorkspace.TryDetermineCSpaceModelType(type, out modelEdmType) || modelEdmType.BuiltInTypeKind != BuiltInTypeKind.EntityType)
-                    throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Typed table hints allowed only for Entity Type's. Mapping for {0} is not found.", type.Name));
-                _hintsForType[modelEdmType.Identity] = hint;
+                var identity = GetCSpaceTypeIdentityForTableHint(type);
+                _hintsForType[identity] = hint;
             }
             else
             {
                 _hintsForType[string.Empty] = hint;
             }
+        }
+
+        private string GetCSpaceTypeIdentityForTableHint(Type type)
+        {
+            EdmType modelEdmType;
+            var metadataWorkspace = _funcletizer.RootContext.MetadataWorkspace;
+            if (!metadataWorkspace.TryDetermineCSpaceModelType(type, out modelEdmType) || modelEdmType.BuiltInTypeKind != BuiltInTypeKind.EntityType)
+                throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Table hints allowed only for Entity Type's. Mapping for {0} is not found.", type.Name));
+
+            return modelEdmType.Identity;
         }
 
         // Cast expression to align types between CQT and eLINQ

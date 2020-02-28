@@ -3802,9 +3802,6 @@ namespace System.Data.Entity.Core.Objects.ELinq
                         var type = (Type)(typeArg.Value);
                         return TranslateHint(parent, linq.Arguments[0], linq.Arguments[1], type);
                     case nameof(TableHintExtension.WithTableHint):
-                        var sourceArgumentType = TypeSystem.GetElementType(linq.Arguments[0].Type);
-                        return TranslateHint(parent, linq.Arguments[0], linq.Arguments[1], sourceArgumentType);
-                    case nameof(TableHintExtension.WithScopedTableHint):
                         return TranslateScopedHint(parent, linq.Arguments[0], linq.Arguments[1]);
                     case nameof(TableHintExtension.WithQueryOptions):
                         return TranslateQueryOptions(parent, linq.Arguments[0], linq.Arguments[1]);
@@ -3827,12 +3824,146 @@ namespace System.Data.Entity.Core.Objects.ELinq
                 return retVal;
             }
 
+            private static Exception InvalidHintsException() =>  new InvalidOperationException("Hint must be a constant or a expression of predefined type.");
+
+            private static TableHints ValidateHint(TableHints hint, bool isScoped)
+            {
+                if (!isScoped && hint is TableHints.TargetableHint)
+                    throw new InvalidOperationException($"{hint.GetType().Name} Valid only in Repository hint (WithTableHint).");
+                return hint;
+            }
+
+            private static TableHints DetermineHintTarget(TableHints hints, Type queryType)
+            {
+                switch (hints)
+                {
+                    case TableHints.TargetableHint th when th.TargetType == null:
+                        return th.AsTarget(queryType.TryGetElementType(typeof(IEnumerable<>)) ?? throw new InvalidOperationException("IQueryable element type is not recognized."));
+                    case TableHints.CompoundTableHint ch:
+                        return ch.Update(DetermineHintTarget(ch.Hint1, queryType), DetermineHintTarget(ch.Hint2, queryType));
+                    default:
+                        return hints;
+                }
+            }
+
+            public static bool TryEvaluateAsConstantChain(Expression expression, out object value)
+            {
+                switch (expression.NodeType)
+                {
+                    case ExpressionType.Constant:
+                    {
+                        value = ((ConstantExpression)expression).Value;
+                        return true;
+                    }
+                    case ExpressionType.MemberAccess:
+                    {
+                        var memberExpression = (MemberExpression)expression;
+                        value = null;
+
+                        switch (memberExpression.Member.MemberType)
+                        {
+                            case MemberTypes.Field:
+                            {
+                                var fieldInfo = (FieldInfo)memberExpression.Member;
+
+                                if (fieldInfo.IsStatic)
+                                {
+                                    value = fieldInfo.GetValue(null);
+                                    return true;
+                                }
+
+                                if (memberExpression.Expression == null || !TryEvaluateAsConstantChain(memberExpression.Expression, out value) || value == null)
+                                    return false;
+
+                                value = fieldInfo.GetValue(value);
+                                return true;
+                            }
+                            case MemberTypes.Property:
+                            {
+                                var propertyInfo = (PropertyInfo)memberExpression.Member;
+                                var getMethod    = propertyInfo.GetGetMethod(true);
+
+                                if (getMethod == null)
+                                    return false;
+
+                                if (getMethod.IsStatic)
+                                {
+                                    value = propertyInfo.GetValue(null, null);
+                                    return true;
+                                }
+
+                                if (memberExpression.Expression == null || !TryEvaluateAsConstantChain(memberExpression.Expression, out value) || value == null)
+                                    return false;
+
+                                value = propertyInfo.GetValue(value, null);
+                                return true;
+                            }
+                        }
+
+                        break;
+                    }
+                }
+
+                value = null;
+                return false;
+            }
+
+
+            private static TableHints TranslateHintExpression(ExpressionConverter parent, Expression hintExpr, bool isScoped, Type queryableType)
+            {
+                bool ValidateCallExpression(Expression expr, out MethodCallExpression methodCall)
+                {
+                    methodCall = expr as MethodCallExpression;
+                    return methodCall != null
+                           && methodCall.Method.IsStatic
+                           && methodCall.Method.DeclaringType == typeof(TableHints);
+                }
+
+                switch (hintExpr.NodeType)
+                {
+                    case ExpressionType.Constant:
+                        return DetermineHintTarget(ValidateHint((TableHints)(((ConstantExpression)hintExpr).Value), isScoped), queryableType);
+                    case ExpressionType.OrElse:
+                    case ExpressionType.Or:
+                    {
+                        var binExp = (BinaryExpression)hintExpr;
+                        var left = TranslateHintExpression(parent, binExp.Left, isScoped, queryableType);
+                        var right = TranslateHintExpression(parent, binExp.Right, isScoped, queryableType);
+                        return left | right;
+                    }
+                    case ExpressionType.MemberAccess:
+                    {
+                        var memExp = (MemberExpression)hintExpr;
+                        if (!typeof(TableHints).IsAssignableFrom(memExp.Type)
+                        || !TryEvaluateAsConstantChain(memExp, out var hintValue)
+                        || !(hintValue is TableHints result))
+                            throw InvalidHintsException();
+
+                        return DetermineHintTarget(ValidateHint(result, isScoped), queryableType);
+                    }
+                    case ExpressionType.Call when ValidateCallExpression(hintExpr, out var methodCall):
+                    {
+                        var args = new object[methodCall.Arguments.Count];
+                        for (var i = 0; i < methodCall.Arguments.Count; i++)
+                        {
+                            if (!TryEvaluateAsConstantChain(methodCall.Arguments[i], out var argValue))
+                                throw InvalidHintsException();
+                            args[i] = argValue;
+                        }
+                        var hintValue = methodCall.Method.Invoke(null, args);
+                        if (!(hintValue is TableHints result))
+                            throw InvalidHintsException();
+
+                        return DetermineHintTarget(ValidateHint(result, isScoped), queryableType);
+                    }
+                    default:
+                        throw InvalidHintsException();
+                }
+            }
+
             private static DbExpression TranslateScopedHint(ExpressionConverter parent, Expression sourceQueryExp, Expression hintArgument)
             {
-                var hintArg = hintArgument as ConstantExpression;
-                if (hintArg == null)
-                    throw new InvalidOperationException("Hint must be a constant.");
-                var hint = (TableHints)(hintArg.Value);
+                var hint = TranslateHintExpression(parent, hintArgument, isScoped:true, sourceQueryExp.Type);
 
                 var oldHints = parent._scopedHints;
                 parent._scopedHints = hint;
@@ -3846,10 +3977,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
             {
                 var retVal = parent.TranslateExpression(sourceQueryExp);
 
-                var hintArg = hintArgument as ConstantExpression;
-                if (hintArg == null)
-                    throw new InvalidOperationException("Hint must be a constant.");
-                var hint = (TableHints)(hintArg.Value);
+                var hint = TranslateHintExpression(parent, hintArgument, isScoped:false, sourceQueryExp.Type);
 
                 parent.AddTypedHint(applyToType, hint);
 

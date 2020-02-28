@@ -17,10 +17,10 @@ namespace System.Data.Entity.Core.Query.InternalTrees
 
         internal static Node Copy(Command cmd, Node n)
         {
-            return Copy(cmd, n, (TableHints?)null);
+            return Copy(cmd, n, (TableHints)null);
         }
 
-        internal static Node Copy(Command cmd, Node n, TableHints? scanHints)
+        internal static Node Copy(Command cmd, Node n, TableHints scanHints)
         {
             VarMap varMap;
             return Copy(cmd, n, scanHints, out varMap);
@@ -53,7 +53,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
             return Copy(cmd, n, null, out varMap);
         }
 
-        private static Node Copy(Command cmd, Node n, TableHints? scanHints, out VarMap varMap)
+        private static Node Copy(Command cmd, Node n, TableHints scanHints, out VarMap varMap)
         {
             var oc = new OpCopier(cmd, scanHints);
             var newNode = oc.CopyNode(n);
@@ -80,7 +80,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // Map of var to cloned Var
         protected VarMap m_varMap;
 
-        private readonly TableHints? m_hints;
+        private readonly TableHints m_hints;
 
         #endregion
 
@@ -91,7 +91,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // </summary>
         // <param name="cmd"> The command </param>
         protected OpCopier(Command cmd)
-            : this(cmd, (TableHints?)null)
+            : this(cmd, (TableHints)null)
         {
         }
 
@@ -100,7 +100,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // </summary>
         // <param name="cmd"> The command </param>
         // <param name="hints"> Scan operations hints override </param>
-        protected OpCopier(Command cmd, TableHints? hints)
+        protected OpCopier(Command cmd, TableHints hints)
             : this(cmd, cmd, hints)
         {
         }
@@ -111,7 +111,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <param name="destCommand"> The Command to which Nodes to be cloned must belong </param>
         // <param name="sourceCommand"> The Command to which cloned Nodes will belong </param>
         // <param name="hints"> Scan operations hints override </param>
-        private OpCopier(Command destCommand, Command sourceCommand, TableHints? hints)
+        private OpCopier(Command destCommand, Command sourceCommand, TableHints hints)
         {
             m_srcCmd = sourceCommand;
             m_destCmd = destCommand;

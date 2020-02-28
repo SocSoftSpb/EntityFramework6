@@ -228,7 +228,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
 
         internal Dictionary<string, TableHints> StoreSetHints { get; private set; }
 
-        internal TableHints? GlobalHints { get; private set; }
+        internal TableHints GlobalHints { get; private set; }
 
         internal QueryOptions QueryOptions { get; private set; }
 

@@ -48,7 +48,7 @@ namespace System.Data.Entity.Core.Objects
         /// <summary>
         /// Default hints for query (Dynamic Table EntitySet only!)
         /// </summary>
-        public TableHints? DefaultTableHints { get; set; }
+        public TableHints DefaultTableHints { get; set; }
 
         /// <summary>
         /// Primary key column names

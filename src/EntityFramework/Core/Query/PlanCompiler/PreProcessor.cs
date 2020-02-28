@@ -11,6 +11,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
     using System.Data.Entity.Core.Query.InternalTrees;
     using System.Data.Entity.Resources;
     using System.Diagnostics.CodeAnalysis;
+    using System.Globalization;
     using System.Runtime.CompilerServices;
 
     // <summary>
@@ -2124,22 +2125,86 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         // <returns> the transformed view-op </returns>
         public override Node Visit(ScanTableOp op, Node n)
         {
-            if (op.Hints == null && m_compilerState.StoreSetHints != null)
+            if (m_compilerState.StoreSetHints != null)
             {
                 var elType = op.Table.TableMetadata.Extent.ElementType;
                 if (elType != null
                     && elType.DataSpace == DataSpace.SSpace
                     && elType.BuiltInTypeKind == BuiltInTypeKind.EntityType)
                 {
-                    TableHints hint;
-                    if (m_compilerState.StoreSetHints.TryGetValue(elType.Identity, out hint))
-                        n.Op = op = m_command.CreateScanTableOp(op.Table, hint);
-                    else if (m_compilerState.GlobalHints != null)
-                        n.Op = op = m_command.CreateScanTableOp(op.Table, m_compilerState.GlobalHints.Value);
+                    if (op.Hints == null)
+                    {
+                        TableHints hint;
+                        if (m_compilerState.StoreSetHints.TryGetValue(elType.Identity, out hint))
+                            n.Op = op = m_command.CreateScanTableOp(op.Table, hint);
+                        else if (m_compilerState.GlobalHints != null)
+                            n.Op = op = m_command.CreateScanTableOp(op.Table, m_compilerState.GlobalHints);
+
+                    }
+                    else
+                    {
+                        var newHints = CreateStoreTableHints(elType, op.Hints, m_compilerState.GlobalHints);
+                        if (!ReferenceEquals(op.Hints, newHints))
+                            n.Op = op = m_command.CreateScanTableOp(op.Table, newHints);
+                    }
                 }
             }
+
             IsOfOp nullFilter = null;
             return ProcessScanTable(n, op, ref nullFilter);
+        }
+
+        private TableHints CreateStoreTableHints(EntityTypeBase elType, TableHints opHints, TableHints globalHints)
+        {
+            var resultHints = globalHints;
+
+            if (opHints != null && opHints.ContainsLockHints())
+                resultHints = null;
+
+            opHints = FilterOpHintsRecursive(elType, opHints);
+
+            return resultHints | opHints;
+        }
+
+        private TableHints FilterOpHintsRecursive(EntityTypeBase elType, TableHints opHints)
+        {
+            switch (opHints)
+            {
+                case TableHints.CompoundTableHint ch:
+                    return ch.Update(FilterOpHintsRecursive(elType, ch.Hint1), FilterOpHintsRecursive(elType, ch.Hint2));
+                case TableHints.TargetableHint th:
+                    return IsHintApplicable(elType, th) ? th : null;
+                default:
+                    return opHints;
+            }
+        }
+
+        private bool IsHintApplicable(EntityTypeBase elType, TableHints.TargetableHint hint)
+        {
+            if (hint.TargetType == null)
+                throw new InvalidOperationException($"TargetType is required for {hint.GetType().Name} hint.");
+
+            var metadataWorkspace = m_command.MetadataWorkspace;
+            if (!metadataWorkspace.TryDetermineCSpaceModelType(hint.TargetType, out var modelEdmType) 
+                || modelEdmType.BuiltInTypeKind != BuiltInTypeKind.EntityType
+                || !(modelEdmType is EntityType cspaceItem))
+                throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Table hints allowed only for Entity Type's. Mapping for {0} is not found.", hint.TargetType.Name));
+
+            if (!metadataWorkspace.TryGetMappingInformation(cspaceItem, out var mapInfo))
+                return false;
+
+            foreach (var etm in mapInfo.EntityTypeMappings)
+            {
+                foreach (var mappingFragment in etm.Fragments)
+                {
+                    if (mappingFragment.StoreEntitySet != null)
+                    {
+                        return mappingFragment.StoreEntitySet.ElementType.Identity == elType.Identity;
+                    }
+                }
+            }
+
+            return false;
         }
 
         // <summary>

@@ -16,7 +16,7 @@ namespace System.Data.Entity.Core.Common.CommandTrees
         {
         }
 
-        internal DbScanExpression(TypeUsage collectionOfEntityType, EntitySetBase entitySet, TableHints? hints)
+        internal DbScanExpression(TypeUsage collectionOfEntityType, EntitySetBase entitySet, TableHints hints)
             : base(DbExpressionKind.Scan, collectionOfEntityType)
         {
             DebugCheck.NotNull(entitySet);
@@ -34,7 +34,7 @@ namespace System.Data.Entity.Core.Common.CommandTrees
 
         /// <summary>Represents table hints (i.e. NOLOCK).</summary>
         /// <returns>Table Hints.</returns>
-        public TableHints? Hints { get; }
+        public TableHints Hints { get; }
 
         /// <summary>Implements the visitor pattern for expressions that do not produce a result value.</summary>
         /// <param name="visitor">

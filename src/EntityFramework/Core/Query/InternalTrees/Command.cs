@@ -1116,7 +1116,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <param name="tableMetadata"> A Table metadata instance that specifies the table that should be scanned </param>
         // <param name="hints">A Table scan operation hints (i.e. NOLOCK)</param>
         // <returns> A new ScanTableOp that references a new Table instance based on the specified table metadata </returns>
-        internal ScanTableOp CreateScanTableOp(TableMD tableMetadata, TableHints? hints)
+        internal ScanTableOp CreateScanTableOp(TableMD tableMetadata, TableHints hints)
         {
             var table = CreateTableInstance(tableMetadata);
             return CreateScanTableOp(table, hints);
@@ -1128,7 +1128,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <param name="table"> The table instance </param>
         // <param name="hints">A Table scan operation hints (i.e. NOLOCK)</param>
         // <returns> a new ScanTableOp </returns>
-        internal virtual ScanTableOp CreateScanTableOp(Table table, TableHints? hints)
+        internal virtual ScanTableOp CreateScanTableOp(Table table, TableHints hints)
         {
             return new ScanTableOp(table, hints);
         }
@@ -1139,7 +1139,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <param name="table"> the table instance </param>
         // <param name="hints">A Table scan operation hints (i.e. NOLOCK)</param>
         // <returns> a new ScanViewOp </returns>
-        internal virtual ScanViewOp CreateScanViewOp(Table table, TableHints? hints)
+        internal virtual ScanViewOp CreateScanViewOp(Table table, TableHints hints)
         {
             return new ScanViewOp(table, hints);
         }
@@ -1150,7 +1150,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <param name="tableMetadata"> the table metadata </param>
         // <param name="hints">A Table scan operation hints (i.e. NOLOCK)</param>
         // <returns> a new ScanViewOp </returns>
-        internal virtual ScanViewOp CreateScanViewOp(TableMD tableMetadata, TableHints? hints)
+        internal virtual ScanViewOp CreateScanViewOp(TableMD tableMetadata, TableHints hints)
         {
             var table = CreateTableInstance(tableMetadata);
             return CreateScanViewOp(table, hints);

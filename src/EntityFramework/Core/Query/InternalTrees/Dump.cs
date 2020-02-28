@@ -583,9 +583,16 @@ namespace System.Data.Entity.Core.Query.InternalTrees
             }
         }
 
+        private AutoXml ScanAutoXml(ScanTableBaseOp op)
+        {
+            return (op.Hints != null)
+                ? new AutoXml(this, op, new Dictionary<string, object> { { nameof(op.Hints), op.Hints.ToString() } })
+                : new AutoXml(this, op);
+        }
+
         public override void Visit(ScanTableOp op, Node n)
         {
-            using (new AutoXml(this, op, new Dictionary<string, object> { { nameof(op.Hints), op.Hints.ToString() } }))
+            using (ScanAutoXml(op))
             {
                 DumpTable(op.Table);
                 VisitChildren(n);
@@ -594,7 +601,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
 
         public override void Visit(ScanViewOp op, Node n)
         {
-            using (new AutoXml(this, op, new Dictionary<string, object> { { nameof(op.Hints), op.Hints.ToString() } }))
+            using (ScanAutoXml(op))
             {
                 DumpTable(op.Table);
                 VisitChildren(n);

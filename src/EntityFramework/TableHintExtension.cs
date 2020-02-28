@@ -17,7 +17,6 @@ namespace System.Data.Entity
         private static readonly MethodInfo _withTableHint;
         private static readonly MethodInfo _withTypedTableHint;
         private static readonly MethodInfo _withDefaultTableHint;
-        private static readonly MethodInfo _withScopedTableHint;
         private static readonly MethodInfo _withQueryOptions;
 
         [SuppressMessage("Microsoft.Performance", "CA1810:InitializeReferenceTypeStaticFieldsInline")]
@@ -26,7 +25,6 @@ namespace System.Data.Entity
             _withTableHint = typeof(TableHintExtension).GetMethod(nameof(WithTableHint));
             _withDefaultTableHint = typeof(TableHintExtension).GetMethod(nameof(WithDefaultTableHint));
             _withTypedTableHint = typeof(TableHintExtension).GetMethod(nameof(WithTypeTableHint));
-            _withScopedTableHint = typeof(TableHintExtension).GetMethod(nameof(WithScopedTableHint));
             _withQueryOptions = typeof(TableHintExtension).GetMethod(nameof(WithQueryOptions));
         }
 
@@ -89,25 +87,6 @@ namespace System.Data.Entity
         }
 
         /// <summary>
-        /// Add table-level hint to scan table operation. Hint scoped to nested scan operations.
-        /// </summary>
-        /// <typeparam name="TSource">Type of queryable</typeparam>
-        /// <param name="source">Source query</param>
-        /// <param name="hint">Query hints</param>
-        /// <returns>Returns SQL Query with hints</returns>
-        /// <remarks><typeparamref name="TSource"/> must be a one of mapped entity type.</remarks>
-        public static IQueryable<TSource> WithScopedTableHint<TSource>(this IQueryable<TSource> source, TableHints hint)
-        {
-            return source.Provider.CreateQuery<TSource>(
-                Expression.Call(
-                    null,
-                    _withScopedTableHint.MakeGenericMethod(typeof(TSource)),
-                    source.Expression,
-                    Expression.Constant(hint, typeof(TableHints)))
-            );
-        }
-
-        /// <summary>
         /// Add SQL query options.
         /// </summary>
         /// <typeparam name="TSource">Type of queryable</typeparam>
@@ -124,43 +103,181 @@ namespace System.Data.Entity
                     Expression.Constant(options, typeof(QueryOptions)))
             );
         }
-
     }
 
     /// <summary>
     /// Represents Table - Level Hints
     /// </summary>
-    [Flags]
-    public enum TableHints
+    public abstract class TableHints
     {
-        /// <summary>
-        /// No hints
-        /// </summary>
-        None = 0,
         /// <summary>
         /// NOLOCK
         /// </summary>
-        [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Nolock")]
-        Nolock = 1,
+        [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersSholdBeSpelledCorrectly", MessageId = "Nolock")]
+        public static readonly TableHints Nolock = new LockTableHint("NOLOCK");
 
         /// <summary>
         /// UPDLOCK
         /// </summary>
         [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Updlock")]
-        Updlock = 2,
+        public static readonly TableHints Updlock = new LockTableHint("UPDLOCK");
 
         /// <summary>
         /// ROWLOCK
         /// </summary>
         [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Rowlock")]
-        Rowlock = 4,
+        public static readonly TableHints Rowlock = new LockTableHint("ROWLOCK");
 
         /// <summary>
         /// HOLDLOCK
         /// </summary>
         [SuppressMessage("Microsoft.Naming", "CA1704:IdentifiersShouldBeSpelledCorrectly", MessageId = "Holdlock")]
-        Holdlock = 8,
+        public static readonly TableHints Holdlock = new LockTableHint("HOLDLOCK");
 
+        /// <summary>
+        /// Constructs FORCESEEK table hint
+        /// </summary>
+        /// <param name="indexName">Name of index to seek (optional)</param>
+        /// <remarks>
+        /// This hint apply to default table of repository.
+        /// </remarks>
+        public static TableHints ForceSeek(string indexName = null)
+        {
+            return ForceSeek(null, indexName);
+        }
+
+        /// <summary>
+        /// Constructs FORCESEEK table hint
+        /// </summary>
+        /// <param name="targetType">Type to identify table for hint - for TPT hierarchies</param>
+        /// <param name="indexName">Name of index to seek (optional)</param>
+        /// <remarks>
+        /// This hint apply to default table of repository.
+        /// </remarks>
+        public static TableHints ForceSeek(Type targetType, string indexName = null)
+        {
+            TableHints hint = new ForceSeekHint(targetType);
+            if (!string.IsNullOrEmpty(indexName))
+            {
+                hint |= new IndexHint(targetType, indexName);
+            }
+
+            return hint;
+        }
+
+        public static TableHints operator |(TableHints hint1, TableHints hint2)
+        {
+            return CompoundTableHint.Compose(hint1, hint2);
+        }
+
+        internal bool ContainsLockHints()
+        {
+            if (this is CompoundTableHint ch)
+                return ch.Hint1.ContainsLockHints() || ch.Hint2.ContainsLockHints();
+
+            return this is LockTableHint;
+        }
+
+        public sealed class LockTableHint : TableHints
+        {
+            internal LockTableHint(string name)
+            {
+                Name = name;
+            }
+
+            public string Name { get; }
+
+            public override string ToString()
+            {
+                return Name;
+            }
+        }
+
+        public abstract class TargetableHint : TableHints
+        {
+            public Type TargetType { get; }
+
+            internal TargetableHint(Type targetType)
+            {
+                TargetType = targetType;
+            }
+
+            internal abstract TargetableHint AsTarget(Type targetType);
+        }
+
+        public sealed class ForceSeekHint : TargetableHint
+        {
+            public ForceSeekHint(Type targetType) : base(targetType)
+            {
+            }
+
+            public override string ToString()
+            {
+                return "FORCESEEK";
+            }
+
+            internal override TargetableHint AsTarget(Type targetType)
+            {
+                return new ForceSeekHint(targetType);
+            }
+        }
+
+        public sealed class IndexHint : TargetableHint
+        {
+            public string IndexName { get; }
+
+            public IndexHint(Type targetType, string indexName) : base(targetType)
+            {
+                IndexName = indexName;
+            }
+
+            public override string ToString()
+            {
+                return string.Concat("INDEX=", IndexName);
+            }
+
+            internal override TargetableHint AsTarget(Type targetType)
+            {
+                return new IndexHint(targetType, IndexName);
+            }
+        }
+
+        public sealed class CompoundTableHint : TableHints
+        {
+            public TableHints Hint1 { get; }
+            public TableHints Hint2 { get; }
+
+            private CompoundTableHint(TableHints hint1, TableHints hint2)
+            {
+                Hint1 = hint1;
+                Hint2 = hint2;
+            }
+
+            internal static TableHints Compose(TableHints hint1, TableHints hint2)
+            {
+                if (hint1 == null)
+                    return hint2;
+                if (hint2 == null)
+                    return hint1;
+
+                return new CompoundTableHint(hint1, hint2);
+            }
+
+            internal TableHints Update(TableHints hint1, TableHints hint2)
+            {
+                if (hint1 == null)
+                    return hint2;
+                if (hint2 == null)
+                    return hint1;
+
+                return ReferenceEquals(hint1, Hint1) && ReferenceEquals(hint2, Hint2) ? this : new CompoundTableHint(hint1, hint2);
+            }
+
+            public override string ToString()
+            {
+                return string.Concat(Hint1.ToString(), ", ", Hint2.ToString());
+            }
+        }
     }
 
     /// <summary>

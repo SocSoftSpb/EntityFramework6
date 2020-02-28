@@ -210,7 +210,7 @@ namespace System.Data.Entity.Core.Mapping.ViewGeneration
         [SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "projectOp")]
         [SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters",
             MessageId = "System.Data.Entity.Core.Query.PlanCompiler.PlanCompiler.Assert(System.Boolean,System.String)")]
-        internal Node GetInternalTree(Command targetIqtCommand, TableHints? hints)
+        internal Node GetInternalTree(Command targetIqtCommand, TableHints hints)
         {
             Debug.Assert(m_extent.EntityContainer.DataSpace == DataSpace.CSpace, "Internal Tree should be asked only for query view");
             if (m_internalTreeNode == null)

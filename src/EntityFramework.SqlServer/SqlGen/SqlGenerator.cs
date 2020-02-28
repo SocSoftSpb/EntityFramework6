@@ -1261,10 +1261,9 @@ namespace System.Data.Entity.SqlServer.SqlGen
             var targetTSql = GetTargetTSql(target, out bool isDefiningQuery);
             ScanSymbol targetSymbol = null;
 
-            if (!isDefiningQuery
-                && e.Hints.GetValueOrDefault(TableHints.None) != TableHints.None)
+            if (!isDefiningQuery && e.Hints != null)
             {
-                var hintOptions = e.Hints.ToString().ToUpper();
+                var hintOptions = TranslateHints(e.Hints);
                 targetSymbol = new ScanSymbol(targetTSql, hintOptions);
             }
 
@@ -1288,6 +1287,41 @@ namespace System.Data.Entity.SqlServer.SqlGen
                 result.From.Append((object)targetSymbol ?? targetTSql);
 
                 return result;
+            }
+        }
+
+        private static string TranslateHints(TableHints hints, StringBuilder sb = null)
+        {
+            var isRoot = (sb == null);
+            switch (hints)
+            {
+                case TableHints.CompoundTableHint ch:
+                    if (sb == null)
+                        sb = new StringBuilder(128);
+
+                    TranslateHints(ch.Hint1, sb);
+                    sb.Append(", ");
+                    TranslateHints(ch.Hint2, sb);
+
+                    return isRoot ? sb.ToString() : null;
+
+                case TableHints.IndexHint ih:
+                    if (sb == null)
+                        sb = new StringBuilder(128);
+
+                    sb.Append("INDEX=").Append("[").Append(ih.IndexName).Append("]");
+
+                    return isRoot ? sb.ToString() : null;
+
+                default:
+                    if (hints == null)
+                        return null;
+                    if (sb != null)
+                    {
+                        sb.Append(hints);
+                        return null;
+                    }
+                    return hints.ToString();
             }
         }
 
