@@ -172,6 +172,10 @@ namespace System.Data.Entity.Core.Common.CommandTrees
                     retType = new RowType(mappedProps, rowType.InitializerMetadata);
                 }
             }
+            else if (Helper.IsDynamicType(type))
+            {
+                retType = type;
+            }
             else
             {
                 if (!_metadata.TryGetType(type.Name, type.NamespaceName, type.DataSpace, out retType)
