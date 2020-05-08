@@ -1669,7 +1669,15 @@ namespace System.Data.Entity.Core.Objects.ELinq
             else if (patternExpression is ConstantExpression constantExpression)
             {
                 var preparedPattern = PrepareCommonLikePattern((DbLikePattern)constantExpression.Value, ProviderManifest);
-                translatedPatternExpression = DbExpression.FromString(preparedPattern);
+                if (preparedPattern != null)
+                {
+                    var stringType = GetValueLayerType(typeof(string));
+                    translatedPatternExpression = stringType.Constant(preparedPattern);
+                }
+                else
+                {
+                    translatedPatternExpression = DbExpressionBuilder.CreatePrimitiveNullExpression(PrimitiveTypeKind.String);
+                }
             }
             else
             {

@@ -1,5 +1,7 @@
 <Project>
   <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" />
+  <Target Name="_InitializeAssemblyVersion" BeforeTargets="GetAssemblyVersion">
+  </Target>
   <ItemGroup>
     <!-- Use the latest version instead of the one bundled with the SDK. -->
     <KnownFrameworkReference Update="Microsoft.NETCore.App"

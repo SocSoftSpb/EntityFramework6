@@ -1,6 +1,12 @@
 <Project>
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
 
+  <PropertyGroup>
+    <MyEfRevision>4</MyEfRevision>
+    <FileVersion>46.4.1.$(MyEfRevision)</FileVersion>
+    <PackageVersion>6.4.1.$(MyEfRevision)</PackageVersion>
+  </PropertyGroup>
+
   <PropertyGroup Condition="'$(CopyrightMicrosoft)' != ''">
     <Copyright>$(CopyrightMicrosoft)</Copyright>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
