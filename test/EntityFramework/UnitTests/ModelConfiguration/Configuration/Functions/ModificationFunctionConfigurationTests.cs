@@ -170,19 +170,22 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Functions
                 = new FunctionParameter(
                     "P1",
                     TypeUsage.Create(PrimitiveType.GetEdmPrimitiveType(PrimitiveTypeKind.String)),
-                    ParameterMode.In);
+                    ParameterMode.In,
+                    false);
 
             var functionParameter2
                 = new FunctionParameter(
                     "P2",
                     TypeUsage.Create(PrimitiveType.GetEdmPrimitiveType(PrimitiveTypeKind.String)),
-                    ParameterMode.In);
+                    ParameterMode.In,
+                    false);
 
             var functionParameter3
                 = new FunctionParameter(
                     "Foo",
                     TypeUsage.Create(PrimitiveType.GetEdmPrimitiveType(PrimitiveTypeKind.String)),
-                    ParameterMode.In);
+                    ParameterMode.In,
+                    false);
 
             var function
                 = new EdmFunction(
@@ -431,7 +434,8 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Functions
                                 "P",
                                 TypeUsage.Create(
                                     PrimitiveType.GetEdmPrimitiveType(PrimitiveTypeKind.String)),
-                                ParameterMode.In),
+                                ParameterMode.In,
+                                false),
                                 new ModificationFunctionMemberPath(new[] { property }, null), false)
                         },
                     null,
@@ -470,7 +474,8 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Functions
                                 "P",
                                 TypeUsage.Create(
                                     PrimitiveType.GetEdmPrimitiveType(PrimitiveTypeKind.String)),
-                                ParameterMode.In),
+                                ParameterMode.In,
+                                false),
                                 new ModificationFunctionMemberPath(new[] { property }, null), false)
                         },
                     rowsAffectedParameter,

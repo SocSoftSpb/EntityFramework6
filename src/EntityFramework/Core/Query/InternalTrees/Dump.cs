@@ -182,10 +182,11 @@ namespace System.Data.Entity.Core.Query.InternalTrees
                 var separator = string.Empty;
                 var iPartition = int.MaxValue;
                 var iOrder = int.MaxValue;
-                var iArgs = op.Function.Parameters.Count;
+                var iArgs = int.MaxValue;
 
                 if (op.Function.WindowAttribute)
                 {
+                    iArgs = op.Function.Parameters.Count;
                     if (op.PartitionCount > 0)
                     {
                         iPartition = iArgs;

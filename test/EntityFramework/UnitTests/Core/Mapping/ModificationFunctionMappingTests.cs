@@ -16,7 +16,7 @@ namespace System.Data.Entity.Core.Mapping
             var entitySet = new EntitySet("ES", "S", "T", "Q", entityType);
             var function = new EdmFunction("F", "N", DataSpace.SSpace, new EdmFunctionPayload());
             var parameterBindings = Enumerable.Empty<ModificationFunctionParameterBinding>();
-            var rowsAffectedParameter = new FunctionParameter("rows_affected", new TypeUsage(), ParameterMode.Out);
+            var rowsAffectedParameter = new FunctionParameter("rows_affected", new TypeUsage(), ParameterMode.Out, false);
             var resultBindings = Enumerable.Empty<ModificationFunctionResultBinding>();
 
             Assert.Equal(
@@ -59,7 +59,7 @@ namespace System.Data.Entity.Core.Mapping
                           new ModificationFunctionMemberPath(Enumerable.Empty<EdmMember>(), null),
                           true)
                   };
-            var rowsAffectedParameter = new FunctionParameter("rows_affected", new TypeUsage(), ParameterMode.Out);
+            var rowsAffectedParameter = new FunctionParameter("rows_affected", new TypeUsage(), ParameterMode.Out, false);
 
             var resultBindings
                 = new[]
@@ -96,7 +96,7 @@ namespace System.Data.Entity.Core.Mapping
                     entityType,
                     new EdmFunction("F", "N", DataSpace.SSpace, new EdmFunctionPayload()),
                     Enumerable.Empty<ModificationFunctionParameterBinding>(),
-                    new FunctionParameter("rows_affected", new TypeUsage(), ParameterMode.Out),
+                    new FunctionParameter("rows_affected", new TypeUsage(), ParameterMode.Out, false),
                     null);
 
             Assert.Equal("rows_affected", storageModificationFunctionMapping.RowsAffectedParameterName);
@@ -120,7 +120,7 @@ namespace System.Data.Entity.Core.Mapping
                           new ModificationFunctionMemberPath(Enumerable.Empty<EdmMember>(), null),
                           true)
                   };
-            var rowsAffectedParameter = new FunctionParameter("rows_affected", new TypeUsage(), ParameterMode.Out);
+            var rowsAffectedParameter = new FunctionParameter("rows_affected", new TypeUsage(), ParameterMode.Out, false);
 
             var resultBindings
                 = new[]

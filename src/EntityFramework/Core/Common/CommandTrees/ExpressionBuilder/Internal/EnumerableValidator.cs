@@ -28,6 +28,7 @@ namespace System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder.Internal
         }
 
         private int expectedElementCount = -1;
+        private int minimumElementCount = -1;
 
         // <summary>
         // Gets or sets a value that determines whether an exception is thrown if the enumerable argument is empty.
@@ -48,6 +49,12 @@ namespace System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder.Internal
         {
             get { return expectedElementCount; }
             set { expectedElementCount = value; }
+        }
+
+        public int MinimumElementCount
+        {
+            get { return minimumElementCount; }
+            set { minimumElementCount = value; }
         }
 
         // <summary>
@@ -117,6 +124,7 @@ namespace System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder.Internal
                 target,
                 argumentName,
                 ExpectedElementCount,
+                MinimumElementCount,
                 AllowEmpty,
                 ConvertElement,
                 CreateResult,
@@ -127,6 +135,7 @@ namespace System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder.Internal
             IEnumerable<TElementIn> argument,
             string argumentName,
             int expectedElementCount,
+            int minimumElementCount,
             bool allowEmpty,
             Func<TElementIn, int, TElementOut> map,
             Func<List<TElementOut>, TResult> collect,
@@ -185,8 +194,12 @@ namespace System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder.Internal
             {
                 if (pos != expectedElementCount)
                 {
-                    throw new ArgumentException(Strings.Cqt_ExpressionList_IncorrectElementCount, argumentName);
+                    throw new ArgumentException("Strings.Cqt_ExpressionList_IncorrectElementCount", argumentName);
                 }
+            }
+            else if (minimumElementCount != -1 && pos < minimumElementCount)
+            {
+                throw new ArgumentException(string.Format("The expression list must contains at least {0} elements.", minimumElementCount), argumentName);
             }
             else
             {

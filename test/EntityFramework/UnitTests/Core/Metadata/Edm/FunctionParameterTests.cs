@@ -13,7 +13,8 @@ namespace System.Data.Entity.Core.Metadata.Edm
                 = new FunctionParameter(
                     "P",
                     TypeUsage.Create(PrimitiveType.GetEdmPrimitiveType(PrimitiveTypeKind.String)),
-                    ParameterMode.InOut);
+                    ParameterMode.InOut,
+                    false);
 
             Assert.Equal("String", function.TypeName);
         }
@@ -25,7 +26,8 @@ namespace System.Data.Entity.Core.Metadata.Edm
                 = new FunctionParameter(
                     "P",
                     TypeUsage.Create(PrimitiveType.GetEdmPrimitiveType(PrimitiveTypeKind.String)),
-                    ParameterMode.InOut);
+                    ParameterMode.InOut,
+                    false);
 
             Assert.Equal("P", function.Name);
 
@@ -60,7 +62,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
                             CreateConstFacet("MaxLength", PrimitiveTypeKind.Int32, 200)
                         });
 
-            var functionParameter = new FunctionParameter("P", typeUsage, ParameterMode.In);
+            var functionParameter = new FunctionParameter("P", typeUsage, ParameterMode.In, false);
 
             Assert.Equal(200, functionParameter.MaxLength.Value);
             Assert.Equal(10, functionParameter.Precision.Value);
@@ -75,7 +77,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
                     PrimitiveType.GetEdmPrimitiveType(PrimitiveTypeKind.String),
                     new[] { CreateConstFacet("Precision", PrimitiveTypeKind.Byte, (byte)10) });
 
-            var functionParameter = new FunctionParameter("P", typeUsage, ParameterMode.In);
+            var functionParameter = new FunctionParameter("P", typeUsage, ParameterMode.In, false);
 
             Assert.True(functionParameter.IsPrecisionConstant);
             Assert.Equal(10, (byte)functionParameter.Precision);
@@ -88,7 +90,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
                 = TypeUsage.Create(
                     PrimitiveType.GetEdmPrimitiveType(PrimitiveTypeKind.String), new Facet[0]);
 
-            var property = new FunctionParameter("P", typeUsage, ParameterMode.In);
+            var property = new FunctionParameter("P", typeUsage, ParameterMode.In, false);
 
             Assert.False(property.IsPrecisionConstant);
             Assert.Null(property.Precision);
@@ -102,7 +104,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
                     PrimitiveType.GetEdmPrimitiveType(PrimitiveTypeKind.String),
                     new[] { CreateConstFacet("Scale", PrimitiveTypeKind.Byte, (byte)10) });
 
-            var property = new FunctionParameter("P", typeUsage, ParameterMode.In);
+            var property = new FunctionParameter("P", typeUsage, ParameterMode.In, false);
 
             Assert.True(property.IsScaleConstant);
             Assert.Equal(10, (byte)property.Scale);
@@ -115,7 +117,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
                 = TypeUsage.Create(
                     PrimitiveType.GetEdmPrimitiveType(PrimitiveTypeKind.String), new Facet[0]);
 
-            var property = new FunctionParameter("P", typeUsage, ParameterMode.In);
+            var property = new FunctionParameter("P", typeUsage, ParameterMode.In, false);
 
             Assert.False(property.IsScaleConstant);
             Assert.Null(property.Scale);
@@ -129,7 +131,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
                     PrimitiveType.GetEdmPrimitiveType(PrimitiveTypeKind.String),
                     new[] { CreateConstFacet("MaxLength", PrimitiveTypeKind.Int32, 200) });
 
-            var property = new FunctionParameter("P", typeUsage, ParameterMode.In);
+            var property = new FunctionParameter("P", typeUsage, ParameterMode.In, false);
 
             Assert.True(property.IsMaxLengthConstant);
             Assert.Equal(200, property.MaxLength);
@@ -142,7 +144,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
                 = TypeUsage.Create(
                     PrimitiveType.GetEdmPrimitiveType(PrimitiveTypeKind.String), new Facet[0]);
 
-            var property = new FunctionParameter("P", typeUsage, ParameterMode.In);
+            var property = new FunctionParameter("P", typeUsage, ParameterMode.In, false);
 
             Assert.False(property.IsMaxLengthConstant);
             Assert.Null(property.MaxLength);
@@ -162,8 +164,8 @@ namespace System.Data.Entity.Core.Metadata.Edm
 
             for (var i = 0; i < parameterCount; i++)
             {
-                parameters[i] = new FunctionParameter("P" + i, typeUsage, ParameterMode.In);
-                returnParameters[i] = new FunctionParameter("R" + i, typeUsage, ParameterMode.ReturnValue);
+                parameters[i] = new FunctionParameter("P" + i, typeUsage, ParameterMode.In, false);
+                returnParameters[i] = new FunctionParameter("R" + i, typeUsage, ParameterMode.ReturnValue, false);
                 entitySets[i] = new EntitySet();
             }
 

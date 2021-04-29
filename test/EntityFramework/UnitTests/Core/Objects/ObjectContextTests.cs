@@ -3775,7 +3775,8 @@ namespace System.Data.Entity.Core.Objects
                                     new FunctionParameter(
                                         EdmConstants.ReturnType,
                                         TypeUsage.Create(collectionTypeMock.Object),
-                                        ParameterMode.ReturnValue),
+                                        ParameterMode.ReturnValue,
+                                        false),
                                 }
                 });
             entityContainer.AddFunctionImport(functionImport);

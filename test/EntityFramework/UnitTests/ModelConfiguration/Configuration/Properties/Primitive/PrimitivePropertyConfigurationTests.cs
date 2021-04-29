@@ -39,13 +39,15 @@ namespace System.Data.Entity.ModelConfiguration.Configuration
                 = new FunctionParameter(
                     "P1",
                     TypeUsage.Create(PrimitiveType.GetEdmPrimitiveType(PrimitiveTypeKind.String)),
-                    ParameterMode.In);
+                    ParameterMode.In,
+                    false);
 
             var functionParameter2
                 = new FunctionParameter(
                     "P2",
                     TypeUsage.Create(PrimitiveType.GetEdmPrimitiveType(PrimitiveTypeKind.String)),
-                    ParameterMode.In);
+                    ParameterMode.In,
+                    false);
 
             new EdmFunction(
                 "F", "N", DataSpace.SSpace,
@@ -71,13 +73,15 @@ namespace System.Data.Entity.ModelConfiguration.Configuration
                 = new FunctionParameter(
                     "P1",
                     TypeUsage.Create(PrimitiveType.GetEdmPrimitiveType(PrimitiveTypeKind.String)),
-                    ParameterMode.In);
+                    ParameterMode.In,
+                    false);
 
             var functionParameter2
                 = new FunctionParameter(
                     "Foo",
                     TypeUsage.Create(PrimitiveType.GetEdmPrimitiveType(PrimitiveTypeKind.String)),
-                    ParameterMode.In);
+                    ParameterMode.In,
+                    false);
 
             new EdmFunction(
                 "F", "N", DataSpace.SSpace,
@@ -103,7 +107,8 @@ namespace System.Data.Entity.ModelConfiguration.Configuration
                 = new FunctionParameter(
                     "P1",
                     TypeUsage.Create(PrimitiveType.GetEdmPrimitiveType(PrimitiveTypeKind.String)),
-                    ParameterMode.In);
+                    ParameterMode.In,
+                    false);
 
             new EdmFunction(
                 "F", "N", DataSpace.SSpace,

@@ -229,7 +229,8 @@ namespace System.Data.Entity.Core.Metadata.Edm
                                         new FunctionParameter(
                                             "ReturnType", 
                                             TypeUsage.CreateDefaultTypeUsage(new ComplexType()), 
-                                            ParameterMode.ReturnValue)
+                                            ParameterMode.ReturnValue,
+                                            false)
                                     }
                     });
 
@@ -263,11 +264,13 @@ namespace System.Data.Entity.Core.Metadata.Edm
                                         new FunctionParameter(
                                             "ReturnType1", 
                                             TypeUsage.CreateDefaultTypeUsage(new ComplexType()), 
-                                            ParameterMode.ReturnValue),
+                                            ParameterMode.ReturnValue,
+                                            false),
                                         new FunctionParameter(
                                             "ReturnType2", 
                                             TypeUsage.CreateDefaultTypeUsage(new EntityType("ET", "NS", DataSpace.CSpace)), 
-                                            ParameterMode.ReturnValue)
+                                            ParameterMode.ReturnValue,
+                                            false)
                                     }
                     });
 
@@ -292,7 +295,8 @@ namespace System.Data.Entity.Core.Metadata.Edm
                 new FunctionParameter(
                     "r", 
                     TypeUsage.CreateDefaultTypeUsage(new RowType().GetCollectionType()), 
-                    ParameterMode.ReturnValue);
+                    ParameterMode.ReturnValue,
+                    false);
 
             new EdmSerializationVisitor(schemaWriterMock.Object).VisitFunctionReturnParameter(returnParameter);
 
@@ -310,7 +314,8 @@ namespace System.Data.Entity.Core.Metadata.Edm
                 new FunctionParameter(
                     "r", 
                     TypeUsage.CreateDefaultTypeUsage(PrimitiveType.GetEdmPrimitiveType(PrimitiveTypeKind.String)), 
-                    ParameterMode.ReturnValue);
+                    ParameterMode.ReturnValue,
+                    false);
 
             new EdmSerializationVisitor(schemaWriterMock.Object).VisitFunctionReturnParameter(returnParameter);
 

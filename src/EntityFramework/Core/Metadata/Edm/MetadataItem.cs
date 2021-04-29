@@ -66,6 +66,8 @@ namespace System.Data.Entity.Core.Metadata.Edm
             ReturnValue = (1 << 11),
 
             ParameterMode = (In | Out | InOut | ReturnValue),
+
+            Variadic = (1 << 12),
         }
 
         private int _flags;

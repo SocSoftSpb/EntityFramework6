@@ -110,7 +110,8 @@ namespace System.Data.Entity.Core.Metadata.Edm
                                 new FunctionParameter(
                                 "P",
                                 typeUsage,
-                                ParameterMode.In),
+                                ParameterMode.In,
+                                false),
                                 new ModificationFunctionMemberPath(
                                 new[] { property },
                                 null),
@@ -119,13 +120,14 @@ namespace System.Data.Entity.Core.Metadata.Edm
                                 new FunctionParameter(
                                 "P_Original",
                                 typeUsage,
-                                ParameterMode.In),
+                                ParameterMode.In,
+                                false),
                                 new ModificationFunctionMemberPath(
                                 new[] { property },
                                 null),
                                 false)
                         },
-                    new FunctionParameter("RowsAffected", typeUsage, ParameterMode.Out),
+                    new FunctionParameter("RowsAffected", typeUsage, ParameterMode.Out, false),
                     new[]
                         {
                             new ModificationFunctionResultBinding("C", property)
@@ -162,7 +164,8 @@ namespace System.Data.Entity.Core.Metadata.Edm
                                 new FunctionParameter(
                                 "P",
                                 TypeUsage.Create(PrimitiveType.GetEdmPrimitiveType(PrimitiveTypeKind.Int32)),
-                                ParameterMode.In),
+                                ParameterMode.In,
+                                false),
                                 new ModificationFunctionMemberPath(
                                 new[]
                                     {
@@ -216,7 +219,8 @@ namespace System.Data.Entity.Core.Metadata.Edm
                                 new FunctionParameter(
                                 "P",
                                 TypeUsage.Create(PrimitiveType.GetEdmPrimitiveType(PrimitiveTypeKind.Int32)),
-                                ParameterMode.In),
+                                ParameterMode.In,
+                                false),
                                 new ModificationFunctionMemberPath(
                                 new EdmMember[]
                                     {
@@ -267,7 +271,8 @@ namespace System.Data.Entity.Core.Metadata.Edm
                                 new FunctionParameter(
                                 "P",
                                 TypeUsage.Create(PrimitiveType.GetEdmPrimitiveType(PrimitiveTypeKind.Int32)),
-                                ParameterMode.In),
+                                ParameterMode.In,
+                                false),
                                 new ModificationFunctionMemberPath(
                                 new EdmMember[]
                                     {
@@ -280,7 +285,8 @@ namespace System.Data.Entity.Core.Metadata.Edm
                                 new FunctionParameter(
                                 "P",
                                 TypeUsage.Create(PrimitiveType.GetEdmPrimitiveType(PrimitiveTypeKind.Int32)),
-                                ParameterMode.In),
+                                ParameterMode.In,
+                                false),
                                 new ModificationFunctionMemberPath(
                                 new EdmMember[]
                                     {
@@ -368,12 +374,13 @@ namespace System.Data.Entity.Core.Metadata.Edm
                                         new FunctionParameter(
                                             "ReturnValue",
                                             TypeUsage.CreateDefaultTypeUsage(complexType.GetCollectionType()),
-                                            ParameterMode.ReturnValue)
+                                            ParameterMode.ReturnValue,
+                                            false)
                                     },
                             Parameters =
                                 new[]
                                     {
-                                        new FunctionParameter("param", typeUsage, ParameterMode.Out)
+                                        new FunctionParameter("param", typeUsage, ParameterMode.Out, false)
                                     }
                         });
 
@@ -393,12 +400,13 @@ namespace System.Data.Entity.Core.Metadata.Edm
                                         new FunctionParameter(
                                             "Return",
                                             TypeUsage.CreateDefaultTypeUsage(rowType),
-                                            ParameterMode.ReturnValue)
+                                            ParameterMode.ReturnValue,
+                                            false)
                                     },
                             Parameters =
                                 new[]
                                     {
-                                        new FunctionParameter("param", typeUsage, ParameterMode.Out)
+                                        new FunctionParameter("param", typeUsage, ParameterMode.Out, false)
                                     }
                         });
 
@@ -463,12 +471,13 @@ namespace System.Data.Entity.Core.Metadata.Edm
                                         new FunctionParameter(
                                             "ReturnValue",
                                             TypeUsage.CreateDefaultTypeUsage(entityType.GetCollectionType()),
-                                            ParameterMode.ReturnValue)
+                                            ParameterMode.ReturnValue,
+                                            false)
                                     },
                         Parameters =
                             new[]
                                     {
-                                        new FunctionParameter("param", typeUsage, ParameterMode.Out)
+                                        new FunctionParameter("param", typeUsage, ParameterMode.Out, false)
                                     }
                     });
 
@@ -488,12 +497,13 @@ namespace System.Data.Entity.Core.Metadata.Edm
                                         new FunctionParameter(
                                             "Return",
                                             TypeUsage.CreateDefaultTypeUsage(rowType),
-                                            ParameterMode.ReturnValue)
+                                            ParameterMode.ReturnValue,
+                                            false)
                                     },
                         Parameters =
                             new[]
                                     {
-                                        new FunctionParameter("param", typeUsage, ParameterMode.Out)
+                                        new FunctionParameter("param", typeUsage, ParameterMode.Out, false)
                                     }
                     });
 
@@ -553,7 +563,8 @@ namespace System.Data.Entity.Core.Metadata.Edm
                                         new FunctionParameter(
                                             "ReturnValue",
                                             TypeUsage.CreateDefaultTypeUsage(typeUsage.EdmType.GetCollectionType()),
-                                            ParameterMode.ReturnValue)
+                                            ParameterMode.ReturnValue,
+                                            false)
                                     },
                     });
 
@@ -572,7 +583,8 @@ namespace System.Data.Entity.Core.Metadata.Edm
                                         new FunctionParameter(
                                             "Return",
                                             TypeUsage.CreateDefaultTypeUsage(rowType.GetCollectionType()),
-                                            ParameterMode.ReturnValue)
+                                            ParameterMode.ReturnValue,
+                                            false)
                                     },
                     });
             
@@ -616,7 +628,8 @@ namespace System.Data.Entity.Core.Metadata.Edm
                                         new FunctionParameter(
                                             "ReturnValue",
                                             TypeUsage.CreateDefaultTypeUsage(complexType.GetCollectionType()),
-                                            ParameterMode.ReturnValue)
+                                            ParameterMode.ReturnValue,
+                                            false)
                                     },
                     });
 
@@ -637,7 +650,8 @@ namespace System.Data.Entity.Core.Metadata.Edm
                                         new FunctionParameter(
                                             "Return",
                                             TypeUsage.CreateDefaultTypeUsage(rowType),
-                                            ParameterMode.ReturnValue)
+                                            ParameterMode.ReturnValue,
+                                            false)
                                     },
                     });
 
@@ -681,7 +695,8 @@ namespace System.Data.Entity.Core.Metadata.Edm
                                         new FunctionParameter(
                                             "ReturnValue",
                                             TypeUsage.CreateDefaultTypeUsage(complexType.GetCollectionType()),
-                                            ParameterMode.ReturnValue)
+                                            ParameterMode.ReturnValue,
+                                            false)
                                     },
                     });
 
@@ -702,7 +717,8 @@ namespace System.Data.Entity.Core.Metadata.Edm
                                         new FunctionParameter(
                                             "Return",
                                             TypeUsage.CreateDefaultTypeUsage(rowType),
-                                            ParameterMode.ReturnValue)
+                                            ParameterMode.ReturnValue,
+                                            false)
                                     },
                     });
 
@@ -779,7 +795,8 @@ namespace System.Data.Entity.Core.Metadata.Edm
                                         new FunctionParameter(
                                             "ReturnValue",
                                             TypeUsage.CreateDefaultTypeUsage(entityType.GetCollectionType()),
-                                            ParameterMode.ReturnValue)
+                                            ParameterMode.ReturnValue,
+                                            false)
                                     },
                     });
 
@@ -800,7 +817,8 @@ namespace System.Data.Entity.Core.Metadata.Edm
                                         new FunctionParameter(
                                             "Return",
                                             TypeUsage.CreateDefaultTypeUsage(rowType),
-                                            ParameterMode.ReturnValue)
+                                            ParameterMode.ReturnValue,
+                                            false)
                                     },
                     });
 

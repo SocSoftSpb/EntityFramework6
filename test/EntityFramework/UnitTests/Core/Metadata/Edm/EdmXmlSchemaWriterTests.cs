@@ -50,7 +50,8 @@ namespace System.Data.Entity.Core.Metadata.Edm
                                         "r",
                                         TypeUsage.CreateDefaultTypeUsage(
                                             PrimitiveType.GetEdmPrimitiveType(PrimitiveTypeKind.Int32)),
-                                        ParameterMode.ReturnValue)
+                                        ParameterMode.ReturnValue,
+                                        false)
                                 }
                     });
 
@@ -81,7 +82,8 @@ namespace System.Data.Entity.Core.Metadata.Edm
                                     new FunctionParameter(
                                         "r",
                                         returnParameterType,
-                                        ParameterMode.ReturnValue)
+                                        ParameterMode.ReturnValue,
+                                        false)
                                 }
                     });
 
@@ -153,7 +155,8 @@ namespace System.Data.Entity.Core.Metadata.Edm
                 = new FunctionParameter(
                     "Foo",
                     typeUsage,
-                    ParameterMode.In);
+                    ParameterMode.In,
+                    false);
 
             fixture.Writer.WriteFunctionParameterHeader(functionParameter);
 
@@ -176,7 +179,8 @@ namespace System.Data.Entity.Core.Metadata.Edm
                 = new FunctionParameter(
                     "Foo",
                     typeUsage,
-                    ParameterMode.In);
+                    ParameterMode.In,
+                    false);
 
             fixture.Writer.WriteFunctionParameterHeader(functionParameter);
 
@@ -196,7 +200,8 @@ namespace System.Data.Entity.Core.Metadata.Edm
                 new FunctionParameter(
                     "ReturnValue",
                     TypeUsage.CreateDefaultTypeUsage(complexType.GetCollectionType()),
-                    ParameterMode.ReturnValue);
+                    ParameterMode.ReturnValue,
+                    false);
 
             var functionPayload =
                 new EdmFunctionPayload
@@ -224,7 +229,8 @@ namespace System.Data.Entity.Core.Metadata.Edm
                 new FunctionParameter(
                     "ReturnValue",
                     TypeUsage.CreateDefaultTypeUsage(PrimitiveType.GetEdmPrimitiveType(PrimitiveTypeKind.Int32)),
-                    ParameterMode.ReturnValue);
+                    ParameterMode.ReturnValue,
+                    false);
 
             var functionPayload =
                 new EdmFunctionPayload
@@ -252,7 +258,8 @@ namespace System.Data.Entity.Core.Metadata.Edm
                 new FunctionParameter(
                     "miles",
                     TypeUsage.CreateDefaultTypeUsage(PrimitiveType.GetEdmPrimitiveType(PrimitiveTypeKind.Int32)),
-                    ParameterMode.InOut);
+                    ParameterMode.InOut,
+                    false);
 
             fixture.Writer.WriteFunctionImportParameterElementHeader(functionImportParameter);
 
@@ -280,7 +287,8 @@ namespace System.Data.Entity.Core.Metadata.Edm
                 new FunctionParameter(
                     "RetValue",
                     TypeUsage.CreateDefaultTypeUsage(PrimitiveType.GetEdmPrimitiveType(PrimitiveTypeKind.Int32)),
-                    ParameterMode.ReturnValue);
+                    ParameterMode.ReturnValue,
+                    false);
 
             fixture.Writer.WriteFunctionReturnTypeElementHeader();
             fixture.Writer.WriteFunctionImportReturnTypeAttributes(returnParameter, null, true);
@@ -297,7 +305,8 @@ namespace System.Data.Entity.Core.Metadata.Edm
                 new FunctionParameter(
                     "RetValue",
                     TypeUsage.CreateDefaultTypeUsage(PrimitiveType.GetEdmPrimitiveType(PrimitiveTypeKind.Int32)),
-                    ParameterMode.ReturnValue);
+                    ParameterMode.ReturnValue,
+                    false);
 
             fixture.Writer.WriteFunctionReturnTypeElementHeader();
             fixture.Writer.WriteFunctionImportReturnTypeAttributes(returnParameter, null, false);
@@ -314,7 +323,8 @@ namespace System.Data.Entity.Core.Metadata.Edm
                 new FunctionParameter(
                     "RetValue",
                     TypeUsage.CreateDefaultTypeUsage(PrimitiveType.GetEdmPrimitiveType(PrimitiveTypeKind.Int32)),
-                    ParameterMode.ReturnValue);
+                    ParameterMode.ReturnValue,
+                    false);
 
             fixture.Writer.WriteFunctionReturnTypeElementHeader();
             fixture.Writer.WriteFunctionImportReturnTypeAttributes(returnParameter, new EntitySet { Name = "ES" }, false);

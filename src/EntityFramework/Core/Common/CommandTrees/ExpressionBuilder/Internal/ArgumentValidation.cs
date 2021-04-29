@@ -210,7 +210,7 @@ namespace System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder.Internal
         }
 
         private static DbExpressionList CreateExpressionList(
-            IEnumerable<DbExpression> arguments, string argumentName, int expectedElementCount, Action<DbExpression, int> validationCallback)
+            IEnumerable<DbExpression> arguments, string argumentName, int expectedElementCount, Action<DbExpression, int> validationCallback, bool variadic)
         {
             var ev = CreateValidator(
                 arguments, argumentName,
@@ -225,7 +225,11 @@ namespace System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder.Internal
                 (expList) => new DbExpressionList(expList)
                 );
 
-            ev.ExpectedElementCount = expectedElementCount;
+            if (!variadic)
+                ev.ExpectedElementCount = expectedElementCount;
+            else
+                ev.MinimumElementCount = expectedElementCount;
+
             ev.AllowEmpty = false;
 
             return ev.Validate();
@@ -265,8 +269,8 @@ namespace System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder.Internal
                         }
 
                         RequireCompatibleType(exp, paramType, "argument");
-                    }
-                );
+                    },
+                variadic:false);
 
             return funcArgs;
         }
@@ -838,10 +842,26 @@ namespace System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder.Internal
             // Validate the arguments
             //
             var expectedParams = GetExpectedParameters(function);
-            validArgs = CreateExpressionList(
-                arguments, "arguments", expectedParams.Length,
-                (exp, idx) => { RequireCompatibleType(exp, expectedParams[idx].TypeUsage, "arguments", idx); }
+            if (!function.VariadicAttribute)
+            {
+                validArgs = CreateExpressionList(
+                    arguments, "arguments", expectedParams.Length,
+                    (exp, idx) => { RequireCompatibleType(exp, expectedParams[idx].TypeUsage, "arguments", idx); },
+                    variadic:false
                 );
+            }
+            else
+            {
+                validArgs = CreateExpressionList(
+                    arguments, "arguments", expectedParams.Length,
+                    (exp, idx) =>
+                    {
+                        var i = Math.Min(idx, expectedParams.Length - 1);
+                        RequireCompatibleType(exp, expectedParams[i].TypeUsage, "arguments", idx);
+                    },
+                    variadic:true
+                );
+            }
 
             return function.ReturnParameter.TypeUsage;
         }
@@ -917,7 +937,7 @@ namespace System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder.Internal
                 var pos = 0;
                 validArguments = CreateExpressionList(
                     arguments, "arguments", expectedTypes.Count,
-                    (exp, idx) => { RequireCompatibleType(exp, expectedTypes[pos++], "arguments", idx); });
+                    (exp, idx) => { RequireCompatibleType(exp, expectedTypes[pos++], "arguments", idx); }, variadic:false);
             }
 
             return instanceType;

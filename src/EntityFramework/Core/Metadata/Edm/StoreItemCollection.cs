@@ -406,7 +406,8 @@ namespace System.Data.Entity.Core.Metadata.Edm
                     new FunctionParameter(
                         sTypeFunction.ReturnParameter.Name,
                         edmTypeUsageReturnParameter,
-                        sTypeFunction.ReturnParameter.GetParameterMode());
+                        sTypeFunction.ReturnParameter.GetParameterMode(), 
+                        false);
             }
 
             var parameters = new List<FunctionParameter>();
@@ -416,7 +417,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
                 {
                     var edmTypeUsage = MetadataHelper.ConvertStoreTypeUsageToEdmTypeUsage(parameter.TypeUsage);
 
-                    var edmTypeParameter = new FunctionParameter(parameter.Name, edmTypeUsage, parameter.GetParameterMode());
+                    var edmTypeParameter = new FunctionParameter(parameter.Name, edmTypeUsage, parameter.GetParameterMode(), parameter.Variadic);
                     parameters.Add(edmTypeParameter);
                 }
             }

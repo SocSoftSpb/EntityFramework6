@@ -318,12 +318,26 @@ namespace System.Data.Entity.Core.Query.InternalTrees
                     argCount -= op.Orders.Count;
             }
 
-            Assert(
-                op.Function.Parameters.Count == argCount, "FunctionOp: Argument count ({0}) does not match parameter count ({1})",
-                argCount, op.Function.Parameters.Count);
-            for (var idx = 0; idx < argCount; idx++)
+            if (!op.Function.VariadicAttribute)
             {
-                AssertEqualTypes(n.Children[idx].Op.Type, op.Function.Parameters[idx].TypeUsage);
+                Assert(
+                    op.Function.Parameters.Count == argCount, "FunctionOp: Argument count ({0}) does not match parameter count ({1})",
+                    argCount, op.Function.Parameters.Count);
+                for (var idx = 0; idx < argCount; idx++)
+                {
+                    AssertEqualTypes(n.Children[idx].Op.Type, op.Function.Parameters[idx].TypeUsage);
+                }
+            }
+            else
+            {
+                Assert(
+                    op.Function.Parameters.Count <= argCount, "FunctionOp: Argument count ({0}) does not match minimal parameter count ({1})",
+                    argCount, op.Function.Parameters.Count);
+                for (var idx = 0; idx < argCount; idx++)
+                {
+                    var paramIndex = Math.Min(idx, op.Function.Parameters.Count - 1);
+                    AssertEqualTypes(n.Children[idx].Op.Type, op.Function.Parameters[paramIndex].TypeUsage);
+                }
             }
         }
 

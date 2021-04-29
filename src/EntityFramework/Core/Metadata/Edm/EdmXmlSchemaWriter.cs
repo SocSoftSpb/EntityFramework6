@@ -341,6 +341,11 @@ namespace System.Data.Entity.Core.Metadata.Edm
                     XmlConstants.ScaleElement, functionParameter.Scale.Value.ToString(CultureInfo.InvariantCulture));
             }
 
+            if (functionParameter.Variadic)
+            {
+                _xmlWriter.WriteAttributeString(XmlConstants.Variadic, GetLowerCaseStringFromBoolValue(functionParameter.Variadic));
+            }
+
         }
 
         internal virtual void WriteFunctionReturnTypeElementHeader()

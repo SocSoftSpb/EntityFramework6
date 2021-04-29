@@ -29,9 +29,10 @@ namespace System.Data.Entity.Core.Metadata.Edm
         // <param name="name"> The name of this FunctionParameter </param>
         // <param name="typeUsage"> The TypeUsage describing the type of this FunctionParameter </param>
         // <param name="parameterMode"> Mode of the parameter </param>
+        // <param name="variadic"> Is variadic parameter (only last parameter of function) </param>
         // <exception cref="System.ArgumentNullException">Thrown if name or typeUsage arguments are null</exception>
         // <exception cref="System.ArgumentException">Thrown if name argument is empty string</exception>
-        internal FunctionParameter(string name, TypeUsage typeUsage, ParameterMode parameterMode)
+        internal FunctionParameter(string name, TypeUsage typeUsage, ParameterMode parameterMode, bool variadic)
         {
             Check.NotEmpty(name, "name");
             Check.NotNull(typeUsage, "typeUsage");
@@ -40,6 +41,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
             _typeUsage = typeUsage;
 
             SetParameterMode(parameterMode);
+            SetFlag(MetadataFlags.Variadic, variadic);
         }
 
         /// <summary>
@@ -67,6 +69,15 @@ namespace System.Data.Entity.Core.Metadata.Edm
         public ParameterMode Mode
         {
             get { return GetParameterMode(); }
+        }
+
+        /// <summary>
+        /// Gets is this parameter can be variadic (may be true only for last parameter of function)
+        /// </summary>
+        [MetadataProperty(PrimitiveTypeKind.Boolean, false)]
+        public bool Variadic
+        {
+            get { return GetFlag(MetadataFlags.Variadic); }
         }
 
         string INamedDataModelItem.Identity
@@ -276,11 +287,28 @@ namespace System.Data.Entity.Core.Metadata.Edm
         /// </returns>
         public static FunctionParameter Create(string name, EdmType edmType, ParameterMode parameterMode)
         {
+            return Create(name, edmType, parameterMode, false);
+        }
+
+        /// <summary>
+        /// The factory method for constructing the <see cref="FunctionParameter" /> object.
+        /// </summary>
+        /// <param name="name">The name of the parameter.</param>
+        /// <param name="edmType">The EdmType of the parameter.</param>
+        /// <param name="parameterMode">
+        /// The <see cref="ParameterMode" /> of the parameter.
+        /// </param>
+        /// <param name="variadic"></param>
+        /// <returns>
+        /// A new, read-only instance of the <see cref="EdmFunction" /> type.
+        /// </returns>
+        public static FunctionParameter Create(string name, EdmType edmType, ParameterMode parameterMode, bool variadic)
+        {
             Check.NotEmpty(name, "name");
             Check.NotNull(edmType, "edmType");
 
             var functionParameter =
-                new FunctionParameter(name, TypeUsage.Create(edmType, FacetValues.NullFacetValues), parameterMode);
+                new FunctionParameter(name, TypeUsage.Create(edmType, FacetValues.NullFacetValues), parameterMode, variadic);
 
             functionParameter.SetReadOnly();
 

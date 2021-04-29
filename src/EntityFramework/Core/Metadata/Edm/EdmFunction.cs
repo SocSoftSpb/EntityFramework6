@@ -86,6 +86,11 @@ namespace System.Data.Entity.Core.Metadata.Edm
                 SetFunctionAttribute(ref _functionAttributes, FunctionAttributes.IsFunctionImport, payload.IsFunctionImport.Value);
             }
 
+            if (payload.IsPredicate.HasValue)
+            {
+                SetFunctionAttribute(ref _functionAttributes, FunctionAttributes.IsPredicate, payload.IsPredicate.Value);
+            }
+
             if (payload.ParameterTypeSemantics.HasValue)
             {
                 _parameterTypeSemantics = payload.ParameterTypeSemantics.Value;
@@ -123,8 +128,9 @@ namespace System.Data.Entity.Core.Metadata.Edm
             if (payload.Parameters != null)
             {
                 // validate the parameters
-                foreach (var parameter in payload.Parameters)
+                for (var i = 0; i < payload.Parameters.Count; i++)
                 {
+                    var parameter = payload.Parameters[i];
                     if (parameter == null)
                     {
                         throw new ArgumentException(Strings.ADP_CollectionParameterElementIsNull("parameters"));
@@ -133,6 +139,14 @@ namespace System.Data.Entity.Core.Metadata.Edm
                     if (parameter.Mode == ParameterMode.ReturnValue)
                     {
                         throw new ArgumentException(Strings.ReturnParameterInInputParameterCollection);
+                    }
+
+                    if (parameter.Variadic)
+                    {
+                        if (i < payload.Parameters.Count - 1)
+                            throw new ArgumentException("Only last parameter of function can be variadic.");
+
+                        SetFunctionAttribute(ref _functionAttributes, FunctionAttributes.Variadic, true);
                     }
                 }
 
@@ -301,6 +315,20 @@ namespace System.Data.Entity.Core.Metadata.Edm
         public bool WindowAttribute
         {
             get { return GetFunctionAttribute(FunctionAttributes.Window); }
+        }
+
+        /// <summary>Gets the variadic attribute of this function (function can accepts a variable number of arguments).</summary>
+        [MetadataProperty(PrimitiveTypeKind.Boolean, false)]
+        public bool VariadicAttribute
+        {
+            get { return GetFunctionAttribute(FunctionAttributes.Variadic); }
+        }
+
+        /// <summary>Gets attribute if function is predicate.</summary>
+        [MetadataProperty(PrimitiveTypeKind.Boolean, false)]
+        public bool IsPredicateAttribute
+        {
+            get { return GetFunctionAttribute(FunctionAttributes.IsPredicate); }
         }
 
         /// <summary>
@@ -506,7 +534,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
         }
 
         [Flags]
-        private enum FunctionAttributes : byte
+        private enum FunctionAttributes : short
         {
             Aggregate = 1,
             BuiltIn = 2,
@@ -516,6 +544,8 @@ namespace System.Data.Entity.Core.Metadata.Edm
             IsCachedStoreFunction = 32,
             IsFunctionImport = 64,
             Window = 128,
+            Variadic = 256,
+            IsPredicate = 512,
             Default = IsComposable,
         }
 

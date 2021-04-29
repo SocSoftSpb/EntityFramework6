@@ -353,7 +353,7 @@ namespace System.Data.Entity.Migrations.Infrastructure
                         new FunctionParameter(
                             _storeGeneratedKeys[_nextStoreGeneratedKey++].Name,
                             column.TypeUsage,
-                            ParameterMode.In), true);
+                            ParameterMode.In, false), true);
             }
 
             if (parameterBindings.Count == 1)
