@@ -63,7 +63,7 @@ namespace System.Data.Entity.ModelConfiguration.Edm.Services
                         {
                             yield return
                                 new ModificationFunctionParameterBinding(
-                                    new FunctionParameter(columnProperty.Name, columnProperty.TypeUsage, ParameterMode.In),
+                                    new FunctionParameter(columnProperty.Name, columnProperty.TypeUsage, ParameterMode.In, false),
                                     new ModificationFunctionMemberPath(propertyPath, null),
                                     isCurrent: !useOriginalValues);
                         }
@@ -73,7 +73,7 @@ namespace System.Data.Entity.ModelConfiguration.Edm.Services
                         {
                             yield return
                                 new ModificationFunctionParameterBinding(
-                                    new FunctionParameter(columnProperty.Name + "_Original", columnProperty.TypeUsage, ParameterMode.In),
+                                    new FunctionParameter(columnProperty.Name + "_Original", columnProperty.TypeUsage, ParameterMode.In, false),
                                     new ModificationFunctionMemberPath(propertyPath, null),
                                     isCurrent: false);
                         }
@@ -96,7 +96,8 @@ namespace System.Data.Entity.ModelConfiguration.Edm.Services
                        = new FunctionParameter(
                        iaFkProperty.Item2.Name,
                        iaFkProperty.Item2.TypeUsage,
-                       ParameterMode.In)
+                       ParameterMode.In,
+                       false)
                    select new ModificationFunctionParameterBinding(
                        functionParameter,
                        iaFkProperty.Item1,

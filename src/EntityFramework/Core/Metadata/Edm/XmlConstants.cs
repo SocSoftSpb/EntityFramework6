@@ -191,6 +191,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
         internal const string Parameter = "Parameter";
         internal const string Mode = "Mode";
         internal const string StoreFunctionName = "StoreFunctionName";
+        internal const string Variadic = "Variadic";
 
         internal const string ProviderManifestElement = "ProviderManifest";
         internal const string TypesElement = "Types";

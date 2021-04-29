@@ -60,7 +60,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
                             StoreFunctionName = "storeFunction",
                             IsAggregate = false,
                             IsNiladic = true,
-                            ReturnParameters = new[] { new FunctionParameter("ReturnParam", stringTypeUsage, ParameterMode.ReturnValue) }
+                            ReturnParameters = new[] { new FunctionParameter("ReturnParam", stringTypeUsage, ParameterMode.ReturnValue, false) }
                         },
                     new[] { new MetadataProperty("TestProperty", stringTypeUsage, "bar") });
 
@@ -98,7 +98,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
                                                       "returnParam",
                                                       TypeUsage.CreateDefaultTypeUsage(
                                                           PrimitiveType.GetEdmPrimitiveType(PrimitiveTypeKind.Int32)),
-                                                      ParameterMode.ReturnValue)
+                                                      ParameterMode.ReturnValue, false)
                                               }
                                   })).Message);
         }
@@ -140,7 +140,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
                                                           "param",
                                                           TypeUsage.CreateDefaultTypeUsage(
                                                               PrimitiveType.GetEdmPrimitiveType(PrimitiveTypeKind.Int32)),
-                                                          mode)
+                                                          mode, false)
                                                   }
                                       })).Message);
             }
@@ -168,7 +168,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
                                                       "param",
                                                       TypeUsage.CreateDefaultTypeUsage(
                                                           PrimitiveType.GetEdmPrimitiveType(PrimitiveTypeKind.Int32)),
-                                                      ParameterMode.ReturnValue)
+                                                      ParameterMode.ReturnValue, false)
                                                   ,
                                               }
                                   })).Message);
@@ -193,12 +193,12 @@ namespace System.Data.Entity.Core.Metadata.Edm
                                                       "param1",
                                                       TypeUsage.CreateDefaultTypeUsage(
                                                           PrimitiveType.GetEdmPrimitiveType(PrimitiveTypeKind.Int32)),
-                                                      ParameterMode.ReturnValue),
+                                                      ParameterMode.ReturnValue, false),
                                                   new FunctionParameter(
                                                       "param2",
                                                       TypeUsage.CreateDefaultTypeUsage(
                                                           PrimitiveType.GetEdmPrimitiveType(PrimitiveTypeKind.Int32)),
-                                                      ParameterMode.ReturnValue)
+                                                      ParameterMode.ReturnValue, false)
                                               }
                               })).Message);
         }

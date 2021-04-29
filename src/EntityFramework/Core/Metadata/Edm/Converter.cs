@@ -944,7 +944,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
                         var modifier = i == 0 ? string.Empty : i.ToString(CultureInfo.InvariantCulture);
                         i++;
                         var returnParameter = new FunctionParameter(
-                            EdmConstants.ReturnType + modifier, returnType, ParameterMode.ReturnValue);
+                            EdmConstants.ReturnType + modifier, returnType, ParameterMode.ReturnValue, false);
                         AddOtherContent(somReturnType, returnParameter);
                         returnParameters.Add(returnParameter);
                     }
@@ -972,7 +972,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
                 {
                     // Create the return parameter object, need to set the declaring type explicitly on the return parameter
                     // because we aren't adding it to the members collection                    
-                    returnParameters.Add(new FunctionParameter(EdmConstants.ReturnType, returnType, ParameterMode.ReturnValue));
+                    returnParameters.Add(new FunctionParameter(EdmConstants.ReturnType, returnType, ParameterMode.ReturnValue, false));
                 }
                 else
                 {
@@ -1040,7 +1040,8 @@ namespace System.Data.Entity.Core.Metadata.Edm
                 var parameter = new FunctionParameter(
                     somParameter.Name,
                     parameterType,
-                    GetParameterMode(somParameter.ParameterDirection));
+                    GetParameterMode(somParameter.ParameterDirection),
+                    somParameter.Variadic);
                 AddOtherContent(somParameter, parameter);
 
                 if (somParameter.Documentation != null)

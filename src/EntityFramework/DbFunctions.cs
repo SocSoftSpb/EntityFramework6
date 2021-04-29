@@ -1818,6 +1818,18 @@ namespace System.Data.Entity
             return decimal.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out _);
         }
 
+        /// <summary>
+        /// Contains for Full-Text Search
+        /// </summary>
+        /// <param name="expr">Expression to search</param>
+        /// <param name="columns">Columns list in table</param>
+        /// <returns></returns>
+        [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "arg")]
+        public static bool FtContains(string expr, params string[] columns)
+        {
+            throw new NotSupportedException(Strings.ELinq_DbFunctionDirectCall);
+        }
+
         private static TOut BootstrapFunction<TIn, TOut>(Expression<Func<IEnumerable<TIn>, TOut>> methodExpression, IEnumerable<TIn> collection)
         {
             var asQueryable = collection as IQueryable;

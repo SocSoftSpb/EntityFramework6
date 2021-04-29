@@ -104,7 +104,7 @@ namespace System.Data.Entity.Core.Metadata.Edm.Provider
             PrimitiveTypeKind returnType, string functionName, KeyValuePair<string, PrimitiveTypeKind>[] parameterDefinitions)
         {
             var returnParameter = CreateReturnParameter(returnType);
-            var parameters = parameterDefinitions.Select(paramDef => CreateParameter(paramDef.Value, paramDef.Key)).ToArray();
+            var parameters = parameterDefinitions.Select(paramDef => CreateParameter(paramDef.Value, paramDef.Key, false)).ToArray();
 
             var function = new EdmFunction(
                 functionName,
@@ -124,23 +124,26 @@ namespace System.Data.Entity.Core.Metadata.Edm.Provider
             functions.Add(function);
         }
 
-        internal void AddFunction(PrimitiveTypeKind returnType, string functionName)
+        internal void AddFunction(PrimitiveTypeKind returnType, string functionName,
+            bool variadic = false, bool isPredicate = false)
         {
-            AddFunction(returnType, functionName, new KeyValuePair<string, PrimitiveTypeKind>[] { });
+            AddFunction(returnType, functionName, variadic, isPredicate, new KeyValuePair<string, PrimitiveTypeKind>[] { });
         }
 
         internal void AddFunction(
-            PrimitiveTypeKind returnType, string functionName, PrimitiveTypeKind argumentTypeKind, string argumentName)
+            PrimitiveTypeKind returnType, string functionName, PrimitiveTypeKind argumentTypeKind, string argumentName,
+            bool variadic = false, bool isPredicate = false)
         {
-            AddFunction(returnType, functionName, new[] { new KeyValuePair<string, PrimitiveTypeKind>(argumentName, argumentTypeKind) });
+            AddFunction(returnType, functionName, variadic, isPredicate, new[] { new KeyValuePair<string, PrimitiveTypeKind>(argumentName, argumentTypeKind) });
         }
 
         internal void AddFunction(
             PrimitiveTypeKind returnType, string functionName, PrimitiveTypeKind argument1TypeKind, string argument1Name,
-            PrimitiveTypeKind argument2TypeKind, string argument2Name)
+            PrimitiveTypeKind argument2TypeKind, string argument2Name,
+            bool variadic = false, bool isPredicate = false)
         {
             AddFunction(
-                returnType, functionName,
+                returnType, functionName, variadic, isPredicate,
                 new[]
                     {
                         new KeyValuePair<string, PrimitiveTypeKind>(argument1Name, argument1TypeKind),
@@ -150,10 +153,11 @@ namespace System.Data.Entity.Core.Metadata.Edm.Provider
 
         internal void AddFunction(
             PrimitiveTypeKind returnType, string functionName, PrimitiveTypeKind argument1TypeKind, string argument1Name,
-            PrimitiveTypeKind argument2TypeKind, string argument2Name, PrimitiveTypeKind argument3TypeKind, string argument3Name)
+            PrimitiveTypeKind argument2TypeKind, string argument2Name, PrimitiveTypeKind argument3TypeKind, string argument3Name,
+            bool variadic = false, bool isPredicate = false)
         {
             AddFunction(
-                returnType, functionName,
+                returnType, functionName, variadic, isPredicate,
                 new[]
                     {
                         new KeyValuePair<string, PrimitiveTypeKind>(argument1Name, argument1TypeKind),
@@ -168,10 +172,11 @@ namespace System.Data.Entity.Core.Metadata.Edm.Provider
             PrimitiveTypeKind argument3TypeKind, string argument3Name,
             PrimitiveTypeKind argument4TypeKind, string argument4Name,
             PrimitiveTypeKind argument5TypeKind, string argument5Name,
-            PrimitiveTypeKind argument6TypeKind, string argument6Name)
+            PrimitiveTypeKind argument6TypeKind, string argument6Name,
+            bool variadic = false, bool isPredicate = false)
         {
             AddFunction(
-                returnType, functionName,
+                returnType, functionName, variadic, isPredicate,
                 new[]
                     {
                         new KeyValuePair<string, PrimitiveTypeKind>(argument1Name, argument1TypeKind),
@@ -190,10 +195,11 @@ namespace System.Data.Entity.Core.Metadata.Edm.Provider
             PrimitiveTypeKind argument4TypeKind, string argument4Name,
             PrimitiveTypeKind argument5TypeKind, string argument5Name,
             PrimitiveTypeKind argument6TypeKind, string argument6Name,
-            PrimitiveTypeKind argument7TypeKind, string argument7Name)
+            PrimitiveTypeKind argument7TypeKind, string argument7Name,
+            bool variadic = false, bool isPredicate = false)
         {
             AddFunction(
-                returnType, functionName,
+                returnType, functionName, variadic, isPredicate,
                 new[]
                     {
                         new KeyValuePair<string, PrimitiveTypeKind>(argument1Name, argument1TypeKind),
@@ -207,10 +213,16 @@ namespace System.Data.Entity.Core.Metadata.Edm.Provider
         }
 
         private void AddFunction(
-            PrimitiveTypeKind returnType, string functionName, KeyValuePair<string, PrimitiveTypeKind>[] parameterDefinitions)
+            PrimitiveTypeKind returnType, string functionName, bool variadic, bool isPredicate, KeyValuePair<string, PrimitiveTypeKind>[] parameterDefinitions)
         {
             var returnParameter = CreateReturnParameter(returnType);
-            var parameters = parameterDefinitions.Select(paramDef => CreateParameter(paramDef.Value, paramDef.Key)).ToArray();
+
+            var parameters = new FunctionParameter[parameterDefinitions.Length];
+            for (var i = 0; i < parameterDefinitions.Length; i++)
+            {
+                var isParameterVariadic = (variadic && i == parameterDefinitions.Length - 1);
+                parameters[i] = CreateParameter(parameterDefinitions[i].Value, parameterDefinitions[i].Key, isParameterVariadic);
+            }
 
             var function = new EdmFunction(
                 functionName,
@@ -222,6 +234,7 @@ namespace System.Data.Entity.Core.Metadata.Edm.Provider
                         ReturnParameters = new[] { returnParameter },
                         Parameters = parameters,
                         IsFromProviderManifest = true,
+                        IsPredicate = isPredicate
                     });
 
             function.SetReadOnly();
@@ -229,21 +242,21 @@ namespace System.Data.Entity.Core.Metadata.Edm.Provider
             functions.Add(function);
         }
 
-        private FunctionParameter CreateParameter(PrimitiveTypeKind primitiveParameterType, string parameterName)
+        private FunctionParameter CreateParameter(PrimitiveTypeKind primitiveParameterType, string parameterName, bool variadic)
         {
-            return new FunctionParameter(parameterName, primitiveTypes[(int)primitiveParameterType], ParameterMode.In);
+            return new FunctionParameter(parameterName, primitiveTypes[(int)primitiveParameterType], ParameterMode.In, variadic);
         }
 
         private FunctionParameter CreateAggregateParameter(PrimitiveTypeKind collectionParameterTypeElementTypeKind)
         {
             return new FunctionParameter(
                 "collection", TypeUsage.Create(primitiveTypes[(int)collectionParameterTypeElementTypeKind].EdmType.GetCollectionType()),
-                ParameterMode.In);
+                ParameterMode.In, false);
         }
 
         private FunctionParameter CreateReturnParameter(PrimitiveTypeKind primitiveReturnType)
         {
-            return new FunctionParameter(EdmConstants.ReturnType, primitiveTypes[(int)primitiveReturnType], ParameterMode.ReturnValue);
+            return new FunctionParameter(EdmConstants.ReturnType, primitiveTypes[(int)primitiveReturnType], ParameterMode.ReturnValue, false);
         }
     }
 }

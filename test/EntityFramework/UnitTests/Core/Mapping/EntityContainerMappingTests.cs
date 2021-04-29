@@ -99,7 +99,8 @@ namespace System.Data.Entity.Core.Mapping
                                             new FunctionParameter(
                                                 "ReturnType",
                                                 typeUsage,
-                                                ParameterMode.ReturnValue),
+                                                ParameterMode.ReturnValue,
+                                                false),
                                         }
 
                             }),
@@ -114,7 +115,8 @@ namespace System.Data.Entity.Core.Mapping
                                             new FunctionParameter(
                                                 "ReturnType",
                                                 typeUsage,
-                                                ParameterMode.ReturnValue),
+                                                ParameterMode.ReturnValue,
+                                                false),
                                         }
                             }),
                     null);

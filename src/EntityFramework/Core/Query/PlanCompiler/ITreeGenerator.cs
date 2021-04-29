@@ -437,7 +437,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
                             }
                             else
                             {
-                                return false;
+                                return edmFunction.IsPredicateAttribute;
                             }
                         }
                     default:
@@ -1169,9 +1169,12 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
                 var argNodes = new List<Node>(e.Arguments.Count);
                 for (var idx = 0; idx < e.Arguments.Count; idx++)
                 {
+                    var parameterIndex = idx;
+                    if (e.Function.VariadicAttribute && idx >= e.Function.Parameters.Count)
+                        parameterIndex = e.Function.Parameters.Count - 1;
                     // Ensure that any argument with a result type that does not exactly match the type of
                     // the corresponding function parameter is enclosed in a SoftCastOp.
-                    argNodes.Add(BuildSoftCast(VisitExprAsScalar(e.Arguments[idx]), e.Function.Parameters[idx].TypeUsage));
+                    argNodes.Add(BuildSoftCast(VisitExprAsScalar(e.Arguments[idx]), e.Function.Parameters[parameterIndex].TypeUsage));
                 }
 
                 var functionOp = _iqtCommand.CreateFunctionOp(e.Function);

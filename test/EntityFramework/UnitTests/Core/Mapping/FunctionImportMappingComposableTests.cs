@@ -128,7 +128,7 @@ namespace System.Data.Entity.Core.Mapping
                                         new FunctionParameter(
                                             "ReturnType", 
                                             TypeUsage.CreateDefaultTypeUsage(entityType), 
-                                            ParameterMode.ReturnValue)
+                                            ParameterMode.ReturnValue, false)
                                     }
                         });
 
@@ -169,7 +169,7 @@ namespace System.Data.Entity.Core.Mapping
                                         new FunctionParameter(
                                             "ReturnType",                                            
                                             TypeUsage.CreateDefaultTypeUsage(new RowType()), 
-                                            ParameterMode.ReturnValue)
+                                            ParameterMode.ReturnValue, false)
                                     }
                     });
 
@@ -213,7 +213,7 @@ namespace System.Data.Entity.Core.Mapping
                                         new FunctionParameter(
                                             "ReturnType", 
                                             TypeUsage.CreateDefaultTypeUsage(complexType.GetCollectionType()), 
-                                            ParameterMode.ReturnValue)
+                                            ParameterMode.ReturnValue, false)
                                     }
                     });
 
@@ -255,7 +255,7 @@ namespace System.Data.Entity.Core.Mapping
                                         new FunctionParameter(
                                             "ReturnType",
                                             TypeUsage.CreateDefaultTypeUsage(complexType.GetCollectionType()),
-                                            ParameterMode.ReturnValue)
+                                            ParameterMode.ReturnValue, false)
                                     }
                         });
 

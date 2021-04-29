@@ -958,6 +958,7 @@ namespace System.Data.Entity.Core.Metadata.Edm.Provider
             functions.AddFunction(PrimitiveTypeKind.Int32, "DataLength", PrimitiveTypeKind.String, "stringArgument");
             functions.AddFunction(PrimitiveTypeKind.Int32, "DataLength", PrimitiveTypeKind.Binary, "bytesArgument");
             functions.AddFunction(PrimitiveTypeKind.Boolean, "IsNumeric", PrimitiveTypeKind.String, "value");
+            functions.AddFunction(PrimitiveTypeKind.Boolean, "FT_CONTAINS", PrimitiveTypeKind.String, "expr", PrimitiveTypeKind.String, "column0", variadic:true, isPredicate:true);
 
             #endregion // Misc Functions
 

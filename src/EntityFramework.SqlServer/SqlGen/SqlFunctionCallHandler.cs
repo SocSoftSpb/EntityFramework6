@@ -293,6 +293,7 @@ namespace System.Data.Entity.SqlServer.SqlGen
             functionHandlers.Add("BitwiseXor", HandleCanonicalFunctionBitwise);
 
             functionHandlers.Add("IsNumeric", HandleCanonicalFunctionIsNumeric);
+            functionHandlers.Add("FT_CONTAINS", HandleCanonicalFunctionFtContains);
 
             return functionHandlers;
         }
@@ -1597,6 +1598,29 @@ namespace System.Data.Entity.SqlServer.SqlGen
         private static ISqlFragment HandleCanonicalFunctionIsNumeric(SqlGenerator sqlgen, DbFunctionExpression e)
         {
             return HandleFunctionDefaultCastReturnValue(sqlgen, e, "ISNUMERIC", "BIT");
+        }
+
+        // <summary>
+        // FT_CONTAINS -> CONTAINS
+        // </summary>
+        private static ISqlFragment HandleCanonicalFunctionFtContains(SqlGenerator sqlgen, DbFunctionExpression e)
+        {
+            var builder = new SqlBuilder();
+            builder.Append("CONTAINS(");
+            if (e.Arguments.Count > 2)
+            {
+                WriteFunctionArguments(sqlgen, e.Arguments.Skip(1), builder);
+            }
+            else
+            {
+                builder.Append(e.Arguments[1].Accept(sqlgen));
+            }
+            builder.Append(", ");
+            builder.Append(e.Arguments[0].Accept(sqlgen));
+
+            builder.Append(")");
+
+            return builder;
         }
 
         // <summary>

@@ -23,13 +23,15 @@ namespace System.Data.Entity.Core.Metadata.Edm
                 = new FunctionParameter(
                     "P",
                     TypeUsage.Create(PrimitiveType.GetEdmPrimitiveType(PrimitiveTypeKind.String)),
-                    ParameterMode.In);
+                    ParameterMode.In,
+                    false);
 
             var parameter2
                 = new FunctionParameter(
                     "P2",
                     TypeUsage.Create(PrimitiveType.GetEdmPrimitiveType(PrimitiveTypeKind.String)),
-                    ParameterMode.In);
+                    ParameterMode.In,
+                    false);
             
             var function
                 = new EdmFunction(

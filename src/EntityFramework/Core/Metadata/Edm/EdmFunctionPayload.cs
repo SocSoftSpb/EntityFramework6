@@ -67,6 +67,10 @@ namespace System.Data.Entity.Core.Metadata.Edm
         /// <returns>true if this function is a function import; otherwise, false.</returns>
         public bool? IsFunctionImport { get; set; }
 
+        /// <summary>Gets or sets whether this function is a predicate.</summary>
+        /// <returns>true if this function is a predicate; otherwise, false.</returns>
+        public bool? IsPredicate { get; set; }
+
         /// <summary>Gets or sets the return parameters.</summary>
         /// <returns>The return parameters.</returns>
         [SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]

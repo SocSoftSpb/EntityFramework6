@@ -230,7 +230,7 @@ namespace System.Data.Entity.ModelConfiguration.Configuration
                             providerManifest.GetStoreType(
                                 TypeUsage.CreateDefaultTypeUsage(
                                     PrimitiveType.GetEdmPrimitiveType(PrimitiveTypeKind.Int32))),
-                            ParameterMode.Out);
+                            ParameterMode.Out, false);
 
                     modificationStoredProcedureMapping.Function.AddParameter(rowsAffectedParameter);
                     modificationStoredProcedureMapping.RowsAffectedParameter = rowsAffectedParameter;

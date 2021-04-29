@@ -43,7 +43,7 @@ namespace System.Data.Entity.Edm
                 = new FunctionParameter(
                     "P",
                     TypeUsage.Create(PrimitiveType.GetEdmPrimitiveType(PrimitiveTypeKind.String)),
-                    ParameterMode.In);
+                    ParameterMode.In, false);
 
             var functionPayload
                 = new EdmFunctionPayload
@@ -92,8 +92,8 @@ namespace System.Data.Entity.Edm
             var typeUsage = 
                 TypeUsage.CreateDefaultTypeUsage(PrimitiveType.GetEdmPrimitiveType(PrimitiveTypeKind.Int32));
 
-            var inputParam = new FunctionParameter("p1", typeUsage, ParameterMode.In);
-            var returnParam = new FunctionParameter("r", typeUsage, ParameterMode.ReturnValue);
+            var inputParam = new FunctionParameter("p1", typeUsage, ParameterMode.In, false);
+            var returnParam = new FunctionParameter("r", typeUsage, ParameterMode.ReturnValue, false);
 
             var functionPayload =
                 new EdmFunctionPayload
@@ -131,7 +131,7 @@ namespace System.Data.Entity.Edm
                     "r",
                     TypeUsage.CreateDefaultTypeUsage(
                         PrimitiveType.GetEdmPrimitiveType(PrimitiveTypeKind.Int32)),
-                    ParameterMode.ReturnValue);
+                    ParameterMode.ReturnValue, false);
 
             var functionPayload =
                 new EdmFunctionPayload
@@ -157,7 +157,7 @@ namespace System.Data.Entity.Edm
                 new FunctionParameter(
                     "r",
                     TypeUsage.CreateDefaultTypeUsage(new RowType().GetCollectionType()),
-                    ParameterMode.ReturnValue);
+                    ParameterMode.ReturnValue, false);
 
             visitorMock.Object.VisitFunctionReturnParameter(returnParameter);
 

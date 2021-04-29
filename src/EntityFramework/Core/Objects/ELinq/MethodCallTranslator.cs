@@ -238,6 +238,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
                         new MathPowerTranslator(),
                         new GuidNewGuidTranslator(),
                         new LikeFunctionTranslator(),
+                        new FullTextFunctionTranslator(),
                         new StringContainsTranslator(),
                         new StartsWithTranslator(),
                         new EndsWithTranslator(),
@@ -958,6 +959,61 @@ namespace System.Data.Entity.Core.Objects.ELinq
                     if (call.Method.Name == nameof(DbFunctions.LikeCommon))
                         return parent.TranslateLikeCommon(call);
                     return parent.TranslateLike(call);
+                }
+            }
+
+            internal sealed class FullTextFunctionTranslator : CallTranslator
+            {
+                internal FullTextFunctionTranslator()
+                    : base(GetMethods())
+                {
+                }
+
+                private static IEnumerable<MethodInfo> GetMethods()
+                {
+                    yield return typeof(DbFunctions).GetDeclaredMethod(nameof(DbFunctions.FtContains), typeof(string), typeof(string[]));
+                }
+
+                internal override CqtExpression Translate(ExpressionConverter parent, MethodCallExpression call)
+                {
+                    var arg0 = parent.TranslateExpression(call.Arguments[0]);
+                    if (arg0.ExpressionKind == DbExpressionKind.ParameterReference)
+                    {
+                        var maxLength = arg0.ResultType.GetFacetValue<int?>(DbProviderManifest.MaxLengthFacetName);
+                        if (maxLength.GetValueOrDefault() <= 0)
+                        {
+                            var isUnicode = arg0.ResultType.GetFacetValue<bool?>(DbProviderManifest.UnicodeFacetName).GetValueOrDefault(true);
+                            var updatedType = arg0.ResultType.ShallowCopy(
+                                new FacetValues
+                                {
+                                    Unicode = isUnicode,
+                                    MaxLength = isUnicode ? 4000 : 8000
+                                });
+
+                            arg0 = updatedType.Parameter(((DbParameterReferenceExpression)arg0).ParameterName);
+                        }
+                    }
+
+                    var argArray = call.Arguments[1];
+                    if (argArray.NodeType != ExpressionType.NewArrayInit)
+                        throw new NotSupportedException(string.Format("Second parameter of {0} must be a New Array of params.", call.Method.Name));
+
+                    var arrayExp = (NewArrayExpression)argArray;
+
+                    var args = new List<CqtExpression>(arrayExp.Expressions.Count + 1)
+                    {
+                        arg0
+                    };
+
+                    foreach (var argExp in arrayExp.Expressions)
+                    {
+                        args.Add(parent.TranslateExpression(argExp));
+                    }
+
+                    var argTypes = new[] { arg0.ResultType, arg0.ResultType };
+                    var fnkContains = parent.FindCanonicalFunction("FT_CONTAINS", argTypes, false, call);
+
+                    return fnkContains.Invoke(args);
                 }
             }
 

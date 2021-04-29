@@ -22,6 +22,7 @@ namespace System.Data.Entity.Core.SchemaObjectModel
         private CollectionKind _collectionKind = CollectionKind.None;
         private ModelFunctionTypeElement _typeSubElement;
         private bool _isRefType;
+        private bool _variadic;
 
         #endregion
 
@@ -40,6 +41,11 @@ namespace System.Data.Entity.Core.SchemaObjectModel
         internal ParameterDirection ParameterDirection
         {
             get { return _parameterDirection; }
+        }
+
+        internal bool Variadic
+        {
+            get { return _variadic; }
         }
 
         internal CollectionKind CollectionKind
@@ -145,6 +151,11 @@ namespace System.Data.Entity.Core.SchemaObjectModel
                 HandleModeAttribute(reader);
                 return true;
             }
+            else if (CanHandleAttribute(reader, XmlConstants.Variadic))
+            {
+
+            }
+
             else if (_typeUsageBuilder.HandleAttribute(reader))
             {
                 return true;
@@ -236,6 +247,14 @@ namespace System.Data.Entity.Core.SchemaObjectModel
                         break;
                 }
             }
+        }
+
+        private void HandleVariadicAttribute(XmlReader reader)
+        {
+            DebugCheck.NotNull(reader);
+            var variadic = false;
+            HandleBoolAttribute(reader, ref variadic);
+            _variadic = variadic;
         }
 
         private void AddErrorBadParameterDirection(string value, XmlReader reader, Func<object, object, object, object, string> errorFunc)
