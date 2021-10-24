@@ -6,6 +6,7 @@ namespace System.Data.Entity.SqlServer.SqlGen
     using System.Data.Entity.Core;
     using System.Data.Entity.Core.Common.CommandTrees;
     using System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder;
+    using System.Data.Entity.Core.Common.CommandTrees.Internal;
     using System.Data.Entity.Core.Metadata.Edm;
     using System.Data.Entity.Spatial;
     using System.Data.Entity.SqlServer.Resources;
@@ -294,6 +295,9 @@ namespace System.Data.Entity.SqlServer.SqlGen
 
             functionHandlers.Add("IsNumeric", HandleCanonicalFunctionIsNumeric);
             functionHandlers.Add("FT_CONTAINS", HandleCanonicalFunctionFtContains);
+
+            functionHandlers.Add("dml_" + nameof(DbDmlFunctions.DeleteMarker), HandleDeleteMarker);
+            functionHandlers.Add("dml_" + nameof(DbDmlFunctions.DeleteMarkerRowCount), HandleDeleteMarker);
 
             return functionHandlers;
         }
@@ -2125,6 +2129,16 @@ namespace System.Data.Entity.SqlServer.SqlGen
             }
 
             return e.Arguments.Any(t => t.ResultType.IsPrimitiveType(type));
+        }
+
+        private static ISqlFragment HandleDeleteMarker(SqlGenerator sqlGen, DbFunctionExpression functionExpr)
+        {
+            if (sqlGen.DmlOperation?.Kind != DbDmlOperationKind.Delete)
+                throw new InvalidOperationException($"Unexpected call of {functionExpr.Function.FullName}.");
+
+            var result = new SqlBuilder();
+            result.Append("1");
+            return result;
         }
     }
 }

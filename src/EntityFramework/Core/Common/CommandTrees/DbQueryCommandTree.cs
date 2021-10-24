@@ -181,6 +181,11 @@ namespace System.Data.Entity.Core.Common.CommandTrees
         /// </summary>
         public QueryOptions QueryOptions { get; set; }
 
+        /// <summary>
+        /// Batch DML Operation
+        /// </summary>
+        public DbDmlOperation DmlOperation { get; set; }
+
         internal static DbQueryCommandTree FromValidExpression(MetadataWorkspace metadata, DataSpace dataSpace, DbExpression query, 
             bool useDatabaseNullSemantics, bool disableFilterOverProjectionSimplificationForCustomFunctions)
         {

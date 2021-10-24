@@ -232,6 +232,8 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
 
         internal QueryOptions QueryOptions { get; private set; }
 
+        internal cqt.DbDmlOperation DmlOperation { get; private set; }
+
         // <summary>
         // Keeps track of foreign key relationships. Needed by  Join Elimination
         // </summary>
@@ -594,6 +596,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
                     GlobalHints = hh;
 
                 QueryOptions = cqtree.QueryOptions;
+                DmlOperation = cqtree.DmlOperation;
             }
 
             // Generate the ITree

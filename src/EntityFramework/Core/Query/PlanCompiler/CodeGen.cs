@@ -73,7 +73,8 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
                         ProviderCommandInfoUtils.Create(
                             Command,
                             Command.Root, // input node
-                            m_compilerState.QueryOptions
+                            m_compilerState.QueryOptions,
+                            m_compilerState.DmlOperation
                             )
                     });
 

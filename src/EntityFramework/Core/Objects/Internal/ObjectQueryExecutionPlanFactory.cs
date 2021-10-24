@@ -27,7 +27,7 @@ namespace System.Data.Entity.Core.Objects.Internal
         public virtual ObjectQueryExecutionPlan Prepare(
             ObjectContext context, DbQueryCommandTree tree, Type elementType, MergeOption mergeOption, bool streaming, Span span,
             IEnumerable<Tuple<ObjectParameter, QueryParameterExpression>> compiledQueryParameters, AliasGenerator aliasGenerator,
-            Dictionary<string, TableHints> hintsForType = null, QueryOptions queryOptions = null)
+            Dictionary<string, TableHints> hintsForType = null, QueryOptions queryOptions = null, DbDmlOperation dmlOperation = null)
         {
             var treeResultType = tree.Query.ResultType;
 
@@ -49,10 +49,12 @@ namespace System.Data.Entity.Core.Objects.Internal
 
             tree.QueryOptions = queryOptions;
 
+            tree.DmlOperation = dmlOperation;
+
             var entityDefinition = CreateCommandDefinition(context, tree);
 
             var shaperFactory = Translator.TranslateColumnMap(
-                _translator, elementType, entityDefinition.CreateColumnMap(null),
+                _translator, elementType,  dmlOperation?.CreateColumnMap() ?? entityDefinition.CreateColumnMap(null),
                 context.MetadataWorkspace, spanInfo, mergeOption, streaming, false);
 
             // attempt to determine entity information for this query (e.g. which entity type and which entity set)

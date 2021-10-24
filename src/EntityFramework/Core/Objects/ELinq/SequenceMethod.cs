@@ -186,6 +186,9 @@ namespace System.Data.Entity.Core.Objects.ELinq
         Zip,
 
         TakeWithTies,
+        
+        BatchUpdate,
+        BatchInsert,
 
         NotSupported,
     }

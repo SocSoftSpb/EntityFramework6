@@ -235,6 +235,9 @@ namespace System.Data.Entity.SqlServer.SqlGen
                         sqlGenerator.AllExtentNames[newName] = 0;
                     }
 
+                    if (Select.DmlModificator != null)
+                        Select.DmlModificator.AnalyzeExtent(fromAlias);
+
                     // Add the current alias to the list, so that the extents
                     // that follow do not collide with me.
                     if (null == outerExtentAliases)
@@ -250,9 +253,15 @@ namespace System.Data.Entity.SqlServer.SqlGen
             // Increase the indent, so that the Sql statement is nested by one tab.
             writer.Indent += 1; // ++ can be confusing in this context
 
+            var dmlMod = Select.DmlModificator;
+            dmlMod?.WriteSubqueryHeader(writer, sqlGenerator);
+
             @select.WriteSql(writer, sqlGenerator);
 
             writer.WriteLine();
+
+            dmlMod?.WriteFromClause(writer, sqlGenerator);
+
             writer.Write("FROM ");
             From.WriteSql(writer, sqlGenerator);
 
@@ -287,12 +296,21 @@ namespace System.Data.Entity.SqlServer.SqlGen
                 WriteOffsetFetch(writer, Select.Top, Select.Skip, sqlGenerator); // Write OFFSET, FETCH clause.
             }
 
+            dmlMod?.WriteSubqueryFooter(writer, sqlGenerator);
+
             if (null != QueryOptions && !QueryOptions.IsEmpty())
             {
                 new OptionClause(QueryOptions).WriteSql(writer, sqlGenerator);
             }
 
             --writer.Indent;
+
+            if (dmlMod != null && dmlMod.WithRowCount)
+            {
+                writer.Write(";");
+                writer.WriteLine();
+                writer.Write("SELECT @@ROWCOUNT;");
+            }
         }
 
         #endregion
@@ -313,5 +331,6 @@ namespace System.Data.Entity.SqlServer.SqlGen
                 writer.Write(" ROWS ONLY ");
             }
         }
+
     }
 }

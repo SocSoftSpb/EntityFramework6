@@ -269,6 +269,8 @@ namespace System.Data.Entity.SqlServer.SqlGen
 
         private List<string> _targets;
 
+        internal DbDmlOperation DmlOperation { get; private set; }
+
         public List<string> Targets
         {
             get { return _targets; }
@@ -443,6 +445,7 @@ namespace System.Data.Entity.SqlServer.SqlGen
         {
             DebugCheck.NotNull(tree.Query);
 
+            DmlOperation = tree.DmlOperation;
             _targets = new List<string>();
 
             var targetTree = tree;
@@ -469,6 +472,19 @@ namespace System.Data.Entity.SqlServer.SqlGen
 
             ISqlFragment result;
 
+            if (DmlOperation != null)
+            {
+                switch (DmlOperation.Kind)
+                {
+                    case DbDmlOperationKind.Delete:
+                    case DbDmlOperationKind.Update:
+                    case DbDmlOperationKind.Insert:
+                        break;
+                    default:
+                        throw new InvalidOperationException($"Unknown DML operation: {DmlOperation.Kind}.");
+                }
+            }
+
             if (BuiltInTypeKind.CollectionType == targetTree.Query.ResultType.EdmType.BuiltInTypeKind)
             {
                 var sqlStatement = VisitExpressionEnsureSqlStatement(targetTree.Query);
@@ -477,6 +493,80 @@ namespace System.Data.Entity.SqlServer.SqlGen
 
                 sqlStatement.IsTopMost = true;
                 sqlStatement.QueryOptions = tree.QueryOptions;
+
+                if (DmlOperation != null)
+                {
+                    switch (DmlOperation.Kind)
+                    {
+                        case DbDmlOperationKind.Delete:
+                        {
+                            var delOp = (DbDmlDeleteOperation)DmlOperation;
+
+                            if (sqlStatement.FromExtents.Count == 1)
+                            {
+                                var extent = sqlStatement.FromExtents[0];
+                                if (IsDeletionTarget(delOp, extent))
+                                {
+                                    // Direct query without projections
+                                    sqlStatement.Select.DmlModificator = new SqlSelectDeleteModificator(wrapDeletionInSubquery: false, extent, delOp.WithRowCount);
+                                }
+                                else if (extent is JoinSymbol joinSym
+                                         && TryFindJoinExtent(delOp, joinSym, out var sym))
+                                {
+                                    sqlStatement.Select.DmlModificator = new SqlSelectDeleteModificator(wrapDeletionInSubquery: false, sym, delOp.WithRowCount);
+                                }
+                                else
+                                {
+                                    // Has projection
+                                    sqlStatement.Select.DmlModificator = new SqlSelectDeleteModificator(wrapDeletionInSubquery: true, null, delOp.WithRowCount);
+                                }
+                            }
+                            else
+                            {
+                                throw new NotSupportedException("The query is too complex. Can't perform batch delete.");
+                            }
+
+                            break;
+                        }
+                        case DbDmlOperationKind.Update:
+                        {
+                            var updOp = (DbDmlUpdateOperation)DmlOperation;
+                            if (updOp.ColumnMap == null || updOp.ColumnMap.Mappings.Length == 0)
+                                throw new InvalidOperationException("ColumnMap is not set for Update DML operation.");
+
+                            if (sqlStatement.FromExtents.Count == 1)
+                            {
+                                sqlStatement.Select.DmlModificator = new SqlSelectUpdateModificator(updOp, sqlStatement);
+                            }
+                            else
+                            {
+                                throw new NotSupportedException("The query is too complex. Can't perform batch update.");
+                            }
+                        }
+                            break;
+
+                        case DbDmlOperationKind.Insert:
+                        {
+                            var insOp = (DbDmlInsertOperation)DmlOperation;
+                            if (insOp.ColumnMap == null || insOp.ColumnMap.Mappings.Length == 0)
+                                throw new InvalidOperationException("ColumnMap is not set for Insert DML operation.");
+
+                            if (sqlStatement.FromExtents.Count == 1)
+                            {
+                                sqlStatement.Select.DmlModificator = new SqlSelectInsertModificator(insOp, sqlStatement);
+                            }
+                            else
+                            {
+                                throw new NotSupportedException("The query is too complex. Can't perform batch update.");
+                            }
+                        }
+                            break;
+                        
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(DbDmlOperationKind));
+                    }
+                }
+
                 result = sqlStatement;
             }
             else
@@ -511,6 +601,36 @@ namespace System.Data.Entity.SqlServer.SqlGen
             }
 
             return builder.ToString();
+
+            // ====================================================================================
+            bool TryFindJoinExtent(DbDmlDeleteOperation delOp, JoinSymbol joinSym, out Symbol symbol)
+            {
+                symbol = null;
+                var extents = joinSym?.ExtentList;
+                if (extents == null || extents.Count == 0)
+                    return false;
+
+                foreach (var extent in extents)
+                {
+                    if (IsDeletionTarget(delOp, extent))
+                    {
+                        symbol = extent;
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
+            bool IsDeletionTarget(DbDmlDeleteOperation delOp, Symbol symbol)
+            {
+                var kind = symbol.Type.EdmType.BuiltInTypeKind;
+                if (kind != BuiltInTypeKind.EntityType)
+                    return false;
+
+                var entityType = (EntityType)(symbol.Type.EdmType);
+                return entityType == delOp.TargetEntitySet.ElementType;
+            }
         }
 
         // <summary>
@@ -1561,32 +1681,22 @@ namespace System.Data.Entity.SqlServer.SqlGen
                     if (!needsInnerQuery)
                     {
                         //Default translation: Key AS Alias
-                        result.Select.Append(separator);
-                        result.Select.AppendLine();
-                        result.Select.Append(keySql);
-                        result.Select.Append(" AS ");
-                        result.Select.Append(alias);
+                        result.Select.AddColumn(keySql, member.Name);
 
                         result.GroupBy.Append(keySql);
                     }
                     else
                     {
                         // The inner query contains the default translation Key AS Alias
-                        innerQuery.Select.Append(separator);
-                        innerQuery.Select.AppendLine();
-                        innerQuery.Select.Append(keySql);
-                        innerQuery.Select.Append(" AS ");
-                        innerQuery.Select.Append(alias);
+                        innerQuery.Select.AddColumn(keySql, member.Name);
 
                         //The outer resulting query projects over the key aliased in the inner query: 
                         //  fromSymbol.Alias AS Alias
-                        result.Select.Append(separator);
-                        result.Select.AppendLine();
-                        result.Select.Append(fromSymbol);
-                        result.Select.Append(".");
-                        result.Select.Append(alias);
-                        result.Select.Append(" AS ");
-                        result.Select.Append(alias);
+                        var builder = new SqlBuilder();
+                        builder.Append(fromSymbol);
+                        builder.Append(".");
+                        builder.Append(alias);
+                        result.Select.AddColumn(builder, member.Name);
 
                         result.GroupBy.Append(alias);
                     }
@@ -1598,7 +1708,7 @@ namespace System.Data.Entity.SqlServer.SqlGen
                 foreach (var aggregate in e.Aggregates)
                 {
                     var member = members.Current;
-                    var alias = QuoteIdentifier(member.Name);
+                    var alias = member.Name;
 
                     var finalArgs = new List<object>();
 
@@ -1611,21 +1721,17 @@ namespace System.Data.Entity.SqlServer.SqlGen
 
                         if (needsInnerQuery)
                         {
-                            var argAlias = QuoteIdentifier(member.Name + "_" + childIndex);
+                            var argAlias = member.Name + "_" + childIndex;
 
                             //In this case the argument to the aggregate is reference to the one projected out by the
                             // inner query
                             var wrappingAggregateArgument = new SqlBuilder();
                             wrappingAggregateArgument.Append(fromSymbol);
                             wrappingAggregateArgument.Append(".");
-                            wrappingAggregateArgument.Append(argAlias);
+                            wrappingAggregateArgument.Append(QuoteIdentifier(argAlias));
                             aggregateArgument = wrappingAggregateArgument;
 
-                            innerQuery.Select.Append(separator);
-                            innerQuery.Select.AppendLine();
-                            innerQuery.Select.Append(translatedAggregateArgument);
-                            innerQuery.Select.Append(" AS ");
-                            innerQuery.Select.Append(argAlias);
+                            innerQuery.Select.AddColumn(translatedAggregateArgument, argAlias);
                         }
                         else
                         {
@@ -1637,11 +1743,7 @@ namespace System.Data.Entity.SqlServer.SqlGen
 
                     ISqlFragment aggregateResult = VisitAggregate(aggregate, finalArgs);
 
-                    result.Select.Append(separator);
-                    result.Select.AppendLine();
-                    result.Select.Append(aggregateResult);
-                    result.Select.Append(" AS ");
-                    result.Select.Append(alias);
+                    result.Select.AddColumn(aggregateResult, alias);
 
                     separator = ", ";
                     members.MoveNext();
@@ -2418,7 +2520,7 @@ namespace System.Data.Entity.SqlServer.SqlGen
             if (newInstanceExpression != null)
             {
                 Dictionary<string, Symbol> newColumns;
-                result.Select.Append(VisitNewInstanceExpression(newInstanceExpression, aliasesNeedRenaming, out newColumns));
+                VisitNewInstanceExpression(newInstanceExpression, aliasesNeedRenaming, result.Select, out newColumns);
                 if (aliasesNeedRenaming)
                 {
                     result.OutputColumnsRenamed = true;
@@ -2427,7 +2529,7 @@ namespace System.Data.Entity.SqlServer.SqlGen
             }
             else
             {
-                result.Select.Append(e.Projection.Accept(this));
+                result.Select.AddColumn(e.Projection.Accept(this), (string)null);
             }
 
             symbolTable.ExitScope();
@@ -2662,9 +2764,10 @@ namespace System.Data.Entity.SqlServer.SqlGen
             Debug.Assert(input.Select.IsEmpty);
             var inputColumns = AddDefaultColumns(input);
 
-            input.Select.Append("row_number() OVER (ORDER BY ");
-            AddSortKeys(input.Select, e.SortOrder);
-            input.Select.Append(") AS ");
+            var sqlRowNumber = new SqlBuilder();
+            sqlRowNumber.Append("row_number() OVER (ORDER BY ");
+            AddSortKeys(sqlRowNumber, e.SortOrder);
+            sqlRowNumber.Append(")");
 
             var row_numberName = "row_number";
             var row_numberSymbol = new Symbol(row_numberName, IntegerType);
@@ -2673,7 +2776,7 @@ namespace System.Data.Entity.SqlServer.SqlGen
                 row_numberSymbol.NeedsRenaming = true;
             }
 
-            input.Select.Append(row_numberSymbol);
+            input.Select.AddColumn(sqlRowNumber, row_numberSymbol);
 
             //The inner statement is complete, its scopes need not be valid any longer
             symbolTable.ExitScope();
@@ -3443,10 +3546,9 @@ namespace System.Data.Entity.SqlServer.SqlGen
         // <returns>
         // A <see cref="SqlBuilder" />
         // </returns>
-        private ISqlFragment VisitNewInstanceExpression(
-            DbNewInstanceExpression e, bool aliasesNeedRenaming, out Dictionary<string, Symbol> newColumns)
+        private void VisitNewInstanceExpression(
+            DbNewInstanceExpression e, bool aliasesNeedRenaming, SqlSelectClauseBuilder selectClause, out Dictionary<string, Symbol> newColumns)
         {
-            var result = new SqlBuilder();
             var rowType = e.ResultType.EdmType as RowType;
 
             if (null != rowType)
@@ -3454,7 +3556,6 @@ namespace System.Data.Entity.SqlServer.SqlGen
                 newColumns = new Dictionary<string, Symbol>(e.Arguments.Count);
 
                 var members = rowType.Properties;
-                var separator = "";
                 for (var i = 0; i < e.Arguments.Count; ++i)
                 {
                     var argument = e.Arguments[i];
@@ -3466,23 +3567,21 @@ namespace System.Data.Entity.SqlServer.SqlGen
                     }
 
                     var member = members[i];
-                    result.Append(separator);
-                    result.AppendLine();
-                    result.Append(argument.Accept(this));
-                    result.Append(" AS ");
+                    var colArg = argument.Accept(this);
+                    string colName = null;
                     if (aliasesNeedRenaming)
                     {
                         var column = new Symbol(member.Name, member.TypeUsage);
                         column.NeedsRenaming = true;
                         column.NewName = String.Concat("Internal_", member.Name);
-                        result.Append(column);
                         newColumns.Add(member.Name, column);
                     }
                     else
                     {
-                        result.Append(QuoteIdentifier(member.Name));
+                        colName = member.Name;
                     }
-                    separator = ", ";
+
+                    selectClause.AddColumn(colArg, colName);
                 }
             }
             else
@@ -3493,8 +3592,6 @@ namespace System.Data.Entity.SqlServer.SqlGen
                 //
                 throw new NotSupportedException();
             }
-
-            return result;
         }
 
         // <summary>

@@ -30,7 +30,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             MessageId = "System.Data.Entity.Core.Query.PlanCompiler.PlanCompiler.Assert(System.Boolean,System.String)")]
         internal static ProviderCommandInfo Create(
             Command command,
-            Node node, QueryOptions queryOptions)
+            Node node, QueryOptions queryOptions, DbDmlOperation dmlOperation)
         {
             var projectOp = node.Op as PhysicalProjectOp;
             PlanCompiler.Assert(projectOp != null, "Expected root Op to be a physical Project");
@@ -41,6 +41,8 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             PlanCompiler.Assert(cqtree != null, "null query command tree");
 
             cqtree.QueryOptions = queryOptions;
+
+            cqtree.DmlOperation = dmlOperation;
 
             // Get the rowtype for the result cqt
             var collType = TypeHelpers.GetEdmType<md.CollectionType>(cqtree.Query.ResultType);

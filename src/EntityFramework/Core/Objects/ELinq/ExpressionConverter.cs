@@ -248,6 +248,8 @@ namespace System.Data.Entity.Core.Objects.ELinq
 
         internal QueryOptions QueryOptions => _queryOptions;
 
+        internal DbDmlOperation DmlOperation { get; private set; }
+
         internal TableHints _scopedHints;
 
         internal Func<bool> RecompileRequired
@@ -793,6 +795,73 @@ namespace System.Data.Entity.Core.Objects.ELinq
             return resultExpression;
         }
 
+        private static bool TryEvaluateAsConstantChain(Expression expression, out object value)
+        {
+            switch (expression.NodeType)
+            {
+                case ExpressionType.Constant:
+                {
+                    value = ((ConstantExpression)expression).Value;
+                    return true;
+                }
+                case ExpressionType.MemberAccess:
+                {
+                    var memberExpression = (MemberExpression)expression;
+                    value = null;
+
+                    switch (memberExpression.Member.MemberType)
+                    {
+                        case MemberTypes.Field:
+                        {
+                            var fieldInfo = (FieldInfo)memberExpression.Member;
+
+                            if (fieldInfo.IsStatic)
+                            {
+                                value = fieldInfo.GetValue(null);
+                                return true;
+                            }
+
+                            if (memberExpression.Expression == null
+                                || !TryEvaluateAsConstantChain(memberExpression.Expression, out value)
+                                || value == null)
+                                return false;
+
+                            value = fieldInfo.GetValue(value);
+                            return true;
+                        }
+                        case MemberTypes.Property:
+                        {
+                            var propertyInfo = (PropertyInfo)memberExpression.Member;
+                            var getMethod = propertyInfo.GetGetMethod(true);
+
+                            if (getMethod == null)
+                                return false;
+
+                            if (getMethod.IsStatic)
+                            {
+                                value = propertyInfo.GetValue(null, null);
+                                return true;
+                            }
+
+                            if (memberExpression.Expression == null
+                                || !TryEvaluateAsConstantChain(memberExpression.Expression, out value)
+                                || value == null)
+                                return false;
+
+                            value = propertyInfo.GetValue(value, null);
+                            return true;
+                        }
+                    }
+
+                    break;
+                }
+            }
+
+            value = null;
+            return false;
+        }
+
+
         private class ScanHintsSetter : DefaultExpressionVisitor
         {
             private readonly TableHints _hints;
@@ -1117,9 +1186,10 @@ namespace System.Data.Entity.Core.Objects.ELinq
                     ||
                     BuiltInTypeKind.ComplexType == typeKind)
                 {
-                    throw new NotSupportedException(
-                        Strings.ELinq_UnsupportedNominalType(
-                            typeUsage.EdmType.FullName));
+                    if (DmlOperation == null || !DmlOperation.CanConstructEntityTypeInExpressionConverter(type))
+                        throw new NotSupportedException(
+                            Strings.ELinq_UnsupportedNominalType(
+                                typeUsage.EdmType.FullName));
                 }
             }
 
@@ -1773,6 +1843,11 @@ namespace System.Data.Entity.Core.Objects.ELinq
             return FindFunction(EdmNamespaceName, functionName, argumentTypes, isGroupAggregateFunction, Expression);
         }
 
+        private EdmFunction FindSingleCanonicalFunction(string functionName, Expression expression)
+        {
+            return FindSingleFunction(EdmNamespaceName, functionName, expression);
+        }
+
         // <summary>
         // Finds a function with the given namespaceName, functionName and argumentTypes
         // </summary>
@@ -1796,6 +1871,19 @@ namespace System.Data.Entity.Core.Objects.ELinq
                 ThrowUnresolvableFunctionOverload(Expression, isAmbiguous);
             }
             return function;
+        }
+
+        private EdmFunction FindSingleFunction(string namespaceName, string functionName, Expression expression)
+        {
+            if (!_perspective.TryGetFunctionByName(namespaceName, functionName, false /* ignore case */, out var candidateFunctions))
+            {
+                ThrowUnresolvableFunction(expression);
+            }
+
+            Debug.Assert(null != candidateFunctions && candidateFunctions.Count > 0, "provider functions must not be null or empty");
+            if (candidateFunctions.Count > 1)
+                ThrowUnresolvableFunctionOverload(expression, true);
+            return candidateFunctions[0];
         }
 
         // <summary>

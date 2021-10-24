@@ -20,19 +20,21 @@ namespace System.Data.Entity.SqlServer.SqlGen
     // Also, we have a Top property, which is non-null if the number of results should
     // be limited to certain number. It is given out of band for the same reasons as DISTINCT.
     // </summary>
-    internal class SqlSelectClauseBuilder : SqlBuilder
+    internal class SqlSelectClauseBuilder : ISqlFragment
     {
         #region Fields and Properties
 
-        private List<OptionalColumn> m_optionalColumns;
+        public List<OptionalColumn> OptionalColumns { get; private set; }
+
+        public List<SelectOutputColumn> Columns { get; private set; }
 
         internal void AddOptionalColumn(OptionalColumn column)
         {
-            if (m_optionalColumns == null)
+            if (OptionalColumns == null)
             {
-                m_optionalColumns = new List<OptionalColumn>();
+                OptionalColumns = new List<OptionalColumn>();
             }
-            m_optionalColumns.Add(column);
+            OptionalColumns.Add(column);
         }
 
         private TopClause m_top;
@@ -67,9 +69,9 @@ namespace System.Data.Entity.SqlServer.SqlGen
         // <summary>
         // Whether any columns have been specified.
         // </summary>
-        public override bool IsEmpty
+        public bool IsEmpty
         {
-            get { return (base.IsEmpty) && (m_optionalColumns == null || m_optionalColumns.Count == 0); }
+            get { return  (Columns == null || Columns.Count == 0) && (OptionalColumns == null || OptionalColumns.Count == 0); }
         }
 
         private readonly Func<bool> m_isPartOfTopMostStatement;
@@ -81,6 +83,27 @@ namespace System.Data.Entity.SqlServer.SqlGen
         internal SqlSelectClauseBuilder(Func<bool> isPartOfTopMostStatement)
         {
             m_isPartOfTopMostStatement = isPartOfTopMostStatement;
+        }
+
+        public SqlSelectDmlModificator DmlModificator { get; set; }
+
+
+        #endregion
+
+        #region Public Methods
+
+        public void AddColumn(ISqlFragment columnDefinition, string alias)
+        {
+            if (Columns == null)
+                Columns = new List<SelectOutputColumn>();
+            Columns.Add(new SelectOutputColumn(columnDefinition, alias));
+        }
+
+        public void AddColumn(ISqlFragment columnDefinition, Symbol columnSymbol)
+        {
+            if (Columns == null)
+                Columns = new List<SelectOutputColumn>();
+            Columns.Add(new SelectOutputColumn(columnDefinition, columnSymbol));
         }
 
         #endregion
@@ -96,9 +119,11 @@ namespace System.Data.Entity.SqlServer.SqlGen
         // In addition, if no required columns are specified and no optional columns are
         // marked as used, the first optional column is written.
         // </summary>
-        public override void WriteSql(SqlWriter writer, SqlGenerator sqlGenerator)
+        public void WriteSql(SqlWriter writer, SqlGenerator sqlGenerator)
         {
-            writer.Write("SELECT ");
+            if (DmlModificator == null || !DmlModificator.ProcessSqlClauseOperatorName(writer, sqlGenerator))
+                writer.Write("SELECT ");
+
             if (IsDistinct)
             {
                 writer.Write("DISTINCT ");
@@ -109,30 +134,46 @@ namespace System.Data.Entity.SqlServer.SqlGen
                 Top.WriteSql(writer, sqlGenerator);
             }
 
-            if (IsEmpty)
+            if (DmlModificator != null && !DmlModificator.WrapAllInSubquery)
+            {
+                // do nothing
+            }
+            else if (IsEmpty)
             {
                 Debug.Assert(false); // we have removed all possibilities of SELECT *.
                 writer.Write("*");
             }
             else
             {
-                //Print the optional columns if any
-                var printedAny = WriteOptionalColumns(writer, sqlGenerator);
+                var printedAny = false;
 
-                if (!base.IsEmpty)
+                if (DmlModificator == null
+                    || !DmlModificator.WriteSelectColumns(writer, sqlGenerator, this))
                 {
-                    if (printedAny)
+                    //Print the optional columns if any
+                    if (OptionalColumns != null
+                        && (DmlModificator == null || DmlModificator.AllowOptionalColumns()))
+                        printedAny = WriteOptionalColumns(writer, sqlGenerator);
+
+                    if (Columns != null)
                     {
-                        writer.Write(", ");
+                        foreach (var column in Columns)
+                        {
+                            if (printedAny)
+                                writer.Write(", ");
+
+                            writer.WriteLine();
+                            column.WriteSql(writer, sqlGenerator);
+                            printedAny = true;
+                        }
                     }
-                    base.WriteSql(writer, sqlGenerator);
-                }
-                //If no optional columns were printed and there were no other columns, 
-                // print at least the first optional column
-                else if (!printedAny)
-                {
-                    m_optionalColumns[0].MarkAsUsed();
-                    m_optionalColumns[0].WriteSqlIfUsed(writer, sqlGenerator, "");
+                    //If no optional columns were printed and there were no other columns, 
+                    // print at least the first optional column
+                    else if (!printedAny)
+                    {
+                        OptionalColumns[0].MarkAsUsed();
+                        OptionalColumns[0].WriteSqlIfUsed(writer, sqlGenerator, "");
+                    }
                 }
             }
         }
@@ -149,14 +190,14 @@ namespace System.Data.Entity.SqlServer.SqlGen
         // <returns> Whether at least one column got written </returns>
         private bool WriteOptionalColumns(SqlWriter writer, SqlGenerator sqlGenerator)
         {
-            if (m_optionalColumns == null)
+            if (OptionalColumns == null)
             {
                 return false;
             }
 
             if (m_isPartOfTopMostStatement() || IsDistinct)
             {
-                foreach (var column in m_optionalColumns)
+                foreach (var column in OptionalColumns)
                 {
                     column.MarkAsUsed();
                 }
@@ -164,7 +205,7 @@ namespace System.Data.Entity.SqlServer.SqlGen
 
             var separator = "";
             var printedAny = false;
-            foreach (var column in m_optionalColumns)
+            foreach (var column in OptionalColumns)
             {
                 if (column.WriteSqlIfUsed(writer, sqlGenerator, separator))
                 {

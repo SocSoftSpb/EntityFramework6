@@ -57,6 +57,8 @@ namespace System.Data.Entity.Core.Common.QueryCache
         private readonly bool _useCSharpNullComparisonBehavior;
 
         private readonly string _hintsKey;
+        
+        private readonly string _dmlKey;
 
         // <summary>
         // Creates a new instance of LinqQueryCacheKey.
@@ -77,7 +79,8 @@ namespace System.Data.Entity.Core.Common.QueryCache
             bool streaming,
             bool useCSharpNullComparisonBehavior,
             Type resultType,
-            string hintsKey)
+            string hintsKey,
+            string dmlKey)
         {
             DebugCheck.NotNull(expressionKey);
 
@@ -90,6 +93,7 @@ namespace System.Data.Entity.Core.Common.QueryCache
             _resultType = resultType;
             _useCSharpNullComparisonBehavior = useCSharpNullComparisonBehavior;
             _hintsKey = hintsKey;
+            _dmlKey = dmlKey;
 
             var combinedHash = _expressionKey.GetHashCode() ^
                                _mergeOption.GetHashCode();
@@ -108,6 +112,9 @@ namespace System.Data.Entity.Core.Common.QueryCache
 
             if (_hintsKey != null)
                 combinedHash ^= hintsKey.GetHashCode();
+
+            if (_dmlKey != null)
+                combinedHash ^= _dmlKey.GetHashCode();
 
             _hashCode = combinedHash;
         }
@@ -132,9 +139,10 @@ namespace System.Data.Entity.Core.Common.QueryCache
                    Equals(otherObjectQueryCacheKey._expressionKey, _expressionKey) &&
                    Equals(otherObjectQueryCacheKey._includePathsToken, _includePathsToken) &&
                    Equals(otherObjectQueryCacheKey._parametersToken, _parametersToken) &&
-                   Equals(otherObjectQueryCacheKey._resultType, _resultType) &&
+                   ReferenceEquals(otherObjectQueryCacheKey._resultType, _resultType) &&
                    Equals(otherObjectQueryCacheKey._useCSharpNullComparisonBehavior, _useCSharpNullComparisonBehavior) &&
-                   Equals(otherObjectQueryCacheKey._hintsKey, _hintsKey);
+                   Equals(otherObjectQueryCacheKey._hintsKey, _hintsKey) &&
+                   Equals(otherObjectQueryCacheKey._dmlKey, _dmlKey);
         }
 
         // <summary>

@@ -22,6 +22,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
     using System.Linq;
     using System.Reflection;
     using System.Runtime.Versioning;
+    using System.Threading;
     using System.Xml;
 
     /// <summary>
@@ -1699,8 +1700,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
         private static void EnsureBaseType(Dictionary<string, CSpaceTypeMappingInfo> dict, EntityType thisType, out CSpaceTypeMappingInfo baseInfo)
         {
             baseInfo = null;
-            var baseType = thisType.BaseType as EntityType;
-            if (baseType != null
+            if (thisType.BaseType is EntityType baseType
                 && baseType.BuiltInTypeKind == BuiltInTypeKind.EntityType
                 && baseType.DataSpace == DataSpace.CSpace)
             {
@@ -1712,8 +1712,8 @@ namespace System.Data.Entity.Core.Metadata.Edm
                     dict[baseType.Identity] = info1;
                     return;
                 }
-                CSpaceTypeMappingInfo grandBaseMapping;
-                EnsureBaseType(dict, baseType, out grandBaseMapping);
+
+                EnsureBaseType(dict, baseType, out var grandBaseMapping);
                 var info = new CSpaceTypeMappingInfo(baseType, grandBaseMapping.EntitySetMapping, true);
                 info.EntityTypeMappings.AddRange(grandBaseMapping.EntityTypeMappings);
                 dict[baseType.Identity] = info;
@@ -1748,6 +1748,9 @@ namespace System.Data.Entity.Core.Metadata.Edm
     [SuppressMessage("Microsoft.Naming", "CA1722:IdentifiersShouldNotHaveIncorrectPrefix")]
     public sealed class CSpaceTypeMappingInfo
     {
+        private DiscriminatorsInfo _discriminators;
+        private SingleStoreEntitySetInfo _singleStoreEntitySetInfo;
+
         internal CSpaceTypeMappingInfo(EntityType entityType, EntitySetMapping entitySetMapping, bool isFakeHierarchyMapping = false)
         {
             CSpaceEntityType = entityType;
@@ -1774,7 +1777,46 @@ namespace System.Data.Entity.Core.Metadata.Edm
         public List<EntityTypeMapping> EntityTypeMappings { get; }
 
         /// <summary>
-        /// Mappin info for base type
+        /// Names of columns and values of discriminators
+        /// </summary>
+        /// <remarks>
+        /// Throws exception if type is not a member of TPH hierarchy 
+        /// </remarks>
+        public ValueConditionMapping[] GetDiscriminatorsForTphType()
+        {
+            if (_discriminators == null)
+            {
+                var discInfo = BuildDiscriminatorsInfo();
+                Interlocked.CompareExchange(ref _discriminators, discInfo, null);
+            }
+
+            return _discriminators.Discriminators ?? throw new InvalidOperationException(_discriminators.ErrorMessage);
+            
+            DiscriminatorsInfo BuildDiscriminatorsInfo()
+            {
+                if (BaseTypeMappingInfo == null && ChildTypeMappingInfos.Count == 0)
+                    return new DiscriminatorsInfo("Type is not a member of Hierarchy.");
+
+                try
+                {
+                    GetSingleStoreEntitySet();
+                }
+                catch (Exception e)
+                {
+                    return new DiscriminatorsInfo(e.Message);
+                }
+
+                var mapping = EntityTypeMappings.SingleOrDefault(e => e.EntityType == CSpaceEntityType);
+                if (mapping == null)
+                    return new DiscriminatorsInfo($"Can't find EntityTypeMapping for {CSpaceEntityType.Name}.");
+
+                var discs = mapping.Fragments[0].Conditions.OfType<ValueConditionMapping>().ToArray();
+                return new DiscriminatorsInfo(discs);
+            }
+        }
+
+        /// <summary>
+        /// Mapping info for base type
         /// </summary>
         public CSpaceTypeMappingInfo BaseTypeMappingInfo { get; internal set; }
 
@@ -1840,6 +1882,92 @@ namespace System.Data.Entity.Core.Metadata.Edm
                         }
                     }
                 }
+            }
+        }
+
+        private sealed class SingleStoreEntitySetInfo
+        {
+            public EntitySet EntitySet { get; }
+            public string ErrorMessage { get; }
+
+            public SingleStoreEntitySetInfo(EntitySet entitySet)
+            {
+                EntitySet = entitySet;
+            }
+
+            public SingleStoreEntitySetInfo(string errorMessage)
+            {
+                ErrorMessage = errorMessage;
+            }
+        }
+        
+        private sealed class DiscriminatorsInfo
+        {
+            public string ErrorMessage { get; }
+            public ValueConditionMapping[] Discriminators { get; }
+
+            public DiscriminatorsInfo(ValueConditionMapping[] discriminators)
+            {
+                Discriminators = discriminators;
+            }
+
+            public DiscriminatorsInfo(string errorMessage)
+            {
+                ErrorMessage = errorMessage;
+            }
+        }
+
+        /// <summary>
+        /// Get store entity set if single, otherwise throws
+        /// </summary>
+        /// <returns></returns>
+        public EntitySet GetSingleStoreEntitySet()
+        {
+            var info = _singleStoreEntitySetInfo;
+            if (info == null)
+            {
+                var rootMapping = GetRootTypeMapping();
+                EntitySet entitySet = null;
+                if (DoRecursive(rootMapping, ref entitySet))
+                {
+                    info = entitySet == null
+                        ? new SingleStoreEntitySetInfo($"The type {CSpaceEntityType.Name} is not mapped to storage Entity Set.")
+                        : new SingleStoreEntitySetInfo(entitySet);
+                }
+                else
+                {
+                    info = new SingleStoreEntitySetInfo($"The type {CSpaceEntityType.Name} is mapped to multiple storage Entity Set's.");
+                }
+
+                var orig = Interlocked.CompareExchange(ref _singleStoreEntitySetInfo, info, null);
+                info = orig ?? info;
+            }
+
+            return info.EntitySet ?? throw new InvalidOperationException(info.ErrorMessage);
+
+            bool DoRecursive(CSpaceTypeMappingInfo mapping, ref EntitySet es)
+            {
+                foreach (var etm in mapping.EntityTypeMappings)
+                {
+                    foreach (var mappingFragment in etm.Fragments)
+                    {
+                        if (mappingFragment.StoreEntitySet != null)
+                        {
+                            if (es == null)
+                                es = mappingFragment.StoreEntitySet;
+                            else if (!ReferenceEquals(es, mappingFragment.StoreEntitySet))
+                                return false;
+                        }
+                    }
+                }
+
+                foreach (var childInfo in mapping.ChildTypeMappingInfos)
+                {
+                    if (!DoRecursive(childInfo, ref es))
+                        return false;
+                }
+
+                return true;
             }
         }
     }

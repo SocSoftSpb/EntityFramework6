@@ -7,7 +7,9 @@ namespace System.Data.Entity.Core.Objects.ELinq
     using System.Data.Entity.Core.Common;
     using System.Data.Entity.Core.Common.CommandTrees;
     using System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder;
+    using System.Data.Entity.Core.Common.CommandTrees.Internal;
     using System.Data.Entity.Core.Common.Utils;
+    using System.Data.Entity.Core.Mapping;
     using System.Data.Entity.Core.Metadata.Edm;
     using System.Data.Entity.Core.Metadata.Edm.Provider;
     using System.Data.Entity.Resources;
@@ -76,6 +78,11 @@ namespace System.Data.Entity.Core.Objects.ELinq
                 if (TableHintTranslator.IsCandidateMethod(linq.Method))
                 {
                     return TableHintTranslator.Translate(parent, linq);
+                }
+
+                if (DmlTranslator.IsCandidateMethod(linq.Method))
+                {
+                    return DmlTranslator.Translate(parent, linq);
                 }
 
                 // check if this method has the FunctionAttribute (known proxy)
@@ -301,6 +308,8 @@ namespace System.Data.Entity.Core.Objects.ELinq
                 yield return new SingleOrDefaultTranslator();
                 yield return new SingleOrDefaultPredicateTranslator();
                 yield return new ContainsTranslator();
+                yield return new BatchUpdateTranslator();
+                yield return new BatchInsertTranslator();
             }
 
             private static IEnumerable<ObjectQueryCallTranslator> GetObjectQueryCallTranslators()
@@ -3834,6 +3843,111 @@ namespace System.Data.Entity.Core.Objects.ELinq
                 {
                 }
             }
+            
+            private sealed class BatchUpdateTranslator : SequenceMethodTranslator
+            {
+                public BatchUpdateTranslator() : base(SequenceMethod.BatchUpdate)
+                {
+                }
+                
+                internal override CqtExpression Translate(ExpressionConverter parent, MethodCallExpression call)
+                {
+                    Debug.Assert(4 == call.Arguments.Count);
+
+                    if (!TryEvaluateAsConstantChain(call.Arguments[2], out var objValue) || !(objValue is bool withRowCount))
+                        throw new InvalidOperationException("Argument 3 (withRowCount) must be a boolean constant.");
+                    
+                    if (!TryEvaluateAsConstantChain(call.Arguments[3], out objValue) || !(objValue is int limit))
+                        throw new InvalidOperationException("Argument 4 (limit) must be a int constant.");
+                    
+                    // translate source
+                    var source = parent.TranslateExpression(call.Arguments[0]);
+                    
+                    // translate lambda expression
+                    var lambdaExpression = parent.GetLambdaExpression(call, 1);
+
+                    ValidateLambda(parent, lambdaExpression, out var clrType, out var entitySet);
+
+                    var updateOp = new DbDmlUpdateOperation(entitySet, clrType, withRowCount, limit);
+                    parent.DmlOperation = updateOp;
+                    var lambda = parent.TranslateLambda(lambdaExpression, source, out DbExpressionBinding sourceBinding);
+                    updateOp.IsUnderTranslation = false;
+                    
+                    var projection = parent.Project(sourceBinding, lambda);
+
+                    return projection;
+                }
+
+                private static void ValidateLambda(ExpressionConverter parent, LambdaExpression lambdaExpression, out Type clrType, out EntitySet entitySet)
+                {
+                    if (lambdaExpression.Body.NodeType != ExpressionType.MemberInit)
+                        throw new InvalidOperationException("MemberInitExpression expected in " + nameof(DbDmlQueryFunctions.BatchUpdate) + ".");
+
+                    var initExpr = (MemberInitExpression)(lambdaExpression.Body);
+                    if (initExpr.Bindings.Count == 0)
+                        throw new InvalidOperationException("MemberInitExpression in " + nameof(DbDmlQueryFunctions.BatchUpdate) + " must have Property setters.");
+
+                    if (initExpr.NewExpression.Arguments.Count > 0)
+                        throw new InvalidOperationException("MemberInitExpression in " + nameof(DbDmlQueryFunctions.BatchUpdate) + " must use parameterless constructor.");
+
+                    clrType = lambdaExpression.ReturnType;
+
+                    if (!parent._perspective.TryGetType(clrType, out var typeUsage)
+                        || typeUsage.EdmType.DataSpace != DataSpace.CSpace
+                        || typeUsage.EdmType.BuiltInTypeKind != BuiltInTypeKind.EntityType)
+                        throw new InvalidOperationException(nameof(DbDmlQueryFunctions.BatchUpdate) + " can process only Entity types.");
+
+                    var metadataWorkspace = parent._perspective.MetadataWorkspace;
+                    if (!metadataWorkspace.TryGetMappingInformation((EntityType)(typeUsage.EdmType), out var mapInfo))
+                        throw new InvalidOperationException($"Can't find mapping information for Entity Type {typeUsage.EdmType.Name}.");
+
+                    entitySet = mapInfo.GetSingleStoreEntitySet();
+                }
+            }
+            
+            private sealed class BatchInsertTranslator : SequenceMethodTranslator
+            {
+                public BatchInsertTranslator() : base(SequenceMethod.BatchInsert)
+                {
+                }
+                
+                internal override DbExpression Translate(ExpressionConverter parent, MethodCallExpression call)
+                {
+                    Debug.Assert(2 == call.Arguments.Count);
+
+                    if (!TryEvaluateAsConstantChain(call.Arguments[1], out var objValue) || !(objValue is bool withRowCount))
+                        throw new InvalidOperationException("Argument 2 (withRowCount) must be a boolean constant.");
+
+                    var clrType = call.Method.GetGenericArguments()[0];
+                    var entitySet = FindEntitySet(parent, clrType, out var discriminators);
+                    
+                    // translate source
+                    var insertOp = new DbDmlInsertOperation(entitySet, clrType, withRowCount, discriminators);
+                    parent.DmlOperation = insertOp;
+                    var projection = parent.TranslateExpression(call.Arguments[0]);
+                    insertOp.IsUnderTranslation = false;
+
+                    return projection;
+                }
+
+                private EntitySet FindEntitySet(ExpressionConverter parent, Type clrType, out ValueConditionMapping[] discriminators)
+                {
+                    discriminators = null;
+                    var metadataWorkspace = parent._perspective.MetadataWorkspace;
+
+                    if (!metadataWorkspace.TryGetMappingInformation(clrType, out var mapInfo))
+                        throw new InvalidOperationException($"Can't find mapping information for CLR Type {clrType.Name}.");
+
+                    if (mapInfo.CSpaceEntityType.Abstract)
+                        throw new InvalidOperationException($"Can't insert abstract CLR Type {clrType.Name}.");
+
+                    var storeSet = mapInfo.GetSingleStoreEntitySet();
+                    if (mapInfo.BaseTypeMappingInfo != null || mapInfo.ChildTypeMappingInfos.Count > 0)
+                        discriminators = mapInfo.GetDiscriminatorsForTphType();
+
+                    return storeSet;
+                }
+            }
 
             #endregion
         }
@@ -3901,69 +4015,6 @@ namespace System.Data.Entity.Core.Objects.ELinq
                         return hints;
                 }
             }
-
-            public static bool TryEvaluateAsConstantChain(Expression expression, out object value)
-            {
-                switch (expression.NodeType)
-                {
-                    case ExpressionType.Constant:
-                    {
-                        value = ((ConstantExpression)expression).Value;
-                        return true;
-                    }
-                    case ExpressionType.MemberAccess:
-                    {
-                        var memberExpression = (MemberExpression)expression;
-                        value = null;
-
-                        switch (memberExpression.Member.MemberType)
-                        {
-                            case MemberTypes.Field:
-                            {
-                                var fieldInfo = (FieldInfo)memberExpression.Member;
-
-                                if (fieldInfo.IsStatic)
-                                {
-                                    value = fieldInfo.GetValue(null);
-                                    return true;
-                                }
-
-                                if (memberExpression.Expression == null || !TryEvaluateAsConstantChain(memberExpression.Expression, out value) || value == null)
-                                    return false;
-
-                                value = fieldInfo.GetValue(value);
-                                return true;
-                            }
-                            case MemberTypes.Property:
-                            {
-                                var propertyInfo = (PropertyInfo)memberExpression.Member;
-                                var getMethod    = propertyInfo.GetGetMethod(true);
-
-                                if (getMethod == null)
-                                    return false;
-
-                                if (getMethod.IsStatic)
-                                {
-                                    value = propertyInfo.GetValue(null, null);
-                                    return true;
-                                }
-
-                                if (memberExpression.Expression == null || !TryEvaluateAsConstantChain(memberExpression.Expression, out value) || value == null)
-                                    return false;
-
-                                value = propertyInfo.GetValue(value, null);
-                                return true;
-                            }
-                        }
-
-                        break;
-                    }
-                }
-
-                value = null;
-                return false;
-            }
-
 
             private static TableHints TranslateHintExpression(ExpressionConverter parent, Expression hintExpr, bool isScoped, Type queryableType)
             {
@@ -4087,7 +4138,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
 				if (lstEdmProperties.Count == 0)
 					throw new InvalidOperationException("No any property is mapped.");
                 
-				var col = parent._funcletizer.RootContext.MetadataWorkspace.GetItemCollection(DataSpace.SSpace, true);
+				var col = parent._perspective.MetadataWorkspace.GetItemCollection(DataSpace.SSpace, true);
 
 				var container = col.GetItems<EntityContainer>().FirstOrDefault();
 				if (container == null)
@@ -4153,7 +4204,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
 			}
 		}
 
-        internal static class WindowFunctionTranslator
+        private static class WindowFunctionTranslator
         {
             public static bool IsCandidateMethod(MethodInfo method)
             {
@@ -4365,6 +4416,52 @@ namespace System.Data.Entity.Core.Objects.ELinq
                 return true;
             }
 
+        }
+
+        private static class DmlTranslator
+        {
+            public static bool IsCandidateMethod(MethodInfo method)
+            {
+                var declaringType = method.DeclaringType;
+                return declaringType == typeof(DbDmlFunctions);
+            }
+            
+            public static DbExpression Translate(ExpressionConverter parent, MethodCallExpression linq)
+            {
+                switch (linq.Method.Name)
+                {
+                    case nameof(DbDmlFunctions.DeleteMarker):
+                        return TranslateDelete(parent, linq, false);
+                    case nameof(DbDmlFunctions.DeleteMarkerRowCount):
+                        return TranslateDelete(parent, linq, true);
+                    default:
+                        throw new NotSupportedException(Strings.ELinq_UnsupportedMethod(linq.Method.Name));
+                }
+            }
+
+            private static DbExpression TranslateDelete(ExpressionConverter parent, MethodCallExpression linq, bool withRowCount)
+            {
+                if (parent.DmlOperation != null)
+                    throw new InvalidOperationException("DML operation specified more than one time.");
+
+                var argExpression = (linq.Arguments.Count == 1 ? linq.Arguments[0] : null) ?? throw new InvalidOperationException("DeleteMarker must accept exactly one argument.");
+                var argDbExp = parent.TranslateExpression(argExpression);
+                var argType = argDbExp.ResultType.EdmType;
+                if (argType == null || argType.BuiltInTypeKind != BuiltInTypeKind.EntityType)
+                    throw new InvalidOperationException("DeleteMarker argument must be a EntityType.");
+
+                var metadataWorkspace = parent._perspective.MetadataWorkspace;
+                if (!metadataWorkspace.TryGetMappingInformation((EntityType)argType, out var mapInfo))
+                    throw new InvalidOperationException($"Can't find mapping information for Entity Type {argType.Name}.");
+
+                var storeSet = mapInfo.GetSingleStoreEntitySet();
+
+                parent.DmlOperation = new DbDmlDeleteOperation(storeSet, withRowCount);
+                
+                var fnk = parent.FindSingleCanonicalFunction("dml_" + linq.Method.Name, linq);
+
+                return fnk.Invoke();
+            }
         }
     }
 }

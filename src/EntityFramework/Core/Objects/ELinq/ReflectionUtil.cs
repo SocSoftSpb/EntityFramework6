@@ -3,6 +3,7 @@
 namespace System.Data.Entity.Core.Objects.ELinq
 {
     using System.Collections.Generic;
+    using System.Data.Entity.Core.Common.CommandTrees.Internal;
     using System.Data.Entity.Utilities;
     using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
@@ -472,6 +473,10 @@ namespace System.Data.Entity.Core.Objects.ELinq
             map.Add(@"TakeWithTies(IQueryable`1<T0>, Int32)->IQueryable`1<T0>", SequenceMethod.TakeWithTies);
             map.Add(@"TakeWithTies(IEnumerable`1<T0>, Int32)->IEnumerable`1<T0>", SequenceMethod.TakeWithTies);
             
+            map.Add(@"BatchUpdate(IQueryable`1<T0>, Expression`1<Func`2<T0, T0>>, Boolean, Int32)->IQueryable`1<Int32>", SequenceMethod.BatchUpdate);
+            map.Add(@"BatchUpdateJoin(IQueryable`1<T0>, Expression`1<Func`2<T0, T1>>, Boolean, Int32)->IQueryable`1<Int32>", SequenceMethod.BatchUpdate);
+            map.Add(@"BatchInsert(IQueryable`1<T0>, Boolean)->IQueryable`1<Int32>", SequenceMethod.BatchInsert);
+            
             // by redirection through canonical method names, determine sequence enum value
             // for all know LINQ operators
             _methodMap = new Dictionary<MethodInfo, SequenceMethod>();
@@ -651,7 +656,8 @@ namespace System.Data.Entity.Core.Objects.ELinq
         {
             return typeof(Queryable).GetDeclaredMethods()
                 .Concat(typeof(Enumerable).GetDeclaredMethods())
-                .Concat(typeof(EntityEnumerableExtensions).GetDeclaredMethods());
+                .Concat(typeof(EntityEnumerableExtensions).GetDeclaredMethods())
+                .Concat(typeof(DbDmlQueryFunctions).GetDeclaredMethods());
         }
     }
 }

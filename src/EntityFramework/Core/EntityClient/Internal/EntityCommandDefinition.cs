@@ -114,6 +114,11 @@ namespace System.Data.Entity.Core.EntityClient.Internal
                     // Then, generate the store commands from the resulting command tree(s)
                     _mappedCommandDefinitions = new List<DbCommandDefinition>(_mappedCommands.Count);
 
+                    if (commandTree is DbQueryCommandTree queryTree && queryTree.DmlOperation != null)
+                    {
+                        queryTree.DmlOperation.AssignMapping(columnMap, queryTree);
+                    }
+
                     foreach (var providerCommandInfo in _mappedCommands)
                     {
                         var providerCommandDefinition = _storeProviderServices.CreateCommandDefinition(
