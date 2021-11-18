@@ -40,12 +40,16 @@ namespace System.Data.Entity.SqlServer.SqlGen
         public override bool WrapAllInSubquery => WrapDeletionInSubquery;
 
         public override bool WithRowCount { get; }
+        
+        public int Limit { get; }
 
-        public SqlSelectDeleteModificator(bool wrapDeletionInSubquery, Symbol fromExtent, bool withRowCount)
+
+        public SqlSelectDeleteModificator(bool wrapDeletionInSubquery, Symbol fromExtent, DbDmlDeleteOperation dmlOperation)
         {
             WrapDeletionInSubquery = wrapDeletionInSubquery;
             FromExtent = fromExtent;
-            WithRowCount = withRowCount;
+            WithRowCount = dmlOperation.WithRowCount;
+            Limit = dmlOperation.Limit;
         }
 
         public override bool ProcessSqlClauseOperatorName(SqlWriter writer, SqlGenerator sqlGenerator)
@@ -53,6 +57,8 @@ namespace System.Data.Entity.SqlServer.SqlGen
             if (!WrapDeletionInSubquery)
             {
                 writer.Write("DELETE ");
+                if (Limit >= 0)
+                    writer.Write($"TOP ({Limit}) ");
                 return true;
             }
 
@@ -63,7 +69,10 @@ namespace System.Data.Entity.SqlServer.SqlGen
         {
             if (WrapDeletionInSubquery)
             {
-                writer.Write("DELETE FROM __dml_query FROM (");
+                writer.Write("DELETE ");
+                if (Limit >= 0)
+                    writer.Write($"TOP ({Limit}) ");
+                writer.Write("FROM __dml_query FROM (");
                 writer.WriteLine();
             }
         }
@@ -274,8 +283,18 @@ namespace System.Data.Entity.SqlServer.SqlGen
         public override void WriteSubqueryHeader(SqlWriter writer, SqlGenerator sqlGenerator)
         {
             writer.Write("INSERT INTO ");
-            writer.Write(SqlGenerator.QuoteIdentifier(DmlOperation.TargetEntitySet.Schema));
-            writer.Write(".");
+            if (!string.IsNullOrEmpty(DmlOperation.TargetEntitySet.Database))
+            {
+                writer.Write(SqlGenerator.QuoteIdentifier(DmlOperation.TargetEntitySet.Database));
+                writer.Write(".");
+            }
+            
+            if (!string.IsNullOrEmpty(DmlOperation.TargetEntitySet.Schema))
+            {
+                writer.Write(SqlGenerator.QuoteIdentifier(DmlOperation.TargetEntitySet.Schema));
+                writer.Write(".");
+            }
+
             writer.Write(SqlGenerator.QuoteIdentifier(DmlOperation.TargetEntitySet.Table));
             writer.Write(" (");
 

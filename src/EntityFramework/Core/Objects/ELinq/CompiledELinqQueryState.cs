@@ -226,6 +226,11 @@ namespace System.Data.Entity.Core.Objects.ELinq
             return new ExpressionConverter(funcletizer, lambda.Body);
         }
 
+        internal override IEnumerable<Tuple<ObjectParameter, QueryParameterExpression>> GetLinqParameters(ObjectQueryExecutionPlan plan)
+        {
+            return plan.CompiledQueryParameters;
+        }
+
         // <summary>
         // Replaces ParameterExpresion with ConstantExpression
         // to make the expression usable as a donor expression

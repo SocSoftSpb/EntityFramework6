@@ -81,10 +81,25 @@ namespace System.Data.Entity
                     ));
             }
             
+            public static IQueryable<TOut> BootstrapFunction<TIn, TOut, TParam0, TParam1, TParam2, TParam3>(
+                Expression<Func<IQueryable<TIn>, IQueryable<TOut>>> methodExpression, IQueryable<TIn> collection, 
+                TParam0 p0, TParam1 p1, TParam2 p2, TParam3 p3)
+            {
+                // We could use methodExpression directly here, but it seems marginally better (and consistent with
+                // previous versions) to use a constant expression for the parameter.
+                return collection.Provider.CreateQuery<TOut>(
+                    Expression.Call(
+                        ((MethodCallExpression)methodExpression.Body).Method, collection.Expression,
+                        Expression.Constant(p0, typeof(TParam0)),
+                        Expression.Constant(p1, typeof(TParam1)),
+                        Expression.Constant(p2, typeof(TParam2)),
+                        Expression.Constant(p3, typeof(TParam3))
+                    ));
+            }
+            
             public static IEnumerable<TOut> BootstrapFunction<TIn, TOut, TParam>(Expression<Func<IQueryable<TIn>, IQueryable<TOut>>> methodExpression, IEnumerable<TIn> collection, TParam p0)
             {
-                var asQueryable = collection as IQueryable<TIn>;
-                if (asQueryable != null)
+                if (collection is IQueryable<TIn> asQueryable)
                 {
                     // We could use methodExpression directly here, but it seems marginally better (and consistent with
                     // previous versions) to use a constant expression for the parameter.

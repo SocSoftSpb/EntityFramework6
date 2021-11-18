@@ -44,6 +44,8 @@ namespace System.Data.Entity.Core.Objects.ELinq
         private readonly OrderByLifter _orderByLifter;
         private Dictionary<string, TableHints> _hintsForType;
         private QueryOptions _queryOptions;
+        private DynamicEntitySetOptions _wantDynamicSet;
+        private EntitySet _foundDynamicSet;
 
         #region Consts
 

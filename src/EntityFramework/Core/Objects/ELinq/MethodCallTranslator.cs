@@ -80,11 +80,6 @@ namespace System.Data.Entity.Core.Objects.ELinq
                     return TableHintTranslator.Translate(parent, linq);
                 }
 
-                if (DmlTranslator.IsCandidateMethod(linq.Method))
-                {
-                    return DmlTranslator.Translate(parent, linq);
-                }
-
                 // check if this method has the FunctionAttribute (known proxy)
                 var functionAttribute = linq.Method.GetCustomAttributes<DbFunctionAttribute>(inherit: false).FirstOrDefault();
                 if (null != functionAttribute)
@@ -308,8 +303,12 @@ namespace System.Data.Entity.Core.Objects.ELinq
                 yield return new SingleOrDefaultTranslator();
                 yield return new SingleOrDefaultPredicateTranslator();
                 yield return new ContainsTranslator();
+                yield return new BatchDeleteTranslator();
+                yield return new BatchDeleteDynamicTranslator();
                 yield return new BatchUpdateTranslator();
+                yield return new BatchUpdateDynamicTranslator();
                 yield return new BatchInsertTranslator();
+                yield return new BatchInsertDynamicTranslator();
             }
 
             private static IEnumerable<ObjectQueryCallTranslator> GetObjectQueryCallTranslators()
@@ -3844,6 +3843,86 @@ namespace System.Data.Entity.Core.Objects.ELinq
                 }
             }
             
+            private sealed class BatchDeleteTranslator : SequenceMethodTranslator
+            {
+                public BatchDeleteTranslator() : base(SequenceMethod.BatchDelete)
+                {
+                }
+
+                internal override CqtExpression Translate(ExpressionConverter parent, MethodCallExpression call)
+                {
+                    Debug.Assert(3 == call.Arguments.Count);
+
+                    if (!TryEvaluateAsConstantChain(call.Arguments[1], out var objValue) || !(objValue is bool withRowCount))
+                        throw new InvalidOperationException("Argument 2 (withRowCount) must be a boolean constant.");
+                    
+                    if (!TryEvaluateAsConstantChain(call.Arguments[2], out objValue) || !(objValue is int limit))
+                        throw new InvalidOperationException("Argument 3 (limit) must be a int constant.");
+                    
+                    // translate source
+                    var source = parent.TranslateExpression(call.Arguments[0]);
+
+                    var genArgs = call.Method.GetGenericArguments();
+                    var entitySet = GetEntitySet(parent, genArgs[genArgs.Length - 1]);
+                    
+                    var deleteOp = new DbDmlDeleteOperation(entitySet, withRowCount, limit);
+                    parent.DmlOperation = deleteOp;
+                    
+                    return source;
+                }
+
+                private static EntitySet GetEntitySet(ExpressionConverter parent, Type clrType)
+                {
+                    if (!parent._perspective.TryGetType(clrType, out var typeUsage)
+                        || typeUsage.EdmType.DataSpace != DataSpace.CSpace
+                        || typeUsage.EdmType.BuiltInTypeKind != BuiltInTypeKind.EntityType)
+                        throw new InvalidOperationException(nameof(DbDmlQueryFunctions.BatchUpdate) + " can process only Entity types.");
+
+                    var metadataWorkspace = parent._perspective.MetadataWorkspace;
+                    if (!metadataWorkspace.TryGetMappingInformation((EntityType)(typeUsage.EdmType), out var mapInfo))
+                        throw new InvalidOperationException($"Can't find mapping information for Entity Type {typeUsage.EdmType.Name}.");
+
+                    return mapInfo.GetSingleStoreEntitySet();
+                }
+            }
+
+            private sealed class BatchDeleteDynamicTranslator : SequenceMethodTranslator
+            {
+                public BatchDeleteDynamicTranslator() : base(SequenceMethod.BatchDeleteDynamic)
+                {
+                }
+
+                internal override CqtExpression Translate(ExpressionConverter parent, MethodCallExpression call)
+                {
+                    Debug.Assert(4 == call.Arguments.Count);
+
+                    if (!TryEvaluateAsConstantChain(call.Arguments[1], out var objValue) || !(objValue is DynamicEntitySetOptions tempTableOptions))
+                        throw new InvalidOperationException("Argument 2 (tempTableOptions) must be a DynamicEntitySetOptions constant.");
+                    
+                    if (!TryEvaluateAsConstantChain(call.Arguments[2], out objValue) || !(objValue is bool withRowCount))
+                        throw new InvalidOperationException("Argument 3 (withRowCount) must be a boolean constant.");
+                    
+                    if (!TryEvaluateAsConstantChain(call.Arguments[3], out objValue) || !(objValue is int limit))
+                        throw new InvalidOperationException("Argument 4 (limit) must be a int constant.");
+                    
+
+                    // translate source
+                    parent._wantDynamicSet = tempTableOptions;
+                    var source = parent.TranslateExpression(call.Arguments[0]);
+                    parent._wantDynamicSet = null;
+                    var dynamicSet = parent._foundDynamicSet;
+                    parent._foundDynamicSet = null;
+
+                    if (dynamicSet == null)
+                        throw new InvalidOperationException("Can't find DynamicEntitySet for given tempTableOptions.");
+                    
+                    var deleteOp = new DbDmlDeleteOperation(dynamicSet, withRowCount, limit);
+                    parent.DmlOperation = deleteOp;
+
+                    return source;
+                }
+            }
+
             private sealed class BatchUpdateTranslator : SequenceMethodTranslator
             {
                 public BatchUpdateTranslator() : base(SequenceMethod.BatchUpdate)
@@ -3905,6 +3984,64 @@ namespace System.Data.Entity.Core.Objects.ELinq
                 }
             }
             
+            private sealed class BatchUpdateDynamicTranslator : SequenceMethodTranslator
+            {
+                public BatchUpdateDynamicTranslator() : base(SequenceMethod.BatchUpdateDynamic)
+                {
+                }
+                
+                internal override CqtExpression Translate(ExpressionConverter parent, MethodCallExpression call)
+                {
+                    Debug.Assert(5 == call.Arguments.Count);
+
+                    if (!TryEvaluateAsConstantChain(call.Arguments[1], out var objValue) || !(objValue is DynamicEntitySetOptions tempTableOptions))
+                        throw new InvalidOperationException("Argument 2 (tempTableOptions) must be a DynamicEntitySetOptions constant.");
+                    
+                    if (!TryEvaluateAsConstantChain(call.Arguments[3], out objValue) || !(objValue is bool withRowCount))
+                        throw new InvalidOperationException("Argument 4 (withRowCount) must be a boolean constant.");
+                    
+                    if (!TryEvaluateAsConstantChain(call.Arguments[4], out objValue) || !(objValue is int limit))
+                        throw new InvalidOperationException("Argument 5 (limit) must be a int constant.");
+                    
+                    // translate source
+                    parent._wantDynamicSet = tempTableOptions;
+                    var source = parent.TranslateExpression(call.Arguments[0]);
+                    parent._wantDynamicSet = null;
+                    var dynamicSet = parent._foundDynamicSet;
+                    parent._foundDynamicSet = null;
+
+                    if (dynamicSet == null)
+                        throw new InvalidOperationException("Can't find DynamicEntitySet for given tempTableOptions.");
+                    
+                    // translate lambda expression
+                    var lambdaExpression = parent.GetLambdaExpression(call, 2);
+
+                    ValidateLambda(lambdaExpression);
+
+                    var updateOp = new DbDmlUpdateOperation(dynamicSet, lambdaExpression.ReturnType, withRowCount, limit);
+                    parent.DmlOperation = updateOp;
+                    var lambda = parent.TranslateLambda(lambdaExpression, source, out DbExpressionBinding sourceBinding);
+                    updateOp.IsUnderTranslation = false;
+                    
+                    var projection = parent.Project(sourceBinding, lambda);
+
+                    return projection;
+                }
+
+                private static void ValidateLambda(LambdaExpression lambdaExpression)
+                {
+                    if (lambdaExpression.Body.NodeType != ExpressionType.MemberInit)
+                        throw new InvalidOperationException("MemberInitExpression expected in " + nameof(DbDmlQueryFunctions.BatchUpdate) + ".");
+
+                    var initExpr = (MemberInitExpression)(lambdaExpression.Body);
+                    if (initExpr.Bindings.Count == 0)
+                        throw new InvalidOperationException("MemberInitExpression in " + nameof(DbDmlQueryFunctions.BatchUpdate) + " must have Property setters.");
+
+                    if (initExpr.NewExpression.Arguments.Count > 0)
+                        throw new InvalidOperationException("MemberInitExpression in " + nameof(DbDmlQueryFunctions.BatchUpdate) + " must use parameterless constructor.");
+                }
+            }
+            
             private sealed class BatchInsertTranslator : SequenceMethodTranslator
             {
                 public BatchInsertTranslator() : base(SequenceMethod.BatchInsert)
@@ -3922,7 +4059,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
                     var entitySet = FindEntitySet(parent, clrType, out var discriminators);
                     
                     // translate source
-                    var insertOp = new DbDmlInsertOperation(entitySet, clrType, withRowCount, discriminators);
+                    var insertOp = new DbDmlInsertOperation(entitySet, clrType, withRowCount, discriminators, null);
                     parent.DmlOperation = insertOp;
                     var projection = parent.TranslateExpression(call.Arguments[0]);
                     insertOp.IsUnderTranslation = false;
@@ -3946,6 +4083,90 @@ namespace System.Data.Entity.Core.Objects.ELinq
                         discriminators = mapInfo.GetDiscriminatorsForTphType();
 
                     return storeSet;
+                }
+            }
+
+            private sealed class BatchInsertDynamicTranslator : SequenceMethodTranslator
+            {
+                public BatchInsertDynamicTranslator()
+                    : base(SequenceMethod.BatchInsertDynamic)
+                {
+                }
+
+                internal override DbExpression Translate(ExpressionConverter parent, MethodCallExpression call)
+                {
+                    Debug.Assert(4 == call.Arguments.Count);
+
+                    var entityType = call.Method.GetGenericArguments()[0];
+
+                    if (!TryEvaluateAsConstantChain(call.Arguments[1], out var objValue)
+                        || !(objValue is string tableName))
+                        throw new InvalidOperationException("Argument 2 (tableName) must be a string constant.");
+                    if (!TryEvaluateAsConstantChain(call.Arguments[2], out objValue)
+                        || !(objValue is DynamicEntitySetOptions tempTableOptions))
+                        throw new InvalidOperationException("Argument 3 (tempTableOptions) must be a DynamicEntitySetOptions constant.");
+                    if (!TryEvaluateAsConstantChain(call.Arguments[3], out objValue)
+                        || !(objValue is bool withRowCount))
+                        throw new InvalidOperationException("Argument 4 (withRowCount) must be a boolean constant.");
+
+                    var entitySet = DynamicSqlTranslator.CreateDynamicEntitySet(parent, entityType, "TABLE:" + tableName, tempTableOptions);
+
+                    parent._mergeOption = MergeOption.NoTracking;
+
+                    var wrappedQuery = TryEvaluateAsConstantChain(call.Arguments[0], out objValue)
+                                       && (objValue is DbDmlQueryFunctions.DynObjectQueryWrapper queryWrapper)
+                        ? queryWrapper.ObjectQuery
+                        : null;
+                        
+                    if (entitySet.AllowDynamicPlanCaching() || wrappedQuery == null)
+                    {
+                        var insertOp = new DbDmlInsertOperation(entitySet, entityType, withRowCount, null, null);
+                        parent.DmlOperation = insertOp;
+                        var projectExpr = wrappedQuery == null ? call.Arguments[0] : Expression.Constant(wrappedQuery);
+                        var projection = parent.TranslateExpression(projectExpr);
+                        insertOp.IsUnderTranslation = false;
+                        return projection;
+                    }
+
+                    {
+                        wrappedQuery.MergeOption = MergeOption.NoTracking;
+                        var insertOp = new DbDmlInsertOperation(entitySet, entityType, withRowCount, null, wrappedQuery);
+                        parent.DmlOperation = insertOp;
+
+                        DbExpression result = null;
+                        if (insertOp.LinqParameters != null)
+                        {
+                            foreach (var linqParameter in insertOp.LinqParameters)
+                            {
+                                if (result == null)
+                                {
+                                    result = linqParameter.Item2.ParameterReference;
+                                }
+                                else
+                                {
+                                    if (result.ExpressionKind == DbExpressionKind.ParameterReference)
+                                    {
+                                        if (!TypeHelpers.TryGetPrimitiveTypeKind(result.ResultType, out var kind)
+                                            || kind != PrimitiveTypeKind.Int32)
+                                            result = result.CastTo(EdmProviderManifest.Instance.GetCanonicalModelTypeUsage(PrimitiveTypeKind.Int32));
+                                    }
+
+                                    {
+                                        DbExpression toAdd = linqParameter.Item2.ParameterReference;
+                                        if (!TypeHelpers.TryGetPrimitiveTypeKind(toAdd.ResultType, out var kind)
+                                            || kind != PrimitiveTypeKind.Int32)
+                                            toAdd = toAdd.CastTo(EdmProviderManifest.Instance.GetCanonicalModelTypeUsage(PrimitiveTypeKind.Int32));
+
+                                        result = result.Plus(toAdd);
+                                    }
+                                }
+
+                                parent.AddParameter(linqParameter.Item2);
+                            }
+                        }
+
+                        return result ?? DbExpression.FromInt32(1);
+                    }
                 }
             }
 
@@ -3996,6 +4217,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
 
             private static Exception InvalidHintsException() =>  new InvalidOperationException("Hint must be a constant or a expression of predefined type.");
 
+            // ReSharper disable once ParameterOnlyUsedForPreconditionCheck.Local
             private static TableHints ValidateHint(TableHints hint, bool isScoped)
             {
                 if (!isScoped && hint is TableHints.TargetableHint)
@@ -4016,7 +4238,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
                 }
             }
 
-            private static TableHints TranslateHintExpression(ExpressionConverter parent, Expression hintExpr, bool isScoped, Type queryableType)
+            private static TableHints TranslateHintExpression(Expression hintExpr, bool isScoped, Type queryableType)
             {
                 bool ValidateCallExpression(Expression expr, out MethodCallExpression methodCall)
                 {
@@ -4034,8 +4256,8 @@ namespace System.Data.Entity.Core.Objects.ELinq
                     case ExpressionType.Or:
                     {
                         var binExp = (BinaryExpression)hintExpr;
-                        var left = TranslateHintExpression(parent, binExp.Left, isScoped, queryableType);
-                        var right = TranslateHintExpression(parent, binExp.Right, isScoped, queryableType);
+                        var left = TranslateHintExpression(binExp.Left, isScoped, queryableType);
+                        var right = TranslateHintExpression(binExp.Right, isScoped, queryableType);
                         return left | right;
                     }
                     case ExpressionType.MemberAccess:
@@ -4070,7 +4292,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
 
             private static DbExpression TranslateScopedHint(ExpressionConverter parent, Expression sourceQueryExp, Expression hintArgument)
             {
-                var hint = TranslateHintExpression(parent, hintArgument, isScoped:true, sourceQueryExp.Type);
+                var hint = TranslateHintExpression(hintArgument, isScoped:true, sourceQueryExp.Type);
 
                 var oldHints = parent._scopedHints;
                 parent._scopedHints = hint;
@@ -4084,7 +4306,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
             {
                 var retVal = parent.TranslateExpression(sourceQueryExp);
 
-                var hint = TranslateHintExpression(parent, hintArgument, isScoped:false, sourceQueryExp.Type);
+                var hint = TranslateHintExpression(hintArgument, isScoped:false, sourceQueryExp.Type);
 
                 parent.AddTypedHint(applyToType, hint);
 
@@ -4109,7 +4331,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
 					return TranslateDynamicSql(parent, linq);
 				}
 				throw new NotSupportedException(string.Format(CultureInfo.InvariantCulture, 
-					"Method {0} of class {1} is not supported.", linq.Method.Name, typeof(DynamicSqlUtilities).Name));
+					"Method {0} of class {1} is not supported.", linq.Method.Name, nameof(DynamicSqlUtilities)));
 			}
 
             [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
@@ -4134,6 +4356,20 @@ namespace System.Data.Entity.Core.Objects.ELinq
 				if (options == null)
 					throw new InvalidOperationException("Mapped properties must be a list constant.");
 
+                var es = CreateDynamicEntitySet(parent, scanType, sql, options);
+
+                if (ReferenceEquals(parent._wantDynamicSet, options))
+                {
+                    if (parent._foundDynamicSet != null)
+                        throw new InvalidOperationException("Dynamic entity set with given options is found twice.");
+                    parent._foundDynamicSet = es;
+                }
+
+				return es.Scan(parent._scopedHints ?? options.DefaultTableHints);
+			}
+
+            public static EntitySet CreateDynamicEntitySet(ExpressionConverter parent, Type entityType, string sqlDefinition, DynamicEntitySetOptions options)
+            {
 				var lstEdmProperties = options.Columns.Select(option => CreateEdmProperty(parent, option)).ToList();
 				if (lstEdmProperties.Count == 0)
 					throw new InvalidOperationException("No any property is mapped.");
@@ -4156,9 +4392,9 @@ namespace System.Data.Entity.Core.Objects.ELinq
 				string tableName = null;
                 string database = null;
 
-                if (sql.StartsWith("TABLE:", StringComparison.Ordinal))
+                if (sqlDefinition.StartsWith("TABLE:", StringComparison.Ordinal))
                 {
-                    tableName = sql.Substring(6);
+                    tableName = sqlDefinition.Substring(6);
                     var pointPos = tableName.LastIndexOf('.');
                     if (pointPos > 0)
                     {
@@ -4172,24 +4408,39 @@ namespace System.Data.Entity.Core.Objects.ELinq
                             schemaName = schemaName.Substring(pointPos + 1);
                         }
                     }
-                    sql = null;
+                    sqlDefinition = null;
                 }
 
-				var entityTypeName = "Dyn_" + scanType.Name;
+				var entityTypeName = "Dyn_" + entityType.Name;
 
 				var et = new EntityType(entityTypeName, DynamicEntityTypeNamespace, DataSpace.CSpace, options.KeyMemberNames, lstEdmProperties);
-				var es = new EntitySet(entitySetName, schemaName, tableName, sql, et) {Database = database};
-                es.DynamicEntitySetMapper = new DynamicEntitySetMapper(es, options, scanType);
+				var es = new EntitySet(entitySetName, schemaName, tableName, sqlDefinition, et) {Database = database};
+                es.DynamicEntitySetMapper = new DynamicEntitySetMapper(es, options, entityType);
 				es.ChangeEntityContainerWithoutCollectionFixup(container);
 				es.SetReadOnly();
                 et.DynamicEntitySet = es;
 
-				return es.Scan(parent._scopedHints ?? options.DefaultTableHints);
-			}
+                return es;
+            }
 
 			private static EdmProperty CreateEdmProperty(ExpressionConverter parent, ColumnOption option)
 			{
 				var tu = parent.GetValueLayerType(option.Property.PropertyType);
+                if (TypeSemantics.IsNullable(tu) != option.IsNullable)
+                {
+                    var facets = tu.Facets.ToArray();
+                    for (var iFacet = 0; iFacet < facets.Length; iFacet++)
+                    {
+                        var facet = facets[iFacet];
+                        if (facet.Name == DbProviderManifest.NullableFacetName)
+                        {
+                            facets[iFacet] = Facet.Create(MetadataItem.NullableFacetDescription, option.IsNullable);
+                            break;
+                        }
+                    }
+
+                    tu = TypeUsage.Create(tu.EdmType, facets);
+                }
 				return new EdmProperty(option.ColumnName, tu);
 			}
 
@@ -4229,26 +4480,22 @@ namespace System.Data.Entity.Core.Objects.ELinq
                 var method = linq.Method;
                 if (method.DeclaringType == typeof(WindowFunction))
                     return new NotSupportedException(Strings.ELinq_WindowFunctionWithoutOver(linq.Method.Name));
-                return new NotSupportedException(Strings.ELinq_WindowPartitionOrderDirectlyCall(method.DeclaringType.Name));
+                return new NotSupportedException(Strings.ELinq_WindowPartitionOrderDirectlyCall(
+                    (method.DeclaringType ?? throw new NullReferenceException("method.DeclaringType == null")).Name));
             }
 
             private static DbExpression TranslateOver(ExpressionConverter parent, MethodCallExpression over)
             {
-                MethodCallExpression windowFunctionCall;
-                if (!TryExtractWindowFunction(over, out windowFunctionCall))
+                if (!TryExtractWindowFunction(over, out var windowFunctionCall))
                     throw new NotSupportedException(Strings.ELinq_WindowFunctionInvalid);
-                
-                MethodCallExpression partitionCall;
-                MethodCallExpression orderCall;
-                string errorMessage;
-                if (!TryExtractPartitionOrder(over, out partitionCall, out orderCall, out errorMessage))
+
+                if (!TryExtractPartitionOrder(over, out var partitionCall, out var orderCall, out var errorMessage))
                     throw new NotSupportedException(errorMessage);
                 
                 if (!TryValidateOverClauses(windowFunctionCall.Method, orderCall, out errorMessage))
                     throw new NotSupportedException(errorMessage);
 
-                TypeUsage[] argTypes;
-                var args = TranslateArgs(parent, windowFunctionCall, out argTypes);
+                var args = TranslateArgs(parent, windowFunctionCall, out var argTypes);
                 var fnk = parent.FindCanonicalFunction("W_" + windowFunctionCall.Method.Name, argTypes, false, windowFunctionCall);
 
                 var partitionList = TranslatePartition(parent, partitionCall);
@@ -4298,9 +4545,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
                 var isDesc = orderCall.Method.Name.EndsWith("Descending", StringComparison.Ordinal);
                 if (!orderCall.Method.IsStatic)
                 {
-                    MethodCallExpression prevOrder;
-                    string errorMessage;
-                    if (!TryExtractOrder(orderCall.Object, out prevOrder, out errorMessage))
+                    if (!TryExtractOrder(orderCall.Object, out var prevOrder, out var errorMessage))
                         throw new NotSupportedException(errorMessage);
                     TranslateOrderRecursive(parent, prevOrder, lst);
                 }
@@ -4313,9 +4558,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
                 var dbExpressionArg = parent.TranslateExpression(arg);
                 if (!partitionCall.Method.IsStatic)
                 {
-                    MethodCallExpression prevPartition;
-                    string errorMessage;
-                    if (!TryExtractPartition(partitionCall.Object, out prevPartition, out errorMessage))
+                    if (!TryExtractPartition(partitionCall.Object, out var prevPartition, out var errorMessage))
                         throw new NotSupportedException(errorMessage);
                     TranslatePartitionRecursive(parent, prevPartition, lst);
                 }
@@ -4354,11 +4597,11 @@ namespace System.Data.Entity.Core.Objects.ELinq
                 partitionCall = null;
                 orderCall = null;
                 var method = over.Method;
-                var prms = method.GetParameters();
+                var methodParameters = method.GetParameters();
 
-                for (var iParam = 0; iParam < prms.Length; iParam++)
+                for (var iParam = 0; iParam < methodParameters.Length; iParam++)
                 {
-                    var parameterInfo = prms[iParam];
+                    var parameterInfo = methodParameters[iParam];
                     if (parameterInfo.ParameterType == typeof(Partition)
                         && !TryExtractPartition(over.Arguments[iParam], out partitionCall, out errorMessage))
                         return false;
@@ -4416,52 +4659,6 @@ namespace System.Data.Entity.Core.Objects.ELinq
                 return true;
             }
 
-        }
-
-        private static class DmlTranslator
-        {
-            public static bool IsCandidateMethod(MethodInfo method)
-            {
-                var declaringType = method.DeclaringType;
-                return declaringType == typeof(DbDmlFunctions);
-            }
-            
-            public static DbExpression Translate(ExpressionConverter parent, MethodCallExpression linq)
-            {
-                switch (linq.Method.Name)
-                {
-                    case nameof(DbDmlFunctions.DeleteMarker):
-                        return TranslateDelete(parent, linq, false);
-                    case nameof(DbDmlFunctions.DeleteMarkerRowCount):
-                        return TranslateDelete(parent, linq, true);
-                    default:
-                        throw new NotSupportedException(Strings.ELinq_UnsupportedMethod(linq.Method.Name));
-                }
-            }
-
-            private static DbExpression TranslateDelete(ExpressionConverter parent, MethodCallExpression linq, bool withRowCount)
-            {
-                if (parent.DmlOperation != null)
-                    throw new InvalidOperationException("DML operation specified more than one time.");
-
-                var argExpression = (linq.Arguments.Count == 1 ? linq.Arguments[0] : null) ?? throw new InvalidOperationException("DeleteMarker must accept exactly one argument.");
-                var argDbExp = parent.TranslateExpression(argExpression);
-                var argType = argDbExp.ResultType.EdmType;
-                if (argType == null || argType.BuiltInTypeKind != BuiltInTypeKind.EntityType)
-                    throw new InvalidOperationException("DeleteMarker argument must be a EntityType.");
-
-                var metadataWorkspace = parent._perspective.MetadataWorkspace;
-                if (!metadataWorkspace.TryGetMappingInformation((EntityType)argType, out var mapInfo))
-                    throw new InvalidOperationException($"Can't find mapping information for Entity Type {argType.Name}.");
-
-                var storeSet = mapInfo.GetSingleStoreEntitySet();
-
-                parent.DmlOperation = new DbDmlDeleteOperation(storeSet, withRowCount);
-                
-                var fnk = parent.FindSingleCanonicalFunction("dml_" + linq.Method.Name, linq);
-
-                return fnk.Invoke();
-            }
         }
     }
 }

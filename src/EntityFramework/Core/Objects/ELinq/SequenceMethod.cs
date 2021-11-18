@@ -187,8 +187,12 @@ namespace System.Data.Entity.Core.Objects.ELinq
 
         TakeWithTies,
         
+        BatchDelete,
         BatchUpdate,
         BatchInsert,
+        BatchDeleteDynamic,
+        BatchUpdateDynamic,
+        BatchInsertDynamic,
 
         NotSupported,
     }

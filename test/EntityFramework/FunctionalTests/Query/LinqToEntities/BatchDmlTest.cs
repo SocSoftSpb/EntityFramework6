@@ -67,50 +67,95 @@ namespace System.Data.Entity.Query.LinqToEntities
         {
             var contextInfo = new DbContextInfo(typeof(MyContext), ProviderRegistry.Sql2008_ProviderInfo);
 
-            using (var context = contextInfo.CreateInstance())
-            {
-                var objectContext = ((IObjectContextAdapter)context).ObjectContext;
-                IQueryable<Book> books = objectContext.CreateObjectSet<Book>();
+            using (var context = new MyContext()) 
+                using (var tr = context.Database.BeginTransaction())
+                {
+                    var objectContext = ((IObjectContextAdapter)context).ObjectContext;
+                    IQueryable<Book> books = objectContext.CreateObjectSet<Book>();
                 
-                var toDelete = books.Where(e => e.Title.Contains("aaa") && e.Author.Name.StartsWith("И"))
-                    //.OrderBy(e => e.Id).ThenBy(e => e.Title)
-                    .Take(100)
-                    ;
+                    var toDelete = books.Where(e => e.Title.Contains("aaa") && e.Author.Name.StartsWith("И"));
 
-                var toDeleteObjectQuery = (ObjectQuery<Book>)toDelete;
+                    var toDeleteObjectQuery = (ObjectQuery<Book>)toDelete;
 
-                var deleteCommand = BatchDmlFactory.CreateBatchDeleteQuery(toDeleteObjectQuery, true);
+                    var deleteCommand = BatchDmlFactory.CreateBatchDeleteQuery(toDeleteObjectQuery, true, 20);
 
-                var str = deleteCommand.ToTraceString();
-            }
+                    var str = deleteCommand.ToTraceString();
+                    var result = deleteCommand.Execute();
+
+                    tr.Rollback();
+                }
+        }
+
+        [Fact]
+        public void CanBatchDeleteJoinBooks()
+        {
+            var contextInfo = new DbContextInfo(typeof(MyContext), ProviderRegistry.Sql2008_ProviderInfo);
+
+            using (var context = new MyContext()) 
+                using (var tr = context.Database.BeginTransaction())
+                {
+                    var objectContext = ((IObjectContextAdapter)context).ObjectContext;
+                    IQueryable<Book> books = objectContext.CreateObjectSet<Book>();
+                    IQueryable<Author> authors = objectContext.CreateObjectSet<Author>();
+
+                    var toDelete = books.Join(authors, b => b.AuthorId, a => a.Id, 
+                            (b, a) => new BatchDmlFactory.JoinTuple<Book, Author>{Entity = b, Source = a})
+                        .Where(
+                            e => e.Entity.Title.Contains("aaa")
+                                 && e.Source.Name.StartsWith("И")
+                        );
+                    
+                    // var aa = from a1 in authors
+                    //     join a2 in authors on a1.Name equals a2.Name
+                    //     select new AuthorInfo { Id = a1.Id, Name = a1.Name };
+
+                    // var toDelete = books.Join(aa, b => b.AuthorId, a => a.Id, 
+                    //         (b, a) => new BatchDmlFactory.JoinTuple<Book, AuthorInfo>{Entity = b, Source = a})
+                    //     .Where(
+                    //         e => e.Entity.Title.Contains("aaa")
+                    //              && e.Source.Name.StartsWith("И")
+                    //     );
+
+                    var fromQuery = (ObjectQuery<BatchDmlFactory.JoinTuple<Book, Author>>)toDelete;
+                    var deleteQuery = BatchDmlFactory.CreateBatchDeleteJoinQuery<BatchDmlFactory.JoinTuple<Book, Author>, Book>(
+                        fromQuery, true, 80);
+                    var strToDelete = deleteQuery.ToTraceString();
+
+                    var result = deleteQuery.Execute();
+                    
+                    tr.Rollback();
+                }
         }
 
         [Fact]
         public void CanBatchUpdateBooks()
         {
             using (var context = new MyContext())
-            {
-                var objectContext = ((IObjectContextAdapter)context).ObjectContext;
-                IQueryable<Book> books = objectContext.CreateObjectSet<Book>();
+                using (var tr = context.Database.BeginTransaction())
+                {
+                    var objectContext = ((IObjectContextAdapter)context).ObjectContext;
+                    IQueryable<Book> books = objectContext.CreateObjectSet<Book>();
 
-                var toUpdate = books.Where(
-                    e => e.Title.Contains("aaa")
-                         && e.Author.Name.StartsWith("И")
-                );
+                    var toUpdate = books.Where(
+                        e => e.Title.Contains("aaa")
+                             && e.Author.Name.StartsWith("И")
+                    );
 
-                var fromQuery = (ObjectQuery<Book>)toUpdate;
-                var updateQuery = BatchDmlFactory.CreateBatchUpdateQuery(
-                    fromQuery,
-                    e => new Book
-                    {
-                        Title = e.Title + " " + e.Author.Name,
-                        SomeNullableInt = null
-                        // AuthorId = 100
-                    }, true, 120);
-                var strToUpdate = updateQuery.ToTraceString();
+                    var fromQuery = (ObjectQuery<Book>)toUpdate;
+                    var updateQuery = BatchDmlFactory.CreateBatchUpdateQuery(
+                        fromQuery,
+                        e => new Book
+                        {
+                            Title = e.Title + " " + e.Author.Name,
+                            SomeNullableInt = null
+                            // AuthorId = 100
+                        }, true, 120);
+                    var strToUpdate = updateQuery.ToTraceString();
 
-                var result = updateQuery.Execute();
-            }
+                    var result = updateQuery.Execute();
+                    
+                    tr.Rollback();
+                }
         }
 
         public class AuthorInfo

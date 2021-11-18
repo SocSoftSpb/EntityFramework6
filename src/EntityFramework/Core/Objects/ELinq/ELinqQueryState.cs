@@ -297,6 +297,8 @@ namespace System.Data.Entity.Core.Objects.ELinq
             get { return _expression; }
         }
 
+        internal virtual IEnumerable<Tuple<ObjectParameter, QueryParameterExpression>> GetLinqParameters(ObjectQueryExecutionPlan plan) => _linqParameters;
+        
         protected virtual ExpressionConverter CreateExpressionConverter()
         {
             var funcletizer = Funcletizer.CreateQueryFuncletizer(ObjectContext);

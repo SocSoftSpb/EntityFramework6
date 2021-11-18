@@ -477,8 +477,18 @@ namespace System.Data.Entity.SqlServer.SqlGen
                 switch (DmlOperation.Kind)
                 {
                     case DbDmlOperationKind.Delete:
+                        break;
                     case DbDmlOperationKind.Update:
+                        break;
                     case DbDmlOperationKind.Insert:
+#if !NET40
+                        var opInsert = (DbDmlInsertOperation)DmlOperation;
+                        if (opInsert.FromObjectQuery != null)
+                        {
+                            paramsToForceNonUnicode = null;
+                            return MakeInsertFromQuery(opInsert);
+                        }
+#endif
                         break;
                     default:
                         throw new InvalidOperationException($"Unknown DML operation: {DmlOperation.Kind}.");
@@ -508,17 +518,17 @@ namespace System.Data.Entity.SqlServer.SqlGen
                                 if (IsDeletionTarget(delOp, extent))
                                 {
                                     // Direct query without projections
-                                    sqlStatement.Select.DmlModificator = new SqlSelectDeleteModificator(wrapDeletionInSubquery: false, extent, delOp.WithRowCount);
+                                    sqlStatement.Select.DmlModificator = new SqlSelectDeleteModificator(wrapDeletionInSubquery: false, extent, delOp);
                                 }
                                 else if (extent is JoinSymbol joinSym
                                          && TryFindJoinExtent(delOp, joinSym, out var sym))
                                 {
-                                    sqlStatement.Select.DmlModificator = new SqlSelectDeleteModificator(wrapDeletionInSubquery: false, sym, delOp.WithRowCount);
+                                    sqlStatement.Select.DmlModificator = new SqlSelectDeleteModificator(wrapDeletionInSubquery: false, sym, delOp);
                                 }
                                 else
                                 {
                                     // Has projection
-                                    sqlStatement.Select.DmlModificator = new SqlSelectDeleteModificator(wrapDeletionInSubquery: true, null, delOp.WithRowCount);
+                                    sqlStatement.Select.DmlModificator = new SqlSelectDeleteModificator(wrapDeletionInSubquery: true, null, delOp);
                                 }
                             }
                             else
@@ -632,6 +642,69 @@ namespace System.Data.Entity.SqlServer.SqlGen
                 return entityType == delOp.TargetEntitySet.ElementType;
             }
         }
+
+#if !NET40
+        private string MakeInsertFromQuery(DbDmlInsertOperation opInsert)
+        {
+            var insertColumnList = new StringBuilder(256);
+            var selectColumnList = new StringBuilder(256);
+            var mapInfo = opInsert.FromQueryMapping;
+            var fromCommand = opInsert.FromStoreCommand;
+            var entitySet = opInsert.TargetEntitySet;
+
+            var nColumn = 0;
+            
+            foreach (var clm in entitySet.ElementType.Properties)
+            {
+                var mp = mapInfo.FirstOrDefault(e => e.TargetName == clm.Name);
+                if (mp == null && clm.TypeUsage.IsNullable())
+                    continue;
+                
+                if (nColumn > 0)
+                {
+                    insertColumnList.Append(", ");
+                    selectColumnList.Append(", ");
+                }
+                insertColumnList.Append(QuoteIdentifier(clm.Name));
+                if (mp == null)
+                {
+                    var sqlType = GetSqlPrimitiveType(clm.TypeUsage);
+                    selectColumnList.Append("CAST(").Append(GetDefaultPrimitiveLiteral(clm.TypeUsage)).Append(" AS ").Append(sqlType).Append(")");
+                }
+                else
+                {
+                    selectColumnList.Append(QuoteIdentifier(mp.SourceProperty.Name));
+                }
+                selectColumnList.Append(" AS ").Append(QuoteIdentifier(clm.Name));
+                nColumn++;
+            }
+
+            var sbCommand = new StringBuilder(512);
+            
+            sbCommand.Append("INSERT INTO ");
+
+            if (!string.IsNullOrEmpty(entitySet.Database))
+                sbCommand.Append(QuoteIdentifier(entitySet.Database)).Append(".");
+            
+            if (!string.IsNullOrEmpty(entitySet.Schema))
+                sbCommand.Append(QuoteIdentifier(entitySet.Schema)).Append(".");
+
+            sbCommand.Append(QuoteIdentifier(entitySet.Table));
+            
+            sbCommand.Append(" WITH (TABLOCK)");
+            sbCommand.AppendLine().Append('(').Append(insertColumnList).Append(')').AppendLine()
+                .Append("SELECT ").Append(selectColumnList).Append(" FROM (");
+
+            sbCommand.AppendLine().Append(fromCommand.CommandText)
+                .AppendLine().Append(") AS x__subquery");
+
+            if (opInsert.WithRowCount)
+                sbCommand.Append(";").AppendLine()
+                    .Append("SELECT @@ROWCOUNT;");
+
+            return sbCommand.ToString();
+        }
+#endif
 
         // <summary>
         // Convert the SQL fragments to a string. Writes a string representing the SQL to be executed
@@ -4170,6 +4243,41 @@ namespace System.Data.Entity.SqlServer.SqlGen
             }
 
             return typeName;
+        }
+
+        private static string GetDefaultPrimitiveLiteral(TypeUsage storeTypeUsage)
+        {
+            Debug.Assert(BuiltInTypeKind.PrimitiveType == storeTypeUsage.EdmType.BuiltInTypeKind, "Type must be primitive type");
+
+            var primitiveTypeKind = storeTypeUsage.GetPrimitiveTypeKind();
+            
+            switch (primitiveTypeKind)
+            {
+                case PrimitiveTypeKind.Byte:
+                case PrimitiveTypeKind.Decimal:
+                case PrimitiveTypeKind.Boolean:
+                case PrimitiveTypeKind.Double:
+                case PrimitiveTypeKind.Single:
+                case PrimitiveTypeKind.SByte:
+                case PrimitiveTypeKind.Int16:
+                case PrimitiveTypeKind.Int32:
+                case PrimitiveTypeKind.Int64:
+                    return "0";
+                case PrimitiveTypeKind.Binary:
+                    return "0x";
+                case PrimitiveTypeKind.DateTime:
+                    return "'00010101'";
+                case PrimitiveTypeKind.Guid:
+                    return "'00000000-0000-0000-0000-000000000000'";
+                case PrimitiveTypeKind.String:
+                    return "''";
+                case PrimitiveTypeKind.Time:
+                    return "''";
+                case PrimitiveTypeKind.DateTimeOffset:
+                    return "'00010101'";
+                default:
+                    throw new InvalidOperationException($"PrimitiveTypeKind {primitiveTypeKind} is not supported.");
+            }
         }
 
         // <summary>

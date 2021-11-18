@@ -639,6 +639,11 @@ namespace System.Data.Entity.Core.EntityClient.Internal
         }
 
 #endif
+        internal DbCommand CreateStoreCommand()
+        {
+            var definition = _mappedCommandDefinitions[0];
+            return definition.CreateCommand();
+        }
 
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
         private DbCommand PrepareEntityCommandBeforeExecution(EntityCommand entityCommand)

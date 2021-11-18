@@ -5,7 +5,6 @@ namespace System.Data.Entity.Core.Metadata.Edm.Provider
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Data.Entity.Core.Common;
-    using System.Data.Entity.Core.Common.CommandTrees.Internal;
     using System.Data.Entity.Hierarchy;
     using System.Data.Entity.Spatial;
     using System.Data.Entity.Utilities;
@@ -1007,13 +1006,6 @@ namespace System.Data.Entity.Core.Metadata.Edm.Provider
                         type, "NullIf", type, "value", type, "defaultValue"));
 
             #endregion
-
-            #region DML Functions
-
-            functions.AddFunction(PrimitiveTypeKind.Int32, "dml_" + nameof(DbDmlFunctions.DeleteMarker));
-            functions.AddFunction(PrimitiveTypeKind.Int32, "dml_" + nameof(DbDmlFunctions.DeleteMarkerRowCount));
-
-            #endregion // DML Functions
 
             var readOnlyFunctions = functions.ToFunctionCollection();
 

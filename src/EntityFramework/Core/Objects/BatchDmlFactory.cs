@@ -5,6 +5,7 @@ namespace System.Data.Entity.Core.Objects
     using System.Collections.Generic;
     using System.Data.Entity.Core.Common;
     using System.Data.Entity.Core.Common.CommandTrees.Internal;
+    using System.Data.Entity.Utilities;
     using System.Linq;
     using System.Linq.Expressions;
 
@@ -13,12 +14,22 @@ namespace System.Data.Entity.Core.Objects
         /// <summary>
         /// Create command for BatchDelete
         /// </summary>
-        public static IBatchDeleteCommand CreateBatchDeleteQuery<T>(ObjectQuery<T> query, bool withRowCount)
+        public static IBatchDeleteCommand CreateBatchDeleteQuery<T>(ObjectQuery<T> query, bool withRowCount, int limit = -1)
         {
-            ObjectQuery<int> q = withRowCount
-                ? (ObjectQuery<int>)query.Select(e => DbDmlFunctions.DeleteMarkerRowCount(e))
-                : (ObjectQuery<int>)query.Select(e => DbDmlFunctions.DeleteMarker(e));
-                
+            Check.NotNull(query, nameof(query));
+            
+            var q = (ObjectQuery<int>)DbDmlQueryFunctions.BatchDelete(query, withRowCount, limit);
+            return new BatchDeleteCommand(q, withRowCount);
+        }
+
+        /// <summary>
+        /// Create command for BatchDelete with Join
+        /// </summary>
+        public static IBatchDeleteCommand CreateBatchDeleteJoinQuery<TQuery, TEntity>(ObjectQuery<TQuery> query, bool withRowCount, int limit = -1)
+        {
+            Check.NotNull(query, nameof(query));
+            
+            var q = (ObjectQuery<int>)DbDmlQueryFunctions.BatchDeleteJoin<TQuery, TEntity>(query, withRowCount, limit);
             return new BatchDeleteCommand(q, withRowCount);
         }
 
@@ -27,12 +38,21 @@ namespace System.Data.Entity.Core.Objects
         /// </summary>
         public static IBatchUpdateCommand CreateBatchUpdateQuery<T>(ObjectQuery<T> query, Expression<Func<T, T>> setters, bool withRowCount, int limit = -1)
         {
+            Check.NotNull(query, nameof(query));
+            Check.NotNull(setters, nameof(setters));
+            
             var q = (ObjectQuery<int>)DbDmlQueryFunctions.BatchUpdate(query, setters, withRowCount, limit);
             return new BatchUpdateCommand(q, withRowCount);
         }
         
+        /// <summary>
+        /// Create command for BatchUpdate with Join
+        /// </summary>
         public static IBatchUpdateCommand CreateBatchUpdateJoinQuery<TQuery, TEntity>(ObjectQuery<TQuery> query, Expression<Func<TQuery, TEntity>> setters, bool withRowCount, int limit = -1)
         {
+            Check.NotNull(query, nameof(query));
+            Check.NotNull(setters, nameof(setters));
+            
             var q = (ObjectQuery<int>)DbDmlQueryFunctions.BatchUpdateJoin(query, setters, withRowCount, limit);
             return new BatchUpdateCommand(q, withRowCount);
         }
@@ -42,10 +62,75 @@ namespace System.Data.Entity.Core.Objects
         /// </summary>
         public static IBatchInsertCommand CreateBatchInsertQuery<T>(ObjectQuery<T> query, bool withRowCount)
         {
+            Check.NotNull(query, nameof(query));
+            
             var q = (ObjectQuery<int>)DbDmlQueryFunctions.BatchInsert(query, withRowCount);
             return new BatchInsertCommand(q, withRowCount);
         }
 
+        /// <summary>
+        /// Create command for BatchInsert into Temp Table
+        /// </summary>
+        public static IBatchInsertCommand CreateBatchInsertDynamicTableQuery<T>(ObjectQuery<T> queryFrom, string tempTableName, DynamicEntitySetOptions tempTableOptions, bool withRowCount)
+        {
+            Check.NotNull(queryFrom, nameof(queryFrom));
+            Check.NotEmpty(tempTableName, nameof(tempTableName));
+            Check.NotNull(tempTableOptions, nameof(tempTableOptions));
+            
+            var q = (ObjectQuery<int>)DbDmlQueryFunctions.BatchInsertDynamic(queryFrom, tempTableName, tempTableOptions, withRowCount);
+            return new BatchInsertCommand(q, withRowCount);
+        }
+
+        /// <summary>
+        /// Create command for BatchDelete Temp Table
+        /// </summary>
+        public static IBatchDeleteCommand CreateBatchDeleteDynamicTableQuery<T>(ObjectQuery<T> query, DynamicEntitySetOptions tempTableOptions, bool withRowCount, int limit = -1)
+        {
+            Check.NotNull(query, nameof(query));
+            Check.NotNull(tempTableOptions, nameof(tempTableOptions));
+            
+            var q = (ObjectQuery<int>)DbDmlQueryFunctions.BatchDeleteDynamic(query, tempTableOptions, withRowCount, limit);
+            return new BatchDeleteCommand(q, withRowCount);
+        }
+        
+        /// <summary>
+        /// Create command for BatchDelete Temp Table with Join
+        /// </summary>
+        public static IBatchDeleteCommand CreateBatchDeleteDynamicTableJoinQuery<TQuery, TEntity>(ObjectQuery<TQuery> query, DynamicEntitySetOptions tempTableOptions, bool withRowCount, int limit = -1)
+        {
+            Check.NotNull(query, nameof(query));
+            Check.NotNull(tempTableOptions, nameof(tempTableOptions));
+            
+            var q = (ObjectQuery<int>)DbDmlQueryFunctions.BatchDeleteJoinDynamic<TQuery, TEntity>(query, tempTableOptions, withRowCount, limit);
+            return new BatchDeleteCommand(q, withRowCount);
+        }
+        
+        /// <summary>
+        /// Create command for BatchUpdate Temp Table
+        /// </summary>
+        public static IBatchUpdateCommand CreateBatchUpdateDynamicTableQuery<T>(ObjectQuery<T> query, DynamicEntitySetOptions tempTableOptions, Expression<Func<T, T>> setters, bool withRowCount, int limit = -1)
+        {
+            Check.NotNull(query, nameof(query));
+            Check.NotNull(tempTableOptions, nameof(tempTableOptions));
+            Check.NotNull(setters, nameof(setters));
+            
+            var q = (ObjectQuery<int>)DbDmlQueryFunctions.BatchUpdateDynamic(query, tempTableOptions, setters, withRowCount, limit);
+            return new BatchUpdateCommand(q, withRowCount);
+        }
+        
+        /// <summary>
+        /// Create command for BatchUpdate Temp Table with Join
+        /// </summary>
+        public static IBatchUpdateCommand CreateBatchUpdateDynamicTableJoinQuery<TQuery, TEntity>(ObjectQuery<TQuery> query, DynamicEntitySetOptions tempTableOptions, Expression<Func<TQuery, TEntity>> setters, bool withRowCount, int limit = -1)
+        {
+            Check.NotNull(query, nameof(query));
+            Check.NotNull(tempTableOptions, nameof(tempTableOptions));
+            Check.NotNull(setters, nameof(setters));
+            
+            var q = (ObjectQuery<int>)DbDmlQueryFunctions.BatchUpdateJoinDynamic(query, tempTableOptions, setters, withRowCount, limit);
+            return new BatchUpdateCommand(q, withRowCount);
+        }
+        
         private static int ExecuteBatchOperation(ObjectQuery<int> query, bool withRowCount)
         {
             if (withRowCount)

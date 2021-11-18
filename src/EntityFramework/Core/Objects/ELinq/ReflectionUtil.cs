@@ -473,9 +473,17 @@ namespace System.Data.Entity.Core.Objects.ELinq
             map.Add(@"TakeWithTies(IQueryable`1<T0>, Int32)->IQueryable`1<T0>", SequenceMethod.TakeWithTies);
             map.Add(@"TakeWithTies(IEnumerable`1<T0>, Int32)->IEnumerable`1<T0>", SequenceMethod.TakeWithTies);
             
+            map.Add(@"BatchDelete(IQueryable`1<T0>, Boolean, Int32)->IQueryable`1<Int32>", SequenceMethod.BatchDelete);
+            map.Add(@"BatchDeleteJoin(IQueryable`1<T0>, Boolean, Int32)->IQueryable`1<Int32>", SequenceMethod.BatchDelete);
             map.Add(@"BatchUpdate(IQueryable`1<T0>, Expression`1<Func`2<T0, T0>>, Boolean, Int32)->IQueryable`1<Int32>", SequenceMethod.BatchUpdate);
             map.Add(@"BatchUpdateJoin(IQueryable`1<T0>, Expression`1<Func`2<T0, T1>>, Boolean, Int32)->IQueryable`1<Int32>", SequenceMethod.BatchUpdate);
             map.Add(@"BatchInsert(IQueryable`1<T0>, Boolean)->IQueryable`1<Int32>", SequenceMethod.BatchInsert);
+            
+            map.Add(@"BatchDeleteDynamic(IQueryable`1<T0>, DynamicEntitySetOptions, Boolean, Int32)->IQueryable`1<Int32>", SequenceMethod.BatchDeleteDynamic);
+            map.Add(@"BatchDeleteJoinDynamic(IQueryable`1<T0>, DynamicEntitySetOptions, Boolean, Int32)->IQueryable`1<Int32>", SequenceMethod.BatchDeleteDynamic);
+            map.Add(@"BatchUpdateDynamic(IQueryable`1<T0>, DynamicEntitySetOptions, Expression`1<Func`2<T0, T0>>, Boolean, Int32)->IQueryable`1<Int32>", SequenceMethod.BatchUpdateDynamic);
+            map.Add(@"BatchUpdateJoinDynamic(IQueryable`1<T0>, DynamicEntitySetOptions, Expression`1<Func`2<T0, T1>>, Boolean, Int32)->IQueryable`1<Int32>", SequenceMethod.BatchUpdateDynamic);
+            map.Add(@"BatchInsertDynamic(IQueryable`1<T0>, String, DynamicEntitySetOptions, Boolean)->IQueryable`1<Int32>", SequenceMethod.BatchInsertDynamic);
             
             // by redirection through canonical method names, determine sequence enum value
             // for all know LINQ operators
