@@ -189,6 +189,24 @@ namespace System.Data.Entity.ModelConfiguration.Edm
                 .SingleOrDefault(e => e.EntitySet == entitySet);
         }
 
+        public static VectorParameterTypeMapping GetVectorParameterTypeMapping(this DbDatabaseMapping databaseMapping, VectorParameterType vectorParameterType)
+        {
+            DebugCheck.NotNull(databaseMapping);
+            DebugCheck.NotNull(vectorParameterType);
+
+            return databaseMapping.GetVectorParameterTypeMapping(vectorParameterType.ElementType.PrimitiveTypeKind);
+        }
+
+        public static VectorParameterTypeMapping GetVectorParameterTypeMapping(this DbDatabaseMapping databaseMapping, PrimitiveTypeKind primitiveTypeKind)
+        {
+            DebugCheck.NotNull(databaseMapping);
+
+            return databaseMapping
+                .EntityContainerMappings
+                .Single()
+                .VectorParameterTypeMappings
+                .SingleOrDefault(e => e.VectorParameterType.ElementType.PrimitiveTypeKind == primitiveTypeKind);
+        }
         public static IEnumerable<EntitySetMapping> GetEntitySetMappings(this DbDatabaseMapping databaseMapping)
         {
             DebugCheck.NotNull(databaseMapping);
@@ -224,6 +242,18 @@ namespace System.Data.Entity.ModelConfiguration.Edm
                 .AddSetMapping(entitySetMapping);
 
             return entitySetMapping;
+        }
+
+        public static VectorParameterTypeMapping AddVectorParameterTypeMapping(this DbDatabaseMapping databaseMapping, VectorParameterType vectorParameterType)
+        {
+            DebugCheck.NotNull(databaseMapping);
+            DebugCheck.NotNull(vectorParameterType);
+
+            var containerMapping = databaseMapping.EntityContainerMappings.Single();
+            var vectorParameterTypeMapping = new VectorParameterTypeMapping(containerMapping, vectorParameterType);
+            containerMapping.AddVectorParameterTypeMapping(vectorParameterTypeMapping);
+
+            return vectorParameterTypeMapping;
         }
 
         public static AssociationSetMapping AddAssociationSetMapping(

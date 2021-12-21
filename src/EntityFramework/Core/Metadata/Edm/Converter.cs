@@ -241,6 +241,11 @@ namespace System.Data.Entity.Core.Metadata.Edm
             {
                 item = ConvertToEnumType((SchemaEnumType)element, newGlobalItems);
             }
+            else if (element is SchemaVectorParameterType)
+            {
+                item = ConvertToVectorParameterType((SchemaVectorParameterType)element, newGlobalItems);
+                
+            }
             else
             {
                 // the only type we don't handle is the ProviderManifest TypeElement
@@ -1146,6 +1151,21 @@ namespace System.Data.Entity.Core.Metadata.Edm
             return enumType;
         }
 
+        private static VectorParameterType ConvertToVectorParameterType(SchemaVectorParameterType somVectorParameterType, Dictionary<SchemaElement, GlobalItem> newGlobalItems)
+        {
+            var elementType = (ScalarType)somVectorParameterType.ElementType;
+            var vectorParameterType = new VectorParameterType(elementType.Type, somVectorParameterType.Namespace, DataSpace.CSpace);
+            
+            if (somVectorParameterType.Documentation != null)
+            {
+                vectorParameterType.Documentation = ConvertToDocumentation(somVectorParameterType.Documentation);
+            }
+            AddOtherContent(somVectorParameterType, vectorParameterType);
+            
+            newGlobalItems.Add(somVectorParameterType, vectorParameterType);
+            return vectorParameterType;
+        }
+        
         // <summary>
         // Converts an SOM Documentation node to a metadata Documentation construct
         // </summary>

@@ -386,6 +386,18 @@ namespace System.Data.Entity.Core.Metadata.Edm
             return Helper.IsPrimitiveType(type) || Helper.IsEnumType(type);
         }
 
+        internal static bool IsVectorParameterType(TypeUsage type)
+        {
+            return IsVectorParameterType(type.EdmType);
+        }
+
+        private static bool IsVectorParameterType(EdmType type)
+        {
+            DebugCheck.NotNull(type);
+
+            return Helper.IsVectorParameterType(type);
+        }
+
         // <summary>
         // Determines if type is a numeric type, i.e., is one of:
         // Byte, Int16, Int32, Int64, Decimal, Single or Double

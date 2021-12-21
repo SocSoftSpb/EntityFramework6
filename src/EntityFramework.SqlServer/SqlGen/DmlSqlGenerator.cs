@@ -590,14 +590,13 @@ namespace System.Data.Entity.SqlServer.SqlGen
             internal string PropertyAlias { get; set; }
 
             // generate parameter (name based on parameter ordinal)
-            internal SqlParameter CreateParameter(object value, TypeUsage type, string name = null)
+            internal SqlParameter CreateParameter(MetadataWorkspace metadataWorkspace, object value, TypeUsage type, string name = null)
             {
                 // Suppress the MaxLength facet in the type usage because
                 // SqlClient will silently truncate data when SqlParameter.Size < |SqlParameter.Value|.
                 const bool preventTruncation = true;
 
-                var parameter = SqlProviderServices.CreateSqlParameter(
-                    name ?? GetParameterName(_parameters.Count), type, ParameterMode.In, value, preventTruncation, _sqlGenerator.SqlVersion);
+                var parameter = SqlProviderServices.CreateSqlParameter(metadataWorkspace, name ?? GetParameterName(_parameters.Count), type, ParameterMode.In, value, preventTruncation, _sqlGenerator.SqlVersion);
 
                 _parameters.Add(parameter);
 
@@ -690,7 +689,7 @@ namespace System.Data.Entity.SqlServer.SqlGen
             {
                 Check.NotNull(expression, "expression");
 
-                var parameter = CreateParameter(expression.Value, expression.ResultType);
+                var parameter = CreateParameter(null, expression.Value, expression.ResultType);
 
                 if (_createParameters)
                 {

@@ -801,7 +801,7 @@ namespace System.Data.Entity.Core.Mapping.Update.Internal
         // <param name="value"> The value to which to set the parameter. </param>
         internal void SetParameterValue(DbParameter parameter, TypeUsage typeUsage, object value)
         {
-            _providerServices.SetParameterValue(parameter, typeUsage, value);
+            _providerServices.SetParameterValue(MetadataWorkspace, parameter, typeUsage, value);
         }
 
         #region Private initialization methods

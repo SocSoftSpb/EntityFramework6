@@ -940,7 +940,7 @@ namespace System.Data.Entity.SqlServer
 
             private static SqlParameter CreateDecimalParameter(byte precision, byte scale, ParameterMode parameterMode)
             {
-                return SqlProviderServices.CreateSqlParameter(
+                return SqlProviderServices.CreateSqlParameter(null,
                     "Lily",
                     TypeUsage.CreateDecimalTypeUsage(PrimitiveType.GetEdmPrimitiveType(PrimitiveTypeKind.Decimal), precision, scale),
                     parameterMode,

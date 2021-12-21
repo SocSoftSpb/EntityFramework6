@@ -227,6 +227,11 @@ namespace System.Data.Entity.Core.Metadata.Edm
             return (BuiltInTypeKind.CollectionType == item.BuiltInTypeKind);
         }
 
+        internal static bool IsVectorParameterType(GlobalItem item)
+        {
+            return (BuiltInTypeKind.VectorParameterType == item.BuiltInTypeKind);
+        }
+
         internal static bool IsDynamicType(EdmType type)
         {
             return IsEntityType(type) && ((EntityType)type).DynamicEntitySet != null;
@@ -346,6 +351,18 @@ namespace System.Data.Entity.Core.Metadata.Edm
         {
             DebugCheck.NotNull(edmType);
             return BuiltInTypeKind.EnumType == edmType.BuiltInTypeKind;
+        }
+
+        internal static bool IsVectorParameterType(TypeUsage type)
+        {
+            DebugCheck.NotNull(type);
+            return IsVectorParameterType(type.EdmType);
+        }
+
+        internal static bool IsVectorParameterType(EdmType edmType)
+        {
+            DebugCheck.NotNull(edmType);
+            return BuiltInTypeKind.VectorParameterType == edmType.BuiltInTypeKind;
         }
 
         internal static bool IsUnboundedFacetValue(Facet facet)

@@ -490,6 +490,10 @@ namespace System.Data.Entity.Core.Mapping
             {
                 ValidateEnumTypeMapping((EnumType)edmType, (EnumType)objectType);
             }
+            else if (Helper.IsVectorParameterType(edmType))
+            {
+                ValidateVectorParameterTypeMapping((VectorParameterType)edmType, (VectorParameterType)objectType);
+            }
             else
             {
                 Debug.Assert(Helper.IsAssociationType(edmType));
@@ -701,6 +705,26 @@ namespace System.Data.Entity.Core.Mapping
             }
         }
 
+        private static void ValidateVectorParameterTypeMapping(VectorParameterType edmVectorParameterType, VectorParameterType objectVectorParameterType)
+        {
+            DebugCheck.NotNull(edmVectorParameterType);
+            Debug.Assert(Helper.IsPrimitiveType(edmVectorParameterType.ElementType));
+
+            DebugCheck.NotNull(objectVectorParameterType);
+            Debug.Assert(Helper.IsPrimitiveType(objectVectorParameterType.ElementType));
+
+            if (edmVectorParameterType.ElementType.PrimitiveTypeKind
+                != objectVectorParameterType.ElementType.PrimitiveTypeKind)
+            {
+                throw new MappingException(
+                    Strings.Mapping_VectorParameter_OCMapping_ElementTypesMismatch(
+                        edmVectorParameterType.ElementType.Name,
+                        edmVectorParameterType.FullName,
+                        objectVectorParameterType.ElementType.Name,
+                        objectVectorParameterType.FullName));
+            }
+        }
+        
         // <summary>
         // Validates whether CSpace enum type and OSpace enum type match.
         // </summary>

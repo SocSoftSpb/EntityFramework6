@@ -90,6 +90,9 @@ namespace System.Data.Entity.Core.Common.CommandTrees
                 {
                     return foundFunc;
                 }
+
+                if (functionMetadata.BuiltInAttribute && functionMetadata.Name == VectorParameterType.WrapperFunctionName)
+                    return functionMetadata;
             }
             else
             {

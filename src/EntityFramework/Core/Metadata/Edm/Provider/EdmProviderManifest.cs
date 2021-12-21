@@ -1006,7 +1006,32 @@ namespace System.Data.Entity.Core.Metadata.Edm.Provider
                         type, "NullIf", type, "value", type, "defaultValue"));
 
             #endregion
+            
+            #region Between Functions
 
+            parameterTypes = new[]
+            {
+                PrimitiveTypeKind.Byte,
+                PrimitiveTypeKind.Int16,
+                PrimitiveTypeKind.Int32,
+                PrimitiveTypeKind.Int64,
+                PrimitiveTypeKind.Decimal,
+                PrimitiveTypeKind.Double,
+                PrimitiveTypeKind.Single,
+                PrimitiveTypeKind.DateTime,
+                PrimitiveTypeKind.DateTimeOffset,
+                PrimitiveTypeKind.Guid,
+                PrimitiveTypeKind.String,
+            };
+
+            EdmProviderManifestFunctionBuilder.ForTypes(
+                parameterTypes,
+                type =>
+                    functions.AddFunction(
+                        PrimitiveTypeKind.Boolean, "Between", type, "value", type, "begin", type, "end", isPredicate: true));
+
+            #endregion
+            
             var readOnlyFunctions = functions.ToFunctionCollection();
 
             Interlocked.CompareExchange(ref _functions, readOnlyFunctions, null);

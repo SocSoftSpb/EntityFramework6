@@ -261,7 +261,7 @@ namespace System.Data.Entity.Core.Objects
 
             // The parameter type metadata is only valid if it's scalar or enumeration type metadata.
             if ((perspective.TryGetType(_mappableType, out type))
-                && (TypeSemantics.IsScalarType(type)))
+                && (TypeSemantics.IsScalarType(type) || TypeSemantics.IsVectorParameterType(type)))
             {
                 return true;
             }

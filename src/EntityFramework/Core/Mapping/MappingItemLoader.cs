@@ -431,6 +431,11 @@ namespace System.Data.Entity.Core.Mapping
                                 LoadFunctionImportMapping(nav.Clone(), entityContainerMapping);
                                 break;
                             }
+                        case MslConstructs.VectorParameterTypeMappingElement:
+                            {
+                                LoadVectorParameterTypeMapping(nav.Clone(), entityContainerMapping);
+                                break;
+                            }
                         default:
                             AddToSchemaErrors(
                                 Strings.Mapping_InvalidContent_Container_SubElement,
@@ -1594,6 +1599,52 @@ namespace System.Data.Entity.Core.Mapping
             {
                 Debug.Assert(false, "XSD validation should ensure this");
             }
+        }
+        
+        private void LoadVectorParameterTypeMapping(XPathNavigator nav, EntityContainerMapping entityContainerMapping)
+        {
+            var lineInfo = (IXmlLineInfo)(nav.Clone());
+
+            var elementTypeName = GetAttributeValue(nav.Clone(), MslConstructs.VectorParameterTypeMappingPrimitiveType);
+
+            VectorParameterType vectorParameterType = null;
+            
+            foreach (var item in EdmItemCollection.GetItems<VectorParameterType>().Where(e => e.ElementType.Name == elementTypeName))
+            {
+                if (vectorParameterType != null)
+                {
+                    AddToSchemaErrors(
+                        Strings.Mapping_VectorParameterType_NotUnique(elementTypeName),
+                        MappingErrorCode.MappingVectorParameterTypeIsNotUniqye, m_sourceLocation, lineInfo, m_parsingErrors);
+                    return;
+                }
+
+                vectorParameterType = item;
+            }
+
+            if (vectorParameterType == null)
+            {
+                AddToSchemaErrors(
+                    Strings.Mapping_VectorParameterType_NotFound(elementTypeName),
+                    MappingErrorCode.MappingVectorParameterTypeNotFound, m_sourceLocation, lineInfo, m_parsingErrors);
+                return;
+            }
+
+            var mapping = new VectorParameterTypeMapping(entityContainerMapping, vectorParameterType);
+
+            if (nav.MoveToChild(XPathNodeType.Element))
+            {
+                if (nav.Name == MslConstructs.VectorParameterTypeStoreMappingElement)
+                {
+                    var schema = GetAttributeValue(nav.Clone(), MslConstructs.VectorParameterTypeStoreTypeSchema);
+                    var name = GetAttributeValue(nav.Clone(), MslConstructs.VectorParameterTypeStoreTypeName);
+                    var column = GetAttributeValue(nav.Clone(), MslConstructs.VectorParameterTypeColumnName);
+
+                    mapping.Configure(schema, name, column);
+                }
+            }
+
+            entityContainerMapping.AddVectorParameterTypeMapping(mapping);
         }
 
         // <summary>

@@ -390,7 +390,8 @@ namespace System.Data.Entity.Core.EntityClient.Internal
         private static EntityParameter CreateEntityParameterFromQueryParameter(KeyValuePair<string, TypeUsage> queryParameter)
         {
             // We really can't have a parameter here that isn't a scalar type...
-            Debug.Assert(TypeSemantics.IsScalarType(queryParameter.Value), "Non-scalar type used as query parameter type");
+            Debug.Assert(TypeSemantics.IsScalarType(queryParameter.Value) || TypeSemantics.IsVectorParameterType(queryParameter.Value), 
+                "Non-scalar type used as query parameter type");
 
             var result = new EntityParameter();
             result.ParameterName = queryParameter.Key;
@@ -414,6 +415,10 @@ namespace System.Data.Entity.Core.EntityClient.Internal
                 else if (Helper.IsSpatialType(type, out primitiveTypeKind))
                 {
                     parameter.EdmType = EdmProviderManifest.Instance.GetPrimitiveType(primitiveTypeKind);
+                }
+                else if (Helper.IsVectorParameterType(type))
+                {
+                    parameter.EdmType = type.EdmType;
                 }
             }
 
@@ -692,7 +697,7 @@ namespace System.Data.Entity.Core.EntityClient.Internal
                         // _storeProviderServices will be null if this object was created via
                         // the test constructor - but if so we shouldn't be calling this
                         DebugCheck.NotNull(_storeProviderServices);
-                        SyncParameterProperties(entityParameter, storeParameter, _storeProviderServices);
+                        SyncParameterProperties(entityCommand, entityParameter, storeParameter, _storeProviderServices);
 
                         if (storeParameter.Direction
                             != ParameterDirection.Input)
@@ -718,7 +723,7 @@ namespace System.Data.Entity.Core.EntityClient.Internal
         // Updates storeParameter size, precision and scale properties from user provided parameter properties.
         // </summary>
         private static void SyncParameterProperties(
-            EntityParameter entityParameter, DbParameter storeParameter, DbProviderServices storeProviderServices)
+            EntityCommand entityCommand, EntityParameter entityParameter, DbParameter storeParameter, DbProviderServices storeProviderServices)
         {
             IDbDataParameter dbDataParameter = storeParameter;
 
@@ -731,8 +736,17 @@ namespace System.Data.Entity.Core.EntityClient.Internal
 
             // Give the store provider the opportunity to set the value before any parameter state has been copied from
             // the EntityParameter.
-            var parameterTypeUsage = TypeHelpers.GetPrimitiveTypeUsageForScalar(entityParameter.GetTypeUsage());
-            storeProviderServices.SetParameterValue(storeParameter, parameterTypeUsage, entityParameter.Value);
+
+            var tu = entityParameter.GetTypeUsage();
+            if (Helper.IsVectorParameterType(tu))
+            {
+                storeProviderServices.SetParameterValue(entityCommand.Connection.GetMetadataWorkspace(), storeParameter, tu, entityParameter.Value);
+            }
+            else
+            {
+                var parameterTypeUsage = TypeHelpers.GetPrimitiveTypeUsageForScalar(entityParameter.GetTypeUsage());
+                storeProviderServices.SetParameterValue(entityCommand.Connection.GetMetadataWorkspace(), storeParameter, parameterTypeUsage, entityParameter.Value);
+            }
 
             // Override the store provider parameter state with any explicitly specified values from the EntityParameter.
             if (entityParameter.IsDirectionSpecified)

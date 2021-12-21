@@ -74,6 +74,22 @@ namespace System.Data.Entity.Core.Objects.ELinq
             }
         }
 
+        internal object TryEvaluateParameterPath()
+        {
+            if (_funcletizedExpression.NodeType
+                == ExpressionType.Constant)
+            {
+                return ((ConstantExpression)_funcletizedExpression).Value;
+            }
+
+            if (TryEvaluatePath(_funcletizedExpression, out var ce))
+            {
+                return ce.Value;
+            }
+
+            return null;
+        }
+
         // <summary>
         // Create QueryParameterExpression based on this one, but with the funcletized expression
         // wrapped by the given method

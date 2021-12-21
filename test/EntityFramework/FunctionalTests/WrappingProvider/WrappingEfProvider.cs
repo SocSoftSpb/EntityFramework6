@@ -67,9 +67,9 @@ namespace System.Data.Entity.WrappingProvider
             _baseServices.DeleteDatabase(((WrappingConnection<TAdoNetBase>)connection).BaseConnection, commandTimeout, storeItemCollection);
         }
 
-        protected override void SetDbParameterValue(DbParameter parameter, TypeUsage parameterType, object value)
+        protected override void SetDbParameterValue(MetadataWorkspace metadataWorkspace, DbParameter parameter, TypeUsage parameterType, object value)
         {
-            _baseServices.SetParameterValue(parameter, parameterType, value);
+            _baseServices.SetParameterValue(metadataWorkspace, parameter, parameterType, value);
         }
 
         public override object GetService(Type type, object key)

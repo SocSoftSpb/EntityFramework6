@@ -533,5 +533,9 @@ namespace System.Data.Entity.Core.Mapping
         // The key properties of all entity types returned by the function import must be mapped to the same non-nullable columns returned by the storage function.
         // </summary>
         MappingFunctionImportCannotInferTargetFunctionKeys = Value + 114,
+        
+        MappingVectorParameterTypeNotFound = Value + 115,
+        
+        MappingVectorParameterTypeIsNotUniqye = Value + 116,
     }
 }

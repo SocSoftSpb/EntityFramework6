@@ -371,6 +371,30 @@ namespace System.Data.Entity.Core.Objects.ELinq
             }
         }
 
+        private QueryParameterExpression GetSameOrAddParameter(QueryParameterExpression queryParameter)
+        {
+            if (null != _parameters)
+            {
+
+                var myValue = queryParameter.TryEvaluateParameterPath();
+                if (myValue != null
+                    && !myValue.GetType().IsValueType())
+                {
+                    foreach (var parameter in _parameters)
+                    {
+                        var pValue = parameter.Item2.TryEvaluateParameterPath();
+                        if (pValue != null
+                            && !pValue.GetType().IsValueType()
+                            && ReferenceEquals(myValue, pValue))
+                            return parameter.Item2;
+                    }
+                }
+            }
+            
+            AddParameter(queryParameter);
+            return queryParameter;
+        }
+
         private bool IsQueryRoot(Expression Expression)
         {
             //

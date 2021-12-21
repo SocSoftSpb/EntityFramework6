@@ -31,6 +31,9 @@ namespace System.Data.Entity.ModelConfiguration.Configuration
         private readonly Dictionary<Type, ComplexTypeConfiguration> _complexTypeConfigurations
             = new Dictionary<Type, ComplexTypeConfiguration>();
 
+        private readonly Dictionary<Type, VectorParameterConfiguration> _vectorParameterConfigurations
+            = new Dictionary<Type, VectorParameterConfiguration>();
+
         private readonly HashSet<Type> _ignoredTypes = new HashSet<Type>();
 
         internal ModelConfiguration()
@@ -41,6 +44,7 @@ namespace System.Data.Entity.ModelConfiguration.Configuration
         {
             source._entityConfigurations.Each(c => _entityConfigurations.Add(c.Key, c.Value.Clone()));
             source._complexTypeConfigurations.Each(c => _complexTypeConfigurations.Add(c.Key, c.Value.Clone()));
+            source._vectorParameterConfigurations.Each(c => _vectorParameterConfigurations.Add(c.Key, c.Value.Clone()));
 
             _ignoredTypes.AddRange(source._ignoredTypes);
 
@@ -78,6 +82,16 @@ namespace System.Data.Entity.ModelConfiguration.Configuration
         internal virtual IEnumerable<Type> StructuralTypes
         {
             get { return _entityConfigurations.Keys.Union(_complexTypeConfigurations.Keys).Except(_ignoredTypes).ToList(); }
+        }
+
+        internal virtual IEnumerable<Type> VectorParameterTypes
+        {
+            get { return _vectorParameterConfigurations.Keys.ToList(); }
+        }
+
+        internal virtual IEnumerable<KeyValuePair<Type, VectorParameterConfiguration>> VectorParameterTypeConfigurations
+        {
+            get { return _vectorParameterConfigurations.ToList(); }
         }
 
         /// <summary>
@@ -130,6 +144,16 @@ namespace System.Data.Entity.ModelConfiguration.Configuration
             _complexTypeConfigurations.Add(complexTypeConfiguration.ClrType, complexTypeConfiguration);
         }
 
+        internal virtual void Add(VectorParameterConfiguration vectorParameterConfiguration)
+        {
+            DebugCheck.NotNull(vectorParameterConfiguration);
+
+            if (_vectorParameterConfigurations.ContainsKey(vectorParameterConfiguration.ElementType))
+                throw Error.DuplicateVectorParameterConfiguration(vectorParameterConfiguration.ElementType);
+            
+            _vectorParameterConfigurations.Add(vectorParameterConfiguration.ElementType, vectorParameterConfiguration);
+        }
+
         /// <summary>
         /// Registers an entity type as part of the model and returns an object that can
         /// be used to configure the entity. This method can be called multiple times
@@ -169,6 +193,17 @@ namespace System.Data.Entity.ModelConfiguration.Configuration
             }
 
             return entityTypeConfiguration;
+        }
+
+        internal virtual VectorParameterConfiguration VectorParameter(Type elementType)
+        {
+            if (!_vectorParameterConfigurations.TryGetValue(elementType, out var vectorParameterConfiguration))
+            {
+                _vectorParameterConfigurations.Add(elementType, 
+                    vectorParameterConfiguration = new VectorParameterConfiguration(elementType));
+            }
+
+            return vectorParameterConfiguration;
         }
 
         /// <summary>
@@ -392,6 +427,7 @@ namespace System.Data.Entity.ModelConfiguration.Configuration
             RemoveRedundantTables(databaseMapping);
             ConfigureTables(databaseMapping.Database);
             ConfigureDefaultSchema(databaseMapping);
+            ConfigureVectorParameterTypes(databaseMapping);
             UniquifyFunctionNames(databaseMapping);
             ConfigureFunctionParameters(databaseMapping);
             RemoveDuplicateTphColumns(databaseMapping);
@@ -419,6 +455,25 @@ namespace System.Data.Entity.ModelConfiguration.Configuration
             }
         }
 
+        private void ConfigureVectorParameterTypes(DbDatabaseMapping databaseMapping)
+        {
+            DebugCheck.NotNull(databaseMapping);
+
+            foreach (var pair in _vectorParameterConfigurations)
+            {
+                if (!pair.Key.IsPrimitiveType(out var primitiveType))
+                    throw new InvalidOperationException("Primitive type expected for VectorParameter.");
+
+                var mapping = databaseMapping.GetVectorParameterTypeMapping(primitiveType.PrimitiveTypeKind);
+
+                if (mapping != null)
+                {
+                    pair.Value.Configure(databaseMapping, mapping);
+                    // AddVectorParameterWrapper(databaseMapping.Database, mapping.VectorParameterType, mapping.ColumnName);
+                }
+            }
+        }
+        
         private static void UniquifyFunctionNames(DbDatabaseMapping databaseMapping)
         {
             DebugCheck.NotNull(databaseMapping);

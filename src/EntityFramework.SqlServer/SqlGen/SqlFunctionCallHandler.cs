@@ -223,6 +223,8 @@ namespace System.Data.Entity.SqlServer.SqlGen
                 "RINGN",
                 (sqlgen, functionExpression) => WriteInstanceFunctionCall(sqlgen, "RingN", functionExpression, isPropertyAccess: false));
 
+            functionHandlers.Add(VectorParameterType.WrapperFunctionName, HandleVectorParameterWrapper);
+
             return functionHandlers;
         }
 
@@ -294,7 +296,8 @@ namespace System.Data.Entity.SqlServer.SqlGen
 
             functionHandlers.Add("IsNumeric", HandleCanonicalFunctionIsNumeric);
             functionHandlers.Add("FT_CONTAINS", HandleCanonicalFunctionFtContains);
-
+            functionHandlers.Add("Between", HandleCanonicalFunctionBetween);
+            
             return functionHandlers;
         }
 
@@ -1621,6 +1624,28 @@ namespace System.Data.Entity.SqlServer.SqlGen
             builder.Append(")");
 
             return builder;
+        }
+        
+        private static ISqlFragment HandleCanonicalFunctionBetween(SqlGenerator sqlgen, DbFunctionExpression e)
+        {
+            var builder = new SqlBuilder();
+            builder.Append("(");
+            builder.Append(e.Arguments[0].Accept(sqlgen));
+            builder.Append(") BETWEEN (");
+            builder.Append(e.Arguments[1].Accept(sqlgen));
+            builder.Append(") AND (");
+            builder.Append(e.Arguments[2].Accept(sqlgen));
+            builder.Append(")");
+
+            return builder;
+        }
+
+        // <summary>
+        // __VectorParameterWrapper__(@p__linq__0) -> @p__linq__0 
+        // </summary>
+        private static ISqlFragment HandleVectorParameterWrapper(SqlGenerator sqlgen, DbFunctionExpression e)
+        {
+            return e.Arguments[0].Accept(sqlgen);
         }
 
         // <summary>

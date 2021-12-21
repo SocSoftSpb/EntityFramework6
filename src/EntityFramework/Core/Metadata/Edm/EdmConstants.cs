@@ -14,7 +14,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
         internal const int NumPrimitiveTypes = (int)Edm.PrimitiveTypeKind.DbLikePattern + 1;
 
         // max number of primitive types
-        internal const int NumBuiltInTypes = (int)BuiltInTypeKind.TypeUsage + 1;
+        internal const int NumBuiltInTypes = (int)BuiltInTypeKind.VectorParameterType + 1;
 
         // MaxLength for the string types: Name, Namespace, Version
         internal const int MaxLength = 256;
@@ -64,6 +64,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
         internal const string SimpleType = "SimpleType";
         internal const string StructuralType = "StructuralType";
         internal const string TypeUsage = "TypeUsage";
+        internal const string VectorParameterType = "VectorParameterType";
 
         //Enum value of date time kind
         internal const string Utc = "Utc";

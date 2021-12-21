@@ -642,5 +642,10 @@ namespace System.Data.Entity.Core.SchemaObjectModel
         // A CSDL spatial type in a file without the UseSpatialUnionType annotation
         // </summary>
         UnexpectedSpatialType = 209,
+        
+        // <summary>
+        // The specified type cannot be used as the underlying type of Enum type.
+        // </summary>
+        InvalidVectorParameterElementType = 210,
     }
 }

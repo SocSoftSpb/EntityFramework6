@@ -283,6 +283,10 @@
     <value>A configuration for type '{0}' has already been added. To reference the existing configuration use the Entity&lt;T&gt;() or ComplexType&lt;T&gt;() methods.</value>
     <comment>## ExceptionType=InvalidOperationException</comment>
   </data>
+  <data name="DuplicateVectorParameterConfiguration" xml:space="preserve">
+    <value>A configuration for VectorParameter&lt;{0}&gt; has already been added. To reference the existing configuration use the VectorParameter&lt;T&gt;() method.</value>
+    <comment>## ExceptionType=InvalidOperationException</comment>
+  </data>
   <data name="ConflictingPropertyConfiguration" xml:space="preserve">
     <value>Conflicting configuration settings were specified for property '{0}' on type '{1}': {2}</value>
     <comment>## ExceptionType=InvalidOperationException</comment>
@@ -327,6 +331,10 @@
   </data>
   <data name="CodeFirstInvalidComplexType" xml:space="preserve">
     <value>The type '{0}' was not mapped. Check that the type has not been explicitly excluded by using the Ignore method or NotMappedAttribute data annotation. Verify that the type was defined as a class, is not primitive or generic, and does not inherit from ComplexObject.</value>
+    <comment>## ExceptionType=InvalidOperationException</comment>
+  </data>
+  <data name="CodeFirstInvalidVectorParameterType" xml:space="preserve">
+    <value>The vector parameter type '{0}' was not mapped. Verify that the type is primitive, and does not inherit from ComplexObject.</value>
     <comment>## ExceptionType=InvalidOperationException</comment>
   </data>
   <data name="InvalidEntityType" xml:space="preserve">
@@ -1875,8 +1883,14 @@
   <data name="Validator_OSpace_Convention_NonMatchingUnderlyingTypes" xml:space="preserve">
     <value>The underlying type of CLR enumeration type does not match the underlying type of EDM enumeration type.</value>
   </data>
+  <data name="Validator_OSpace_Convention_NonMatchingVectorElementTypes" xml:space="preserve">
+    <value>The element type of CLR vector parameter type does not match the element type of EDM vector parameter type.</value>
+  </data>
   <data name="Validator_UnsupportedEnumUnderlyingType" xml:space="preserve">
     <value>The type '{0}' is not a supported underlying type for enumeration types.</value>
+  </data>
+  <data name="Validator_UnsupportedVectorParameterElementType" xml:space="preserve">
+    <value>The type '{0}' is not a supported element type for Vector Parameter types.</value>
   </data>
   <data name="ExtraInfo" xml:space="preserve">
     <value>The following information may be useful in resolving the previous error:</value>
@@ -2235,6 +2249,9 @@
   </data>
   <data name="Mapping_Enum_OCMapping_MemberMismatch" xml:space="preserve">
     <value>The enumeration type '{0}' defined in the object layer does not have a member that corresponds to the member '{1}' whose value is '{2}' of the enumeration type '{3}' defined in the conceptual model.</value>
+  </data>
+  <data name="Mapping_VectorParameter_OCMapping_ElementTypesMismatch" xml:space="preserve">
+    <value>The element type '{0}' of the vector type '{1}' defined in the conceptual model does not match the element type '{2}' of the vector type '{3}' defined in the object layer.</value>
   </data>
   <data name="Mapping_NotFound_EntityContainer" xml:space="preserve">
     <value>The mapping for EntityContainer '{0}' was not found in Workspace.</value>
@@ -5021,6 +5038,9 @@
   <data name="InvalidEnumUnderlyingType" xml:space="preserve">
     <value>The specified type cannot be used as the underlying type of an enumeration type.</value>
   </data>
+  <data name="InvalidVectorParameterElementType" xml:space="preserve">
+    <value>The specified type cannot be used as the element type of an vector parameter type.</value>
+  </data>
   <data name="DuplicateEnumMember" xml:space="preserve">
     <value>Enumeration members have to have unique names.</value>
   </data>
@@ -5609,5 +5629,11 @@
   </data>
   <data name="ELinq_WindowOrderNotSupported" xml:space="preserve">
     <value>Window function {0} not supported order clause.</value>
+  </data>
+  <data name="Mapping_VectorParameterType_NotFound" xml:space="preserve">
+    <value>VectorParameterType for Element Type {0} is not found.</value>
+  </data>
+  <data name="Mapping_VectorParameterType_NotUnique" xml:space="preserve">
+    <value>VectorParameterType for Element Type {0} is not unique.</value>
   </data>
 </root>

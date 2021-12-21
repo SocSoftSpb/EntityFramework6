@@ -222,6 +222,11 @@ namespace System.Data.Entity
                     _modelConfiguration.Entity(typeof(TEntityType), explicitEntity: true));
         }
 
+        public virtual VectorParameterConfiguration VectorParameter<TElementType>()
+        {
+            return new VectorParameterConfiguration(_modelConfiguration.VectorParameter(typeof(TElementType)));
+        }
+
         /// <summary>
         /// Registers an entity type as part of the model.
         /// </summary>
@@ -481,6 +486,17 @@ namespace System.Data.Entity
                     throw Error.CodeFirstInvalidComplexType(type);
                 }
             }
+
+            var vectorParameterTypes = _modelConfiguration.VectorParameterTypes as IList<Type> ??
+                                       _modelConfiguration.VectorParameterTypes.ToList();
+
+            for (var vectorParameterTypesIterator = 0; vectorParameterTypesIterator < vectorParameterTypes.Count; vectorParameterTypesIterator++)
+            {
+                var type = vectorParameterTypes[vectorParameterTypesIterator];
+                if (typeMapper.MapVectorParameterType(type) == null)
+                    throw Error.CodeFirstInvalidVectorParameterType(type);
+            }
+            
             // ReSharper restore ForCanBeConvertedToForeach
         }
 

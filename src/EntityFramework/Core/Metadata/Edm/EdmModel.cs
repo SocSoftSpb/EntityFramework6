@@ -22,6 +22,8 @@ namespace System.Data.Entity.Core.Metadata.Edm
         private readonly List<EntityType> _entityTypes = new List<EntityType>();
         private readonly List<EnumType> _enumTypes = new List<EnumType>();
         private readonly List<EdmFunction> _functions = new List<EdmFunction>();
+        private readonly List<VectorParameterType> _vectorParameterTypes = new List<VectorParameterType>();
+
         private readonly EntityContainer _container;
 
         private double _schemaVersion;
@@ -91,6 +93,11 @@ namespace System.Data.Entity.Core.Metadata.Edm
         {
             get { return _complexTypes; }
         }
+
+        /// <summary>
+        /// Gets the Vector Parameter Types in the model
+        /// </summary>
+        public IEnumerable<VectorParameterType> VectorParameterTypes => _vectorParameterTypes;
 
         /// <summary>
         /// Gets the entity types in the model.
@@ -182,6 +189,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
                     .Concat<EdmType>(_complexTypes)
                     .Concat(_entityTypes)
                     .Concat(_enumTypes)
+                    .Concat(_vectorParameterTypes)
                     .Concat(_functions);
             }
         }
@@ -246,6 +254,18 @@ namespace System.Data.Entity.Core.Metadata.Edm
             ValidateSpace(item);
 
             _enumTypes.Add(item);
+        }
+
+        /// <summary>
+        /// Adds an vector parameter type to the model.
+        /// </summary>
+        /// <param name="item">The VectorParameterType instance to be added.</param>
+        public void AddItem(VectorParameterType item)
+        {
+            Check.NotNull(item, "item");
+            ValidateSpace(item);
+
+            _vectorParameterTypes.Add(item);
         }
 
         /// <summary>

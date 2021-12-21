@@ -236,4 +236,15 @@ namespace System.Data.Entity.Core.Common
             return false;
         }
     }
+
+    /// <summary>
+    /// Allows wrap provider manifest
+    /// </summary>
+    public interface IDbProviderManifestWrapper
+    {
+        /// <summary>
+        /// Wrapped manifest
+        /// </summary>
+        DbProviderManifest WrappedDbProviderManifest { get; }
+    }
 }

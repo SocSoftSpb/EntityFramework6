@@ -8,7 +8,9 @@ namespace System.Data.Entity.SqlServer
     using System.Data.Entity.Core;
     using System.Data.Entity.Core.Common;
     using System.Data.Entity.Core.Common.CommandTrees;
+    using System.Data.Entity.Core.Mapping;
     using System.Data.Entity.Core.Metadata.Edm;
+    using System.Data.Entity.Core.Objects;
     using System.Data.Entity.Hierarchy;
     using System.Data.Entity.Infrastructure;
     using System.Data.Entity.Infrastructure.DependencyResolution;
@@ -19,10 +21,12 @@ namespace System.Data.Entity.SqlServer
     using System.Data.Entity.SqlServer.SqlGen;
     using System.Data.Entity.SqlServer.Utilities;
     using System.Data.SqlClient;
+    using System.Data.SqlTypes;
     using System.Diagnostics;
     using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
     using System.IO;
+    using Microsoft.SqlServer.Server;
 
     /// <summary>
     /// The DbProviderServices implementation for the SqlClient provider for SQL Server.
@@ -265,7 +269,7 @@ namespace System.Data.Entity.SqlServer
             DebugCheck.NotNull(providerManifest);
             DebugCheck.NotNull(commandTree);
 
-            var sqlManifest = (providerManifest as SqlProviderManifest);
+            var sqlManifest = TryExtractSqlProviderManifest(providerManifest);
             if (sqlManifest == null)
             {
                 throw new ArgumentException(Strings.Mapping_Provider_WrongManifestType(typeof(SqlProviderManifest)));
@@ -300,9 +304,7 @@ namespace System.Data.Entity.SqlServer
                     && function.Parameters.TryGetValue(queryParameter.Key, false, out functionParameter))
                 {
                     const bool preventTruncation = false;
-                    parameter = CreateSqlParameter(
-                        functionParameter.Name, functionParameter.TypeUsage, functionParameter.Mode, DBNull.Value, preventTruncation,
-                        sqlVersion);
+                    parameter = CreateSqlParameter(commandTree.MetadataWorkspace, functionParameter.Name, functionParameter.TypeUsage, functionParameter.Mode, DBNull.Value, preventTruncation, sqlVersion);
                 }
                 else
                 {
@@ -313,8 +315,7 @@ namespace System.Data.Entity.SqlServer
                                             : queryParameter.Value;
 
                     const bool preventTruncation = false;
-                    parameter = CreateSqlParameter(
-                        queryParameter.Key, parameterType, ParameterMode.In, DBNull.Value, preventTruncation, sqlVersion);
+                    parameter = CreateSqlParameter(commandTree.MetadataWorkspace, queryParameter.Key, parameterType, ParameterMode.In, DBNull.Value, preventTruncation, sqlVersion);
                 }
                 command.Parameters.Add(parameter);
             }
@@ -343,16 +344,17 @@ namespace System.Data.Entity.SqlServer
         /// <summary>
         /// Sets the parameter value and appropriate facets for the given <see cref="TypeUsage"/>.
         /// </summary>
+        /// <param name="metadataWorkspace"></param>
         /// <param name="parameter">The parameter.</param>
         /// <param name="parameterType">The type of the parameter.</param>
         /// <param name="value">The value of the parameter.</param>
-        protected override void SetDbParameterValue(DbParameter parameter, TypeUsage parameterType, object value)
+        protected override void SetDbParameterValue(MetadataWorkspace metadataWorkspace, DbParameter parameter, TypeUsage parameterType, object value)
         {
             Check.NotNull(parameter, "parameter");
             Check.NotNull(parameterType, "parameterType");
 
             // Ensure a value that can be used with SqlParameter
-            value = EnsureSqlParameterValue(value);
+            value = EnsureSqlParameterValue(metadataWorkspace, parameterType, value);
 
             if (parameterType.IsPrimitiveType(PrimitiveTypeKind.String)
                 || parameterType.IsPrimitiveType(PrimitiveTypeKind.Binary))
@@ -535,14 +537,14 @@ namespace System.Data.Entity.SqlServer
         // Creates a SqlParameter given a name, type, and direction
         // </summary>
         internal static SqlParameter CreateSqlParameter(
-            string name, TypeUsage type, ParameterMode mode, object value, bool preventTruncation, SqlVersion version)
+            MetadataWorkspace metadataWorkspace, string name, TypeUsage type, ParameterMode mode, object value, bool preventTruncation, SqlVersion version)
         {
             int? size;
             byte? precision;
             byte? scale;
             string udtTypeName;
 
-            value = EnsureSqlParameterValue(value);
+            value = EnsureSqlParameterValue(metadataWorkspace, type, value);
 
             var result = new SqlParameter(name, value);
 
@@ -557,6 +559,22 @@ namespace System.Data.Entity.SqlServer
             // output parameters are handled differently (we need to ensure there is space for return
             // values where the user has not given a specific Size/MaxLength)
             var isOutParam = mode != ParameterMode.In;
+
+            if (type.EdmType.BuiltInTypeKind == BuiltInTypeKind.VectorParameterType)
+            {
+                var vpt = (VectorParameterType)type.EdmType;
+                if (!metadataWorkspace.TryGetVectorParameterTypeMapping(vpt.ElementType.PrimitiveTypeKind, out var mapping))
+                    throw new InvalidOperationException(Strings.Mapping_VectorParameterType_NotFound(vpt.ElementType.PrimitiveTypeKind));
+                
+                if (string.IsNullOrEmpty(mapping.StoreTypeName))
+                    throw new InvalidOperationException(Strings.Mapping_VectorParameterType_StoreTypeNotMapped(vpt.ElementType.PrimitiveTypeKind));
+
+                result.SqlDbType = SqlDbType.Structured;
+                result.TypeName = mapping.StoreTypeSchema == null ? mapping.StoreTypeName : string.Concat(mapping.StoreTypeSchema, ".", mapping.StoreTypeName);
+
+                return result;
+            }
+            
             var sqlDbType = GetSqlDbType(type, isOutParam, version, out size, out precision, out scale, out udtTypeName);
 
             if (result.SqlDbType != sqlDbType)
@@ -657,45 +675,114 @@ namespace System.Data.Entity.SqlServer
         // CLR UDT value is available via the ProviderValue property (see SqlSpatialServices for the full conversion process from instances of
         // DbGeography/DbGeometry to instances of the CLR SqlGeography/SqlGeometry UDTs)
         // </summary>
-        internal static object EnsureSqlParameterValue(object value)
+        internal static object EnsureSqlParameterValue(MetadataWorkspace metadataWorkspace, TypeUsage parameterType, object value)
         {
             if (value != null
                 && value != DBNull.Value
                 && value.GetType().IsClass())
             {
-                // If the parameter is being created based on an actual value (typically for constants found in DML expressions) then a DbGeography/DbGeometry
-                // value must be replaced by an appropriate Microsoft.SqlServer.Types.SqlGeography/SqlGeometry instance. Since the DbGeography/DbGeometry
-                // value may not have been originally created by this SqlClient provider services implementation, just using the ProviderValue is not sufficient.
-                var geographyValue = value as DbGeography;
-                if (geographyValue != null)
+                switch (value)
                 {
-                    value = SqlTypesAssemblyLoader.DefaultInstance.GetSqlTypesAssembly().ConvertToSqlTypesGeography(geographyValue);
-                }
-                else
-                {
-                    var geometryValue = value as DbGeometry;
-                    if (geometryValue != null)
-                    {
+                    // If the parameter is being created based on an actual value (typically for constants found in DML expressions) then a DbGeography/DbGeometry
+                    // value must be replaced by an appropriate Microsoft.SqlServer.Types.SqlGeography/SqlGeometry instance. Since the DbGeography/DbGeometry
+                    // value may not have been originally created by this SqlClient provider services implementation, just using the ProviderValue is not sufficient.
+                    case DbGeography geographyValue:
+                        value = SqlTypesAssemblyLoader.DefaultInstance.GetSqlTypesAssembly().ConvertToSqlTypesGeography(geographyValue);
+                        break;
+                    case DbGeometry geometryValue:
                         value = SqlTypesAssemblyLoader.DefaultInstance.GetSqlTypesAssembly().ConvertToSqlTypesGeometry(geometryValue);
-                    }
-                    else
-                    {
-                        var hierarchyIdValue = value as HierarchyId;
-                        if (hierarchyIdValue != null)
-                        {
-                            value = SqlTypesAssemblyLoader.DefaultInstance.GetSqlTypesAssembly().ConvertToSqlTypesHierarchyId(hierarchyIdValue);
-                        }
-                    }
+                        break;
+                    case HierarchyId hierarchyIdValue:
+                        value = SqlTypesAssemblyLoader.DefaultInstance.GetSqlTypesAssembly().ConvertToSqlTypesHierarchyId(hierarchyIdValue);
+                        break;
+                    case VectorParameter vectorParameter:
+                        if (parameterType.EdmType.BuiltInTypeKind != BuiltInTypeKind.VectorParameterType)
+                            throw new InvalidOperationException("VectorParameterType expected.");
+                        var vectorParameterType = (VectorParameterType)parameterType.EdmType;
+                        if (!metadataWorkspace.TryGetVectorParameterTypeMapping(vectorParameterType.ElementType.PrimitiveTypeKind, out var mapping))
+                            throw new InvalidOperationException(Strings.Mapping_VectorParameterType_NotFound(vectorParameterType.ElementType.PrimitiveTypeKind));
+
+                        value = BuildVectorParameterValue(metadataWorkspace, vectorParameter, mapping);
+                        
+                        break;
                 }
             }
 
             return value;
         }
 
-        // <summary>
-        // Determines SqlDbType for the given primitive type. Extracts facet
-        // information as well.
-        // </summary>
+        private static IEnumerable<SqlDataRecord> BuildVectorParameterValue(MetadataWorkspace metadataWorkspace, VectorParameter vectorParameter, VectorParameterTypeMapping vectorParameterTypeMapping)
+        {
+            SqlMetaData metadata = GetVectorColumnMetadata(metadataWorkspace, vectorParameterTypeMapping);
+            
+            var sqlRecord = new SqlDataRecord(metadata);
+            
+            foreach (var value in vectorParameter)
+            {
+                sqlRecord.SetValue(0, value);
+
+                yield return sqlRecord;
+            }
+        }
+
+        private static SqlMetaData GetVectorColumnMetadata(MetadataWorkspace metadataWorkspace, VectorParameterTypeMapping vectorParameterTypeMapping)
+        {
+            var metadata = (SqlMetaData)vectorParameterTypeMapping.ProviderServicesMetadata;
+            if (metadata == null)
+            {
+                var storeMetadata = (StoreItemCollection)metadataWorkspace.GetItemCollection(DataSpace.SSpace);
+
+                Debug.Assert(
+                    storeMetadata.ProviderManifest != null,
+                    "StoreItemCollection has null ProviderManifest?");
+                
+                var sqlManifest = TryExtractSqlProviderManifest(storeMetadata.ProviderManifest);
+                if (sqlManifest == null)
+                    throw new ArgumentException(Strings.Mapping_Provider_WrongManifestType(typeof(SqlProviderManifest)));
+
+                var elementTypeUsage = vectorParameterTypeMapping.VectorParameterType.ElementTypeUsage;
+                var sqlDbType = GetSqlDbType(elementTypeUsage, false, sqlManifest.SqlVersion,
+                    out var size, out var precision, out var scale, out var udtName);
+
+                var columnName = vectorParameterTypeMapping.ColumnName ?? "Value";
+                if (vectorParameterTypeMapping.VectorParameterType.ElementType.PrimitiveTypeKind == PrimitiveTypeKind.String
+                    && size == null)
+                    size = -1;
+
+                if (size == null && precision == null && scale == null)
+                    metadata = new SqlMetaData(columnName, sqlDbType);
+                else if (precision == null && scale == null)
+                    metadata = new SqlMetaData(columnName, sqlDbType, size.Value);
+                else if (size == null)
+                    metadata = new SqlMetaData(columnName, sqlDbType, precision.GetValueOrDefault(), scale.GetValueOrDefault());
+                else
+                    // ReSharper disable once AssignNullToNotNullAttribute
+                    metadata = new SqlMetaData(columnName, sqlDbType, (long)size.GetValueOrDefault(), precision.GetValueOrDefault(), scale.GetValueOrDefault(), 0, SqlCompareOptions.None, null);
+
+                vectorParameterTypeMapping.ProviderServicesMetadata = metadata;
+            }
+
+            return metadata;
+        }
+
+        private static SqlProviderManifest TryExtractSqlProviderManifest(DbProviderManifest providerManifest)
+        {
+            while (true)
+            {
+                switch (providerManifest)
+                {
+                    case SqlProviderManifest sqlProviderManifest:
+                        return sqlProviderManifest;
+                    // ReSharper disable once SuspiciousTypeConversion.Global
+                    case IDbProviderManifestWrapper wrapper:
+                        providerManifest = wrapper.WrappedDbProviderManifest;
+                        break;
+                    default:
+                        return null;
+                }
+            }
+        }
+        
         private static SqlDbType GetSqlDbType(
             TypeUsage type, bool isOutParam, SqlVersion version, out int? size, out byte? precision, out byte? scale, out string udtName)
         {

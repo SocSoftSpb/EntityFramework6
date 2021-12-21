@@ -397,6 +397,22 @@ namespace System.Data.Entity.SqlServer.Resources
         {
             return EntityRes.GetString(EntityRes.SqlServerMigrationSqlGenerator_UnknownOperation, p0, p1);
         }
+
+        // <summary>
+        // A string like "Vector parameter with element type '{0}' is not mapped."
+        // </summary>
+        internal static string Mapping_VectorParameterType_NotFound(object p0)
+        {
+            return EntityRes.GetString(EntityRes.Mapping_VectorParameterType_NotFound, p0);
+        }
+
+        // <summary>
+        // A string like "Storage user type name must be mapped for vector parameter with element type '{0}'."
+        // </summary>
+        internal static string Mapping_VectorParameterType_StoreTypeNotMapped(object p0)
+        {
+            return EntityRes.GetString(EntityRes.Mapping_VectorParameterType_StoreTypeNotMapped, p0);
+        }
     }
 
     // <summary>
@@ -502,6 +518,8 @@ namespace System.Data.Entity.SqlServer.Resources
         internal const string AutomaticMigration = "AutomaticMigration";
         internal const string InvalidDatabaseName = "InvalidDatabaseName";
         internal const string SqlServerMigrationSqlGenerator_UnknownOperation = "SqlServerMigrationSqlGenerator_UnknownOperation";
+        internal const string Mapping_VectorParameterType_NotFound = "Mapping_VectorParameterType_NotFound";
+        internal const string Mapping_VectorParameterType_StoreTypeNotMapped = "Mapping_VectorParameterType_StoreTypeNotMapped";
 
         private static EntityRes loader;
         private readonly ResourceManager resources;

@@ -111,5 +111,11 @@ namespace System.Data.Entity.Core.Mapping
         internal const char IdentitySeperator = ':';
         internal const string EntityViewGenerationTypeName = "Edm_EntityMappingGeneratedViews.ViewsForBaseEntitySets";
         internal const string FunctionImportMappingResultMapping = "ResultMapping";
+        internal const string VectorParameterTypeMappingElement = "VectorParameterTypeMapping";
+        internal const string VectorParameterTypeMappingPrimitiveType = "ElementType";
+        internal const string VectorParameterTypeStoreMappingElement = "StoreMapping";
+        internal const string VectorParameterTypeStoreTypeSchema = "StoreTypeSchema";
+        internal const string VectorParameterTypeStoreTypeName = "StoreTypeName";
+        internal const string VectorParameterTypeColumnName = "ColumnName";
     }
 }

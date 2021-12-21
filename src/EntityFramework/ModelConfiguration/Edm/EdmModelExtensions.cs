@@ -185,7 +185,7 @@ namespace System.Data.Entity.ModelConfiguration.Edm
 
             return model.GetStructuralType(name) ?? model.GetEnumType(name);
         }
-
+        
         public static EdmType GetStructuralType(this EdmModel model, string name)
         {
             DebugCheck.NotNull(model);
@@ -200,6 +200,21 @@ namespace System.Data.Entity.ModelConfiguration.Edm
             DebugCheck.NotEmpty(name);
 
             return model.EntityTypes.SingleOrDefault(e => e.Name == name);
+        }
+
+        public static VectorParameterType GetVectorParameterType(this EdmModel model, string name)
+        {
+            DebugCheck.NotNull(model);
+            DebugCheck.NotEmpty(name);
+
+            return model.VectorParameterTypes.SingleOrDefault(e => e.Name == name);
+        }
+
+        public static VectorParameterType GetVectorParameterType(this EdmModel model, PrimitiveType primitiveType)
+        {
+            DebugCheck.NotNull(model);
+            
+            return model.GetVectorParameterType(VectorParameterType.BuildName(primitiveType.Name));
         }
 
         public static EntityType GetEntityType(this EdmModel model, Type clrType)
@@ -336,6 +351,22 @@ namespace System.Data.Entity.ModelConfiguration.Edm
             model.AddItem(enumType);
 
             return enumType;
+        }
+
+        public static VectorParameterType AddVectorParameterType(this EdmModel model, PrimitiveType primitiveType, string modelNamespace = null)
+        {
+            DebugCheck.NotNull(model);
+            DebugCheck.NotNull(primitiveType);
+
+            var vectorParameterType
+                = new VectorParameterType(
+                    primitiveType,
+                    modelNamespace ?? DefaultModelNamespace,
+                    DataSpace.CSpace);
+
+            model.AddItem(vectorParameterType);
+            
+            return vectorParameterType;
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode",

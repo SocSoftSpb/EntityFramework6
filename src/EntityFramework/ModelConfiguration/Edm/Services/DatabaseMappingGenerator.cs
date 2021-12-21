@@ -42,6 +42,7 @@ namespace System.Data.Entity.ModelConfiguration.Edm.Services
             GenerateEntityTypes(databaseMapping);
             GenerateDiscriminators(databaseMapping);
             GenerateAssociationTypes(databaseMapping);
+            GenerateVectorParameterTypes(databaseMapping);
 
             return databaseMapping;
         }
@@ -70,6 +71,17 @@ namespace System.Data.Entity.ModelConfiguration.Edm.Services
 
                 new TableMappingGenerator(databaseMapping.ProviderManifest).
                     Generate(entityType, databaseMapping);
+            }
+        }
+        
+        private void GenerateVectorParameterTypes(DbDatabaseMapping databaseMapping)
+        {
+            DebugCheck.NotNull(databaseMapping);
+
+            foreach (var vectorParameterType in databaseMapping.Model.VectorParameterTypes)
+            {
+                var vpMapping = databaseMapping.GetVectorParameterTypeMapping(vectorParameterType)
+                                ?? databaseMapping.AddVectorParameterTypeMapping(vectorParameterType);
             }
         }
 

@@ -14,6 +14,9 @@ namespace System.Data.Entity.TestHelpers
 
         public static bool IsSqlAzure(string connectionString)
         {
+            if (string.IsNullOrEmpty(connectionString))
+                return false;
+            
             // try to guess if we are targeting SQL Azure
             // heuristic - connection string contains: "Data Source=abcd1234.database.windows.net"
             return _isAzureServer.IsMatch(connectionString);
@@ -21,6 +24,9 @@ namespace System.Data.Entity.TestHelpers
 
         public static bool IsLocalDb(string connectionString)
         {
+            if (connectionString == null)
+                return false;
+            
             // try to guess if we are targeting LocalDB
             // heuristic - connection string contains: "(localdb)"
             return connectionString.ToLower().Contains(@"(localdb)");

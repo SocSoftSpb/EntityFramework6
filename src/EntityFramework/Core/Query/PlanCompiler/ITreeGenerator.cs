@@ -345,7 +345,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         private static bool ValidateParameterType(TypeUsage paramType)
         {
             return (paramType != null && paramType.EdmType != null &&
-                    (TypeSemantics.IsPrimitiveType(paramType) || paramType.EdmType is EnumType));
+                    (TypeSemantics.IsPrimitiveType(paramType) || TypeSemantics.IsEnumerationType(paramType) || TypeSemantics.IsVectorParameterType(paramType)));
         }
 
         #region DbExpressionVisitor Helpers

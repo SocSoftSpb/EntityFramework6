@@ -424,6 +424,23 @@ namespace System.Data.Entity.Core.Metadata.Edm
             }
         }
 
+        internal void WriteVectorParameterElementHeader(VectorParameterType vectorParameterType)
+        {
+            DebugCheck.NotNull(vectorParameterType);
+
+            _xmlWriter.WriteStartElement(XmlConstants.VectorParameterType);
+            _xmlWriter.WriteAttributeString(XmlConstants.Name, vectorParameterType.Name);
+
+            WriteExtendedProperties(vectorParameterType);
+
+            if (vectorParameterType.ElementType != null)
+            {
+                _xmlWriter.WriteAttributeString(
+                    XmlConstants.ElementType,
+                    vectorParameterType.ElementType.PrimitiveTypeKind.ToString());
+            }
+        }
+
         internal void WriteEnumTypeMemberElementHeader(EnumMember enumTypeMember)
         {
             DebugCheck.NotNull(enumTypeMember);

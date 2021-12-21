@@ -11,6 +11,7 @@ namespace System.Data.Entity.Utilities
     using System.Collections.Generic;
     using System.Data.Entity.Core;
     using System.Data.Entity.Core.Metadata.Edm;
+    using System.Data.Entity.Core.Objects;
     using System.Data.Entity.Core.Objects.DataClasses;
     using System.Data.Entity.Hierarchy;
     using System.Data.Entity.Resources;
@@ -692,6 +693,12 @@ namespace System.Data.Entity.Utilities
 #else
             return type.GetTypeInfo().IsEnum;
 #endif
+        }
+
+        public static bool IsVectorParameter(this Type type)
+        {
+            DebugCheck.NotNull(type);
+            return !type.IsAbstract() && type.IsSubclassOf(typeof(VectorParameter));
         }
 
         public static bool IsSerializable(this Type type)

@@ -206,6 +206,11 @@ namespace System.Data.Entity.Core.Metadata.Edm
         /// Type Information Kind
         /// </summary>
         TypeUsage,
+        
+        /// <summary>
+        /// Vector Parameter Kind
+        /// </summary>
+        VectorParameterType,
 
         //
         //If you add anything below this, make sure you update the variable NumBuiltInTypes in EdmConstants

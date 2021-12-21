@@ -24,7 +24,8 @@ namespace System.Data.Entity.Core.Metadata.Edm
             foreach (var cSpaceType in edmItemCollection.OfType<EdmType>().Where(
                 t => t.BuiltInTypeKind == BuiltInTypeKind.EntityType
                      || t.BuiltInTypeKind == BuiltInTypeKind.EnumType
-                     || t.BuiltInTypeKind == BuiltInTypeKind.ComplexType))
+                     || t.BuiltInTypeKind == BuiltInTypeKind.ComplexType
+                     || t.BuiltInTypeKind == BuiltInTypeKind.VectorParameterType))
             {
                 var clrType = cSpaceType.GetClrType();
                 if (clrType != null)

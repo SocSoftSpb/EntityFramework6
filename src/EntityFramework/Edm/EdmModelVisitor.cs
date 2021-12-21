@@ -27,6 +27,7 @@ namespace System.Data.Entity.Edm
                 VisitComplexTypes(item.ComplexTypes);
                 VisitEntityTypes(item.EntityTypes);
                 VisitEnumTypes(item.EnumTypes);
+                VisitVectorParameterTypes(item.VectorParameterTypes);
                 VisitAssociationTypes(item.AssociationTypes);
                 VisitFunctions(item.Functions);
                 VisitEntityContainers(item.Containers);
@@ -201,6 +202,11 @@ namespace System.Data.Entity.Edm
             VisitCollection(enumTypes, VisitEdmEnumType);
         }
 
+        protected virtual void VisitVectorParameterTypes(IEnumerable<VectorParameterType> vectorParameterTypes)
+        {
+            VisitCollection(vectorParameterTypes, VisitEdmVectorParameterType);
+        }
+
         protected internal virtual void VisitFunctions(IEnumerable<EdmFunction> functions)
         {
             VisitCollection(functions, VisitEdmFunction);
@@ -278,6 +284,15 @@ namespace System.Data.Entity.Edm
                 {
                     VisitEnumMembers(item, item.Members);
                 }
+            }
+        }
+
+        protected virtual void VisitEdmVectorParameterType(VectorParameterType item)
+        {
+            VisitMetadataItem(item);
+            if (item != null)
+            {
+                VisitEdmType(item.ElementType);
             }
         }
 

@@ -383,6 +383,14 @@ namespace System.Data.Entity.Resources
         }
 
         // <summary>
+        // A string like "A configuration for VectorParameter<{0}> has already been added. To reference the existing configuration use the VectorParameter<T>() method."
+        // </summary>
+        internal static string DuplicateVectorParameterConfiguration(object p0)
+        {
+            return EntityRes.GetString(EntityRes.DuplicateVectorParameterConfiguration, p0);
+        }
+
+        // <summary>
         // A string like "Conflicting configuration settings were specified for property '{0}' on type '{1}': {2}"
         // </summary>
         internal static string ConflictingPropertyConfiguration(object p0, object p1, object p2)
@@ -492,6 +500,14 @@ namespace System.Data.Entity.Resources
         internal static string CodeFirstInvalidComplexType(object p0)
         {
             return EntityRes.GetString(EntityRes.CodeFirstInvalidComplexType, p0);
+        }
+
+        // <summary>
+        // A string like "The vector parameter type '{0}' was not mapped. Verify that the type is primitive, and does not inherit from ComplexObject."
+        // </summary>
+        internal static string CodeFirstInvalidVectorParameterType(object p0)
+        {
+            return EntityRes.GetString(EntityRes.CodeFirstInvalidVectorParameterType, p0);
         }
 
         // <summary>
@@ -4303,11 +4319,27 @@ namespace System.Data.Entity.Resources
         }
 
         // <summary>
+        // A string like "The element type of CLR vector parameter type does not match the element type of EDM vector parameter type."
+        // </summary>
+        internal static string Validator_OSpace_Convention_NonMatchingVectorElementTypes
+        {
+            get { return EntityRes.GetString(EntityRes.Validator_OSpace_Convention_NonMatchingVectorElementTypes); }
+        }
+
+        // <summary>
         // A string like "The type '{0}' is not a supported underlying type for enumeration types."
         // </summary>
         internal static string Validator_UnsupportedEnumUnderlyingType(object p0)
         {
             return EntityRes.GetString(EntityRes.Validator_UnsupportedEnumUnderlyingType, p0);
+        }
+
+        // <summary>
+        // A string like "The type '{0}' is not a supported element type for Vector Parameter types."
+        // </summary>
+        internal static string Validator_UnsupportedVectorParameterElementType(object p0)
+        {
+            return EntityRes.GetString(EntityRes.Validator_UnsupportedVectorParameterElementType, p0);
         }
 
         // <summary>
@@ -5260,6 +5292,14 @@ namespace System.Data.Entity.Resources
         internal static string Mapping_Enum_OCMapping_MemberMismatch(object p0, object p1, object p2, object p3)
         {
             return EntityRes.GetString(EntityRes.Mapping_Enum_OCMapping_MemberMismatch, p0, p1, p2, p3);
+        }
+
+        // <summary>
+        // A string like "The element type '{0}' of the vector type '{1}' defined in the conceptual model does not match the element type '{2}' of the vector type '{3}' defined in the object layer."
+        // </summary>
+        internal static string Mapping_VectorParameter_OCMapping_ElementTypesMismatch(object p0, object p1, object p2, object p3)
+        {
+            return EntityRes.GetString(EntityRes.Mapping_VectorParameter_OCMapping_ElementTypesMismatch, p0, p1, p2, p3);
         }
 
         // <summary>
@@ -12615,6 +12655,14 @@ namespace System.Data.Entity.Resources
         }
 
         // <summary>
+        // A string like "The specified type cannot be used as the element type of an vector parameter type."
+        // </summary>
+        internal static string InvalidVectorParameterElementType
+        {
+            get { return EntityRes.GetString(EntityRes.InvalidVectorParameterElementType); }
+        }
+
+        // <summary>
         // A string like "Enumeration members have to have unique names."
         // </summary>
         internal static string DuplicateEnumMember
@@ -14117,6 +14165,22 @@ namespace System.Data.Entity.Resources
         {
             return EntityRes.GetString(EntityRes.ELinq_WindowOrderNotSupported, p0);
         }
+
+        // <summary>
+        // A string like "VectorParameterType for Element Type {0} is not found."
+        // </summary>
+        internal static string Mapping_VectorParameterType_NotFound(object p0)
+        {
+            return EntityRes.GetString(EntityRes.Mapping_VectorParameterType_NotFound, p0);
+        }
+
+        // <summary>
+        // A string like "VectorParameterType for Element Type {0} is not unique."
+        // </summary>
+        internal static string Mapping_VectorParameterType_NotUnique(object p0)
+        {
+            return EntityRes.GetString(EntityRes.Mapping_VectorParameterType_NotUnique, p0);
+        }
     }
 
     // <summary>
@@ -14350,6 +14414,14 @@ namespace System.Data.Entity.Resources
         }
 
         // <summary>
+        // InvalidOperationException with message like "A configuration for VectorParameter<{0}> has already been added. To reference the existing configuration use the VectorParameter<T>() method."
+        // </summary>
+        internal static Exception DuplicateVectorParameterConfiguration(object p0)
+        {
+            return new InvalidOperationException(Strings.DuplicateVectorParameterConfiguration(p0));
+        }
+
+        // <summary>
         // InvalidOperationException with message like "Conflicting configuration settings were specified for property '{0}' on type '{1}': {2}"
         // </summary>
         internal static Exception ConflictingPropertyConfiguration(object p0, object p1, object p2)
@@ -14379,6 +14451,14 @@ namespace System.Data.Entity.Resources
         internal static Exception CodeFirstInvalidComplexType(object p0)
         {
             return new InvalidOperationException(Strings.CodeFirstInvalidComplexType(p0));
+        }
+
+        // <summary>
+        // InvalidOperationException with message like "The vector parameter type '{0}' was not mapped. Verify that the type is primitive, and does not inherit from ComplexObject."
+        // </summary>
+        internal static Exception CodeFirstInvalidVectorParameterType(object p0)
+        {
+            return new InvalidOperationException(Strings.CodeFirstInvalidVectorParameterType(p0));
         }
 
         // <summary>
@@ -15836,6 +15916,7 @@ namespace System.Data.Entity.Resources
         internal const string InvalidPropertiesExpression = "InvalidPropertiesExpression";
         internal const string InvalidComplexPropertiesExpression = "InvalidComplexPropertiesExpression";
         internal const string DuplicateStructuralTypeConfiguration = "DuplicateStructuralTypeConfiguration";
+        internal const string DuplicateVectorParameterConfiguration = "DuplicateVectorParameterConfiguration";
         internal const string ConflictingPropertyConfiguration = "ConflictingPropertyConfiguration";
         internal const string ConflictingTypeAnnotation = "ConflictingTypeAnnotation";
         internal const string ConflictingColumnConfiguration = "ConflictingColumnConfiguration";
@@ -15850,6 +15931,7 @@ namespace System.Data.Entity.Resources
         internal const string ConflictWhenConsolidating = "ConflictWhenConsolidating";
         internal const string OrderConflictWhenConsolidating = "OrderConflictWhenConsolidating";
         internal const string CodeFirstInvalidComplexType = "CodeFirstInvalidComplexType";
+        internal const string CodeFirstInvalidVectorParameterType = "CodeFirstInvalidVectorParameterType";
         internal const string InvalidEntityType = "InvalidEntityType";
         internal const string SimpleNameCollision = "SimpleNameCollision";
         internal const string NavigationInverseItself = "NavigationInverseItself";
@@ -16326,7 +16408,9 @@ namespace System.Data.Entity.Resources
         internal const string Validator_OSpace_Convention_BaseTypeNotLoaded = "Validator_OSpace_Convention_BaseTypeNotLoaded";
         internal const string Validator_OSpace_Convention_SSpaceOSpaceTypeMismatch = "Validator_OSpace_Convention_SSpaceOSpaceTypeMismatch";
         internal const string Validator_OSpace_Convention_NonMatchingUnderlyingTypes = "Validator_OSpace_Convention_NonMatchingUnderlyingTypes";
+        internal const string Validator_OSpace_Convention_NonMatchingVectorElementTypes = "Validator_OSpace_Convention_NonMatchingVectorElementTypes";
         internal const string Validator_UnsupportedEnumUnderlyingType = "Validator_UnsupportedEnumUnderlyingType";
+        internal const string Validator_UnsupportedVectorParameterElementType = "Validator_UnsupportedVectorParameterElementType";
         internal const string ExtraInfo = "ExtraInfo";
         internal const string Metadata_General_Error = "Metadata_General_Error";
         internal const string InvalidNumberOfParametersForAggregateFunction = "InvalidNumberOfParametersForAggregateFunction";
@@ -16446,6 +16530,7 @@ namespace System.Data.Entity.Resources
         internal const string Mapping_Default_OCMapping_Member_Type_Mismatch = "Mapping_Default_OCMapping_Member_Type_Mismatch";
         internal const string Mapping_Enum_OCMapping_UnderlyingTypesMismatch = "Mapping_Enum_OCMapping_UnderlyingTypesMismatch";
         internal const string Mapping_Enum_OCMapping_MemberMismatch = "Mapping_Enum_OCMapping_MemberMismatch";
+        internal const string Mapping_VectorParameter_OCMapping_ElementTypesMismatch = "Mapping_VectorParameter_OCMapping_ElementTypesMismatch";
         internal const string Mapping_NotFound_EntityContainer = "Mapping_NotFound_EntityContainer";
         internal const string Mapping_Duplicate_CdmAssociationSet_StorageMap = "Mapping_Duplicate_CdmAssociationSet_StorageMap";
         internal const string Mapping_Invalid_CSRootElementMissing = "Mapping_Invalid_CSRootElementMissing";
@@ -17365,6 +17450,7 @@ namespace System.Data.Entity.Resources
         internal const string NoCodeGenNamespaceInStructuralAnnotation = "NoCodeGenNamespaceInStructuralAnnotation";
         internal const string CannotLoadDifferentVersionOfSchemaInTheSameItemCollection = "CannotLoadDifferentVersionOfSchemaInTheSameItemCollection";
         internal const string InvalidEnumUnderlyingType = "InvalidEnumUnderlyingType";
+        internal const string InvalidVectorParameterElementType = "InvalidVectorParameterElementType";
         internal const string DuplicateEnumMember = "DuplicateEnumMember";
         internal const string CalculatedEnumValueOutOfRange = "CalculatedEnumValueOutOfRange";
         internal const string EnumMemberValueOutOfItsUnderylingTypeRange = "EnumMemberValueOutOfItsUnderylingTypeRange";
@@ -17553,6 +17639,8 @@ namespace System.Data.Entity.Resources
         internal const string ELinq_WindowOrderInvalidExpression = "ELinq_WindowOrderInvalidExpression";
         internal const string ELinq_WindowOrderRequired = "ELinq_WindowOrderRequired";
         internal const string ELinq_WindowOrderNotSupported = "ELinq_WindowOrderNotSupported";
+        internal const string Mapping_VectorParameterType_NotFound = "Mapping_VectorParameterType_NotFound";
+        internal const string Mapping_VectorParameterType_NotUnique = "Mapping_VectorParameterType_NotUnique";
 
         private static EntityRes loader;
         private readonly ResourceManager resources;

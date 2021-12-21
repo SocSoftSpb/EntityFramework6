@@ -263,4 +263,10 @@
     <value>The current migration SQL generator ({0}) is unable to generate SQL for operations of type '{1}'. Call SetSqlGenerator on your migrations configuration class to use a different SQL generator. To create a custom SQL generator that can handle this type of operation, add a new class that derives from {0} and override Generate(MigrationOperation).</value>
     <comment>## ExceptionType=InvalidOperationException</comment>
   </data>
+  <data name="Mapping_VectorParameterType_NotFound" xml:space="preserve">
+    <value>Vector parameter with element type '{0}' is not mapped.</value>
+  </data>
+  <data name="Mapping_VectorParameterType_StoreTypeNotMapped" xml:space="preserve">
+    <value>Storage user type name must be mapped for vector parameter with element type '{0}'.</value>
+  </data>
 </root>

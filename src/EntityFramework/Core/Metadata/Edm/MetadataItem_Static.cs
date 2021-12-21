@@ -62,6 +62,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
             _builtInTypes[(int)BuiltInTypeKind.SimpleType] = new ComplexType();
             _builtInTypes[(int)BuiltInTypeKind.StructuralType] = new ComplexType();
             _builtInTypes[(int)BuiltInTypeKind.TypeUsage] = new ComplexType();
+            _builtInTypes[(int)BuiltInTypeKind.VectorParameterType] = new ComplexType();
 
             ////////////////////////////////////////////////////////////////////////////////////////////////
             // Initialize item attributes for all the built-in complex types
@@ -108,6 +109,12 @@ namespace System.Data.Entity.Core.Metadata.Edm
             InitializeBuiltInTypes(
                 (ComplexType)GetBuiltInType(BuiltInTypeKind.EnumType),
                 EdmConstants.EnumerationType,
+                false /*isAbstract*/,
+                (ComplexType)GetBuiltInType(BuiltInTypeKind.SimpleType));
+
+            InitializeBuiltInTypes(
+                (ComplexType)GetBuiltInType(BuiltInTypeKind.VectorParameterType),
+                EdmConstants.VectorParameterType,
                 false /*isAbstract*/,
                 (ComplexType)GetBuiltInType(BuiltInTypeKind.SimpleType));
 
@@ -390,6 +397,10 @@ namespace System.Data.Entity.Core.Metadata.Edm
             AddBuiltInTypeProperties(
                 BuiltInTypeKind.EnumType,
                 new[] { new EdmProperty(EdmConstants.EnumMembers, stringTypeUsage) });
+
+            AddBuiltInTypeProperties(
+                BuiltInTypeKind.VectorParameterType,
+                new[] { new EdmProperty(EdmConstants.PrimitiveType, TypeUsage.Create(GetBuiltInType(BuiltInTypeKind.PrimitiveType))) });
 
             AddBuiltInTypeProperties(
                 BuiltInTypeKind.CollectionType,

@@ -232,7 +232,7 @@ namespace System.Data.Entity.Core.EntityClient
             set
             {
                 if (value != null
-                    && !Helper.IsScalarType(value))
+                    && !(Helper.IsScalarType(value) || Helper.IsVectorParameterType(value)))
                 {
                     throw new InvalidOperationException(Strings.EntityClient_EntityParameterEdmTypeNotScalar(value.FullName));
                 }

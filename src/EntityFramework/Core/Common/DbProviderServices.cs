@@ -514,24 +514,26 @@ namespace System.Data.Entity.Core.Common
         /// <summary>
         /// Sets the parameter value and appropriate facets for the given <see cref="TypeUsage"/>.
         /// </summary>
+        /// <param name="metadataWorkspace">Metadata to resolve parameter mappings</param>
         /// <param name="parameter">The parameter.</param>
         /// <param name="parameterType">The type of the parameter.</param>
         /// <param name="value">The value of the parameter.</param>
-        public void SetParameterValue(DbParameter parameter, TypeUsage parameterType, object value)
+        public void SetParameterValue(MetadataWorkspace metadataWorkspace, DbParameter parameter, TypeUsage parameterType, object value)
         {
             Check.NotNull(parameter, "parameter");
             Check.NotNull(parameterType, "parameterType");
 
-            SetDbParameterValue(parameter, parameterType, value);
+            SetDbParameterValue(metadataWorkspace, parameter, parameterType, value);
         }
 
         /// <summary>
         /// Sets the parameter value and appropriate facets for the given <see cref="TypeUsage"/>.
         /// </summary>
+        /// <param name="metadataWorkspace"></param>
         /// <param name="parameter">The parameter.</param>
         /// <param name="parameterType">The type of the parameter.</param>
         /// <param name="value">The value of the parameter.</param>
-        protected virtual void SetDbParameterValue(DbParameter parameter, TypeUsage parameterType, object value)
+        protected virtual void SetDbParameterValue(MetadataWorkspace metadataWorkspace, DbParameter parameter, TypeUsage parameterType, object value)
         {
             Check.NotNull(parameter, "parameter");
             Check.NotNull(parameterType, "parameterType");

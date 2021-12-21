@@ -37,6 +37,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
         private Lazy<StorageMappingItemCollection> _itemsCSSpace;
         private Lazy<DefaultObjectMappingItemCollection> _itemsOCSpace;
         private Lazy<Dictionary<string, CSpaceTypeMappingInfo>> _mappingInfos;
+        private Lazy<Dictionary<PrimitiveTypeKind, VectorParameterTypeMapping>> _vectorParameterTypeMappings;
 
         private bool _foundAssemblyWithAttribute;
         private double _schemaVersion = XmlConstants.UndefinedVersion;
@@ -52,6 +53,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
         {
             _itemsOSpace = new Lazy<ObjectItemCollection>(() => new ObjectItemCollection(), isThreadSafe: true);
             _mappingInfos = new Lazy<Dictionary<string, CSpaceTypeMappingInfo>>(() => BuildMappingInformation(), isThreadSafe: true);
+            _vectorParameterTypeMappings = new Lazy<Dictionary<PrimitiveTypeKind, VectorParameterTypeMapping>>(() => BuildVectorParameterTypeMappings(), isThreadSafe: true);
 
             MetadataOptimization = new MetadataOptimization(this);
         }
@@ -88,6 +90,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
             _itemsOCSpace = new Lazy<DefaultObjectMappingItemCollection>(
                 () => new DefaultObjectMappingItemCollection(_itemsCSpace.Value, _itemsOSpace.Value), isThreadSafe: true);
             _mappingInfos = new Lazy<Dictionary<string, CSpaceTypeMappingInfo>>(() => BuildMappingInformation(), isThreadSafe: true);
+            _vectorParameterTypeMappings = new Lazy<Dictionary<PrimitiveTypeKind, VectorParameterTypeMapping>>(() => BuildVectorParameterTypeMappings(), isThreadSafe: true);
 
             MetadataOptimization = new MetadataOptimization(this);
         }
@@ -120,6 +123,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
             _itemsOCSpace = new Lazy<DefaultObjectMappingItemCollection>(
                 () => new DefaultObjectMappingItemCollection(_itemsCSpace.Value, _itemsOSpace.Value), isThreadSafe: true);
             _mappingInfos = new Lazy<Dictionary<string, CSpaceTypeMappingInfo>>(() => BuildMappingInformation(), isThreadSafe: true);
+            _vectorParameterTypeMappings = new Lazy<Dictionary<PrimitiveTypeKind, VectorParameterTypeMapping>>(() => BuildVectorParameterTypeMappings(), isThreadSafe: true);
 
             MetadataOptimization = new MetadataOptimization(this);
         }
@@ -158,6 +162,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
 
             CreateMetadataWorkspaceWithResolver(paths, () => assembliesToConsider, resolveReference);
             _mappingInfos = new Lazy<Dictionary<string, CSpaceTypeMappingInfo>>(() => BuildMappingInformation(), isThreadSafe: true);
+            _vectorParameterTypeMappings = new Lazy<Dictionary<PrimitiveTypeKind, VectorParameterTypeMapping>>(() => BuildVectorParameterTypeMappings(), isThreadSafe: true);
 
             MetadataOptimization = new MetadataOptimization(this);
         }
@@ -1739,6 +1744,28 @@ namespace System.Data.Entity.Core.Metadata.Edm
                 Debug.Assert(entitySetMapping.EntitySet.EdmEquals(info.EntitySetMapping.EntitySet));
             }
             info.EntityTypeMappings.Add(entityTypeMapping);
+        }
+
+        public bool TryGetVectorParameterTypeMapping(PrimitiveTypeKind elementTypeKind, out VectorParameterTypeMapping vectorParameterTypeMapping)
+        {
+            return _vectorParameterTypeMappings.Value.TryGetValue(elementTypeKind, out vectorParameterTypeMapping);
+        }
+        
+        private Dictionary<PrimitiveTypeKind, VectorParameterTypeMapping> BuildVectorParameterTypeMappings()
+        {
+            var dict = new Dictionary<PrimitiveTypeKind, VectorParameterTypeMapping>();
+            
+            foreach (var entityContainerMapping in _itemsCSSpace.Value.GetItems<EntityContainerMapping>())
+            {
+                foreach (var vectorParameterTypeMapping in entityContainerMapping.VectorParameterTypeMappings)
+                {
+                    var key = vectorParameterTypeMapping.VectorParameterType.ElementType.PrimitiveTypeKind;
+                    if (!dict.ContainsKey(key))
+                        dict.Add(key, vectorParameterTypeMapping);
+                }
+            }
+
+            return dict;
         }
     }
 

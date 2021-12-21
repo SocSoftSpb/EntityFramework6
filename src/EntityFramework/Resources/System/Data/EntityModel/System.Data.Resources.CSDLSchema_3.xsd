@@ -25,6 +25,7 @@
             <xs:element name="ComplexType" type="edm:TComplexType" minOccurs="0" maxOccurs="unbounded" />
             <xs:element name="EntityType" type="edm:TEntityType" minOccurs="0" maxOccurs="unbounded" />
             <xs:element name="EnumType" type="edm:TEnumType" minOccurs="0" maxOccurs="unbounded" />
+            <xs:element name="VectorParameterType" type="edm:TVectorParameterType" minOccurs="0" maxOccurs="unbounded" />
             <xs:element name="ValueTerm" type="edm:TValueTerm" minOccurs="0" maxOccurs="unbounded" />
             <xs:element name="Function" type="edm:TFunction" minOccurs="0" maxOccurs="unbounded" />
             <xs:element name="Annotations" type="edm:TAnnotations" minOccurs="0" maxOccurs="unbounded" />
@@ -242,6 +243,15 @@
         <xs:attribute name="IsFlags" type="xs:boolean" use="optional" />
         <xs:attribute name="UnderlyingType" type="edm:TPropertyType" use="optional" />
         <xs:attribute ref="cg:TypeAccess" use="optional" />
+        <xs:anyAttribute namespace="##other" processContents="lax" />
+    </xs:complexType>
+    <xs:complexType name="TVectorParameterType">
+        <xs:sequence>
+            <xs:element name="Documentation" type="edm:TDocumentation" minOccurs="0" maxOccurs="1" />
+            <xs:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded" />
+        </xs:sequence>
+        <xs:attribute name="Name" type="edm:TSimpleIdentifier" use="required" />
+        <xs:attribute name="ElementType" type="xs:string" use="required" />
         <xs:anyAttribute namespace="##other" processContents="lax" />
     </xs:complexType>
     <xs:complexType name="TFunction">

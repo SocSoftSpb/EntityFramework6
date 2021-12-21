@@ -209,6 +209,13 @@ namespace System.Data.Entity.Core.Metadata.Edm
             _schemaWriter.WriteEndElement();
         }
 
+        protected override void VisitEdmVectorParameterType(VectorParameterType item)
+        {
+            _schemaWriter.WriteVectorParameterElementHeader(item);
+            base.VisitEdmVectorParameterType(item);
+            _schemaWriter.WriteEndElement();
+        }
+
         protected override void VisitEdmEnumTypeMember(EnumMember item)
         {
             _schemaWriter.WriteEnumTypeMemberElementHeader(item);

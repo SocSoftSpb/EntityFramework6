@@ -9,6 +9,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
     using System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder;
     using System.Data.Entity.Core.Metadata.Edm;
     using System.Data.Entity.Core.Objects.DataClasses;
+    using System.Data.Entity.ModelConfiguration.Edm;
     using System.Data.Entity.Resources;
     using System.Data.Entity.Utilities;
     using System.Diagnostics;
@@ -1080,8 +1081,50 @@ namespace System.Data.Entity.Core.Objects.ELinq
                     throw new NotSupportedException(Strings.ELinq_UnsupportedExpressionType(linq.NodeType));
                 }
                 // otherwise add a new query parameter...
-                parent.AddParameter(queryParameter);
-                return queryParameter.ParameterReference;
+                DbParameterReferenceExpression parameterReference;
+                
+                if (queryParameter.Type.IsVectorParameter())
+                {
+                    queryParameter = parent.GetSameOrAddParameter(queryParameter);
+
+                    parameterReference = queryParameter.ParameterReference;
+                    
+                    var metadataWorkspace = parent._perspective.MetadataWorkspace;
+                    var paramType = (queryParameter.ParameterReference.ResultType.EdmType as VectorParameterType) 
+                                    ?? throw new InvalidOperationException("VectorParameterType expected.");
+                    if (!metadataWorkspace.TryGetVectorParameterTypeMapping(paramType.ElementType.PrimitiveTypeKind, out var mapping))
+                        throw new InvalidOperationException("VectorParameterType is not mapped.");
+                
+                    /*
+                    if (!parent._perspective.TryGetFunctionByName(EdmModelExtensions.DefaultStoreNamespace, "__VectorParameterWrapper__", true, out var funcs)
+                        || !(funcs.FirstOrDefault(
+                                e => e.Parameters.Count == 1 
+                                     && e.Parameters[0].TypeUsage.EdmType.BuiltInTypeKind == BuiltInTypeKind.VectorParameterType
+                                     && ((VectorParameterType)(e.Parameters[0].TypeUsage.EdmType)).ElementType.PrimitiveTypeKind == paramType.ElementType.PrimitiveTypeKind)
+                            is EdmFunction edmFunc))
+                        throw new InvalidOperationException($"Cant' find wrapper function for Vector Parameter of {paramType.ElementType}.");
+                    */
+
+                    var edmFunc = mapping.WrapperFunction;
+
+                    var binding = edmFunc.Invoke(parameterReference).BindAs(parent.AliasGenerator.Next());
+                    var retType = edmFunc.ReturnParameter.TypeUsage.EdmType;
+                    if (!(retType is CollectionType collectionType))
+                        throw new InvalidOperationException("CollectionType expected for VectorParameterWrapper function.");
+                        
+                    if (!(collectionType.TypeUsage.EdmType is RowType rowType))
+                        throw new InvalidOperationException("RowType expected for Collection for VectorParameterWrapper function.");
+                    
+                    return binding.Project(binding.Variable.Property(rowType.Properties[0]));
+                }
+                else
+                {
+                    parent.AddParameter(queryParameter);
+
+                    parameterReference = queryParameter.ParameterReference;
+                }
+
+                return parameterReference;
             }
         }
 

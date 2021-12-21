@@ -133,6 +133,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
         internal const string Annotations = "Annotations";
         internal const string ValueAnnotation = "ValueAnnotation";
         internal const string TypeAnnotation = "TypeAnnotation";
+        internal const string VectorParameterType = "VectorParameterType";
 
         internal const string Using = "Using";
 

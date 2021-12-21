@@ -476,6 +476,10 @@ namespace System.Data.Entity.Core.Metadata.Edm
             {
                 return ((ClrEnumType)edmType).CSpaceTypeName;
             }
+            else if (Helper.IsVectorParameterType(edmType))
+            {
+                return ((ClrVectorParameterType)edmType).CSpaceTypeName;
+            }
 
             return edmType.Identity;
         }

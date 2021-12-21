@@ -78,7 +78,35 @@ namespace System.Data.Entity.Core.Metadata.Edm
             {
                 WriteFunctionImportMappingElement(functionMapping);
             }
+            
+            foreach (var vectorParameterTypeMapping in containerMapping.VectorParameterTypeMappings)
+            {
+                WriteVectorParameterTypeMappingElement(vectorParameterTypeMapping);
+            }
 
+            _xmlWriter.WriteEndElement();
+        }
+
+        private void WriteVectorParameterTypeMappingElement(VectorParameterTypeMapping vectorParameterTypeMapping)
+        {
+            _xmlWriter.WriteStartElement(MslConstructs.VectorParameterTypeMappingElement);
+            
+            _xmlWriter.WriteAttributeString(MslConstructs.VectorParameterTypeMappingPrimitiveType, vectorParameterTypeMapping.VectorParameterType.ElementType.Name);
+
+            if (vectorParameterTypeMapping.HasStoreMapping())
+            {
+                _xmlWriter.WriteStartElement(MslConstructs.VectorParameterTypeStoreMappingElement);
+
+                if (vectorParameterTypeMapping.StoreTypeSchema != null)
+                    _xmlWriter.WriteAttributeString(MslConstructs.VectorParameterTypeStoreTypeSchema, vectorParameterTypeMapping.StoreTypeSchema);
+                if (vectorParameterTypeMapping.StoreTypeName != null)
+                    _xmlWriter.WriteAttributeString(MslConstructs.VectorParameterTypeStoreTypeName, vectorParameterTypeMapping.StoreTypeName);
+                if (vectorParameterTypeMapping.ColumnName != null)
+                    _xmlWriter.WriteAttributeString(MslConstructs.VectorParameterTypeColumnName, vectorParameterTypeMapping.ColumnName);
+               
+                _xmlWriter.WriteEndElement();
+            }
+            
             _xmlWriter.WriteEndElement();
         }
 

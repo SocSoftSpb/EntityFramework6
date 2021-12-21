@@ -5,6 +5,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder;
+    using System.Data.Entity.Core.Mapping.ViewGeneration.Structures;
     using System.Data.Entity.Core.Metadata.Edm;
     using System.Data.Entity.Core.Metadata.Edm.Provider;
     using System.Data.Entity.Resources;
@@ -212,7 +213,13 @@ namespace System.Data.Entity.Core.Objects.ELinq
         // Determines whether the node may be evaluated locally and whether
         // it is a constant. Assumes that all children are also client expressions.
         // </summary>
-        private bool IsImmutable(Expression expression)
+        private static bool IsImmutable(Expression expression) => IsImmutable(expression, false);
+        
+        // <summary>
+        // Determines whether the node may be evaluated locally and whether
+        // it is a constant. Assumes that all children are also client expressions.
+        // </summary>
+        private static bool IsImmutable(Expression expression, bool forClosure)
         {
             if (null == expression)
             {
@@ -233,6 +240,11 @@ namespace System.Data.Entity.Core.Objects.ELinq
                         return true;
                     }
                 case ExpressionType.Constant:
+                    if (forClosure)
+                        return true;
+                    var constValue = ((ConstantExpression)expression).Value;
+                    if (constValue is VectorParameter)
+                        return false;
                     return true;
                 case ExpressionType.NewArrayInit:
                     // allow initialization of byte[] 'literals'
@@ -248,13 +260,13 @@ namespace System.Data.Entity.Core.Objects.ELinq
         // Determines whether the node may be evaluated locally and whether
         // it is a variable. Assumes that all children are also variable client expressions.
         // </summary>
-        private bool IsClosureExpression(Expression expression)
+        private static bool IsClosureExpression(Expression expression)
         {
             if (null == expression)
             {
                 return false;
             }
-            if (IsImmutable(expression))
+            if (IsImmutable(expression, true))
             {
                 return true;
             }
@@ -265,9 +277,19 @@ namespace System.Data.Entity.Core.Objects.ELinq
                 if (member.Member.MemberType
                     == MemberTypes.Property)
                 {
-                    return ExpressionConverter.CanFuncletizePropertyInfo((PropertyInfo)member.Member);
+                    var retVal = ExpressionConverter.CanFuncletizePropertyInfo((PropertyInfo)member.Member);
+                    return retVal;
                 }
                 return true;
+            }
+
+            if (ExpressionType.Call == expression.NodeType)
+            {
+                var mci = (MethodCallExpression)expression;
+                if (!mci.Method.IsStatic
+                    && mci.Method.DeclaringType == typeof(ObjectContext)
+                    && mci.Method.Name == nameof(ObjectContext.CreateObjectSet))
+                    return true;
             }
             return false;
         }
@@ -308,27 +330,33 @@ namespace System.Data.Entity.Core.Objects.ELinq
             if (_rootContext.Perspective.TryGetTypeByName(
                 TypeSystem.GetNonNullableType(type).FullNameWithNesting(),
                 false, // bIgnoreCase
-                out typeUsage)
-                &&
-                (TypeSemantics.IsScalarType(typeUsage)))
+                out typeUsage))
             {
-                if (expression.NodeType == ExpressionType.Convert)
+                if (TypeSemantics.IsScalarType(typeUsage))
                 {
-                    type = ((UnaryExpression)expression).Operand.Type;
+                    if (expression.NodeType == ExpressionType.Convert)
+                    {
+                        type = ((UnaryExpression)expression).Operand.Type;
+                    }
+
+                    if (type.IsValueType
+                        && Nullable.GetUnderlyingType(type) == null
+                        && TypeSemantics.IsNullable(typeUsage))
+                    {
+                        typeUsage = typeUsage.ShallowCopy(
+                            new FacetValues
+                            {
+                                Nullable = false
+                            });
+                    }
+
+                    return true;
                 }
 
-                if (type.IsValueType
-                    && Nullable.GetUnderlyingType(type) == null
-                    && TypeSemantics.IsNullable(typeUsage))
+                if (TypeSemantics.IsVectorParameterType(typeUsage))
                 {
-                    typeUsage = typeUsage.ShallowCopy(
-                        new FacetValues
-                        {
-                            Nullable = false
-                        });
+                    return true;
                 }
-
-                return true;
             }
 
             typeUsage = null;
@@ -404,8 +432,14 @@ namespace System.Data.Entity.Core.Objects.ELinq
                         }
                         else if (_isClientVariable(exp))
                         {
-                            TypeUsage queryParameterType;
-                            if (_funcletizer.TryGetTypeUsageForTerminal(exp, out queryParameterType))
+                            if (exp.NodeType == ExpressionType.Constant)
+                            {
+                                var value = ((ConstantExpression)exp).Value;
+                                if (value is VectorParameter)
+                                    exp = Expression.Constant(value, value.GetType());
+                            }
+
+                            if (_funcletizer.TryGetTypeUsageForTerminal(exp, out var queryParameterType))
                             {
                                 var parameterReference = queryParameterType.Parameter(_funcletizer.GenerateParameterName());
                                 return new QueryParameterExpression(parameterReference, exp, _funcletizer._compiledQueryParameters);

@@ -5,6 +5,7 @@ namespace System.Data.Entity.ModelConfiguration.Mappers
     using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Data.Entity.Core.Metadata.Edm;
+    using System.Data.Entity.Core.Objects;
     using System.Data.Entity.ModelConfiguration.Configuration.Types;
     using System.Data.Entity.ModelConfiguration.Edm;
     using System.Data.Entity.ModelConfiguration.Utilities;
@@ -111,6 +112,25 @@ namespace System.Data.Entity.ModelConfiguration.Mappers
             return complexType;
         }
 
+        public VectorParameterType MapVectorParameterType(Type type)
+        {
+            if (!type.IsPrimitiveType(out var primitiveType))
+                return null;
+
+            var vectorParameterType = _mappingContext.Model.GetVectorParameterType(primitiveType);
+            
+            if (vectorParameterType == null)
+            {
+                vectorParameterType = _mappingContext.Model.AddVectorParameterType(primitiveType, _mappingContext.ModelConfiguration.ModelNamespace);
+
+                var annotations = vectorParameterType.GetMetadataProperties();
+                annotations.SetClrType(typeof(VectorParameter<>).MakeGenericType(type));
+                new AttributeMapper(_mappingContext.AttributeProvider).Map(type, annotations);
+            }
+
+            return vectorParameterType;
+        }
+
         [Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
         public EntityType MapEntityType(Type type)
         {
@@ -207,7 +227,7 @@ namespace System.Data.Entity.ModelConfiguration.Mappers
             }
             return edmType as T;
         }
-
+        
         private void MapStructuralElements<TStructuralTypeConfiguration>(
             Type type,
             ICollection<MetadataProperty> annotations,

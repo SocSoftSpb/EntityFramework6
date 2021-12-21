@@ -98,6 +98,9 @@ namespace System.Data.Entity.Core.Mapping
         private readonly Dictionary<string, EntitySetBaseMapping> m_entitySetMappings =
             new Dictionary<string, EntitySetBaseMapping>(StringComparer.Ordinal);
 
+        private readonly Dictionary<PrimitiveTypeKind, VectorParameterTypeMapping> m_vectorParameterTypeMappings = 
+            new Dictionary<PrimitiveTypeKind, VectorParameterTypeMapping>();
+
         //A collection of EntitySetMappings under this EntityContainer mapping
 
         private readonly Dictionary<string, EntitySetBaseMapping> m_associationSetMappings =
@@ -234,6 +237,11 @@ namespace System.Data.Entity.Core.Mapping
             get { return m_functionImportMappings.Values; }
         }
 
+        public IEnumerable<VectorParameterTypeMapping> VectorParameterTypeMappings
+        {
+            get { return m_vectorParameterTypeMappings.Values; }
+        }
+
         // <summary>
         // a list of all the  entity set maps under this
         // container. In CS mapping, the mapping is done
@@ -358,6 +366,16 @@ namespace System.Data.Entity.Core.Mapping
             {
                 m_entitySetMappings.Add(setMapping.Set.Name, setMapping);
             }
+        }
+
+        public void AddVectorParameterTypeMapping(VectorParameterTypeMapping vectorParameterTypeMapping)
+        {
+            Check.NotNull(vectorParameterTypeMapping, nameof(vectorParameterTypeMapping));
+            Util.ThrowIfReadOnly(this);
+
+            var key = vectorParameterTypeMapping.VectorParameterType.ElementType.PrimitiveTypeKind;
+            if (!m_vectorParameterTypeMappings.ContainsKey(key))
+                m_vectorParameterTypeMappings.Add(key, vectorParameterTypeMapping);
         }
 
         /// <summary>

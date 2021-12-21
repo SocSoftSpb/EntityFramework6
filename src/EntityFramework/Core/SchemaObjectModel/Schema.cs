@@ -624,6 +624,11 @@ namespace System.Data.Entity.Core.SchemaObjectModel
                     HandleEnumTypeElement(reader);
                     return true;
                 }
+                else if (CanHandleElement(reader, XmlConstants.VectorParameterType))
+                {
+                    HandleVectorParameterTypeElement(reader);
+                    return true;
+                }
                 else if (CanHandleElement(reader, XmlConstants.ValueTerm))
                 {
                     // EF does not support this EDM 3.0 element, so ignore it.
@@ -992,6 +997,16 @@ namespace System.Data.Entity.Core.SchemaObjectModel
             enumType.Parse(reader);
 
             TryAddType(enumType, doNotAddErrorForEmptyName: true);
+        }
+        
+        private void HandleVectorParameterTypeElement(XmlReader reader)
+        {
+            DebugCheck.NotNull(reader);
+
+            var vectorParameterType = new SchemaVectorParameterType(this);
+            vectorParameterType.Parse(reader);
+
+            TryAddType(vectorParameterType, doNotAddErrorForEmptyName: true);
         }
 
         // <summary>

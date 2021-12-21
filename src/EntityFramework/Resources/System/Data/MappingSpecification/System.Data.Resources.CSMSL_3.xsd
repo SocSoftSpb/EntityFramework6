@@ -35,12 +35,27 @@
             <xs:element name="EntitySetMapping" type="csmsl:TEntitySetMapping" />
             <xs:element name="AssociationSetMapping" type="csmsl:TAssociationSetMapping" />
             <xs:element name="FunctionImportMapping" type="csmsl:TFunctionImportMapping" />
+            <xs:element name="VectorParameterTypeMapping" type="csmsl:TVectorParameterTypeMapping" />
         </xs:choice>
         <xs:attribute name="CdmEntityContainer" type="csmsl:TSimpleIdentifier" use="required" />
         <xs:attribute name="StorageEntityContainer" type="xs:string" use="required" />
         <xs:attribute name="GenerateUpdateViews" type="xs:boolean" use="optional" />
     </xs:complexType>
 
+    <!-- Type for VectorParameterTypeMapping element -->
+    <xs:complexType name="TVectorParameterTypeMapping">
+        <xs:sequence>
+            <xs:element minOccurs="0" maxOccurs="1" name="StoreMapping" type="csmsl:TVectorParameterStoreMapping" />
+        </xs:sequence>
+        <xs:attribute name="ElementType" type="xs:string" use="required" />
+    </xs:complexType>
+
+    <xs:complexType name="TVectorParameterStoreMapping">
+        <xs:attribute name="StoreTypeSchema" type="xs:string" use="optional" />
+        <xs:attribute name="StoreTypeName" type="xs:string" use="optional" />
+        <xs:attribute name="ColumnName" type="xs:string" use="optional" />
+    </xs:complexType>
+    
     <!-- Type for FunctionImportMapping element -->
     <xs:complexType name="TFunctionImportMapping">
         <xs:sequence>

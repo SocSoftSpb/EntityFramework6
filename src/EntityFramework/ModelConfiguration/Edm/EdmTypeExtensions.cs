@@ -29,6 +29,12 @@ namespace System.Data.Entity.ModelConfiguration.Edm
                 return asComplexType.GetClrType();
             }
 
+            var asVectorParameterType = item as VectorParameterType;
+            if (asVectorParameterType != null)
+            {
+                return asVectorParameterType.GetClrType();
+            }
+
             return null;
         }
     }

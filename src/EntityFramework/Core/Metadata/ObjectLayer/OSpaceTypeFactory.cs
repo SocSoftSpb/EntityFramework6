@@ -37,7 +37,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
         {
             DebugCheck.NotNull(type);
             DebugCheck.NotNull(cspaceType);
-            Debug.Assert(cspaceType is StructuralType || Helper.IsEnumType(cspaceType), "Structural or enum type expected");
+            Debug.Assert(cspaceType is StructuralType || Helper.IsEnumType(cspaceType) || Helper.IsVectorParameterType(cspaceType), "Structural or Enum or VectorParameter type expected");
 
             // if one of the types is an enum while the other is not there is no match
             if (Helper.IsEnumType(cspaceType)
@@ -53,6 +53,12 @@ namespace System.Data.Entity.Core.Metadata.Edm
             if (Helper.IsEnumType(cspaceType))
             {
                 TryCreateEnumType(type, (EnumType)cspaceType, out newOSpaceType);
+                return newOSpaceType;
+            }
+
+            if (Helper.IsVectorParameterType(cspaceType))
+            {
+                TryCreateVectorParameterType(type, (VectorParameterType)cspaceType, out newOSpaceType);
                 return newOSpaceType;
             }
 
@@ -80,6 +86,28 @@ namespace System.Data.Entity.Core.Metadata.Edm
             newOSpaceType = new ClrEnumType(enumType, cspaceEnumType.NamespaceName, cspaceEnumType.Name);
 
             LoadedTypes.Add(enumType.FullName, newOSpaceType);
+
+            return true;
+        }
+
+        private bool TryCreateVectorParameterType(Type vectorParameterType, VectorParameterType cspaceVectorParameterType, out EdmType newOSpaceType)
+        {
+            DebugCheck.NotNull(vectorParameterType);
+            Debug.Assert(vectorParameterType.IsVectorParameter(), "Vector parameter type expected");
+            DebugCheck.NotNull(cspaceVectorParameterType);
+            Debug.Assert(Helper.IsVectorParameterType(cspaceVectorParameterType), "Vector parameter type expected");
+
+            newOSpaceType = null;
+
+            // Check if the OSpace and CSpace type match
+            if (!IsElementTypesMatch(vectorParameterType, cspaceVectorParameterType))
+            {
+                return false;
+            }
+
+            newOSpaceType = new ClrVectorParameterType(vectorParameterType, cspaceVectorParameterType.NamespaceName, cspaceVectorParameterType.Name);
+
+            LoadedTypes.Add(vectorParameterType.FullName, newOSpaceType);
 
             return true;
         }
@@ -142,6 +170,34 @@ namespace System.Data.Entity.Core.Metadata.Edm
         internal static bool TypesMatchByConvention(Type type, EdmType cspaceType)
         {
             return type.Name == cspaceType.Name;
+        }
+
+        private bool IsElementTypesMatch(Type vectorParameterType, VectorParameterType cspaceVectorParameterType)
+        {
+            DebugCheck.NotNull(vectorParameterType);
+            Debug.Assert(vectorParameterType.IsVectorParameter(), "expected VectorParameter OSpace type");
+            DebugCheck.NotNull(cspaceVectorParameterType);
+            Debug.Assert(Helper.IsVectorParameterType(cspaceVectorParameterType), "VectorParameter type expected");
+            
+            PrimitiveType elementType;
+            var underType = vectorParameterType.GetGenericArguments()[0];
+            if (!ClrProviderManifest.Instance.TryGetPrimitiveType(underType, out elementType))
+            {
+                LogLoadMessage(
+                    Strings.Validator_UnsupportedVectorParameterElementType(elementType.FullName),
+                    cspaceVectorParameterType);
+
+                return false;
+            }
+            else if (elementType.PrimitiveTypeKind != cspaceVectorParameterType.ElementType.PrimitiveTypeKind)
+            {
+                LogLoadMessage(
+                    Strings.Validator_OSpace_Convention_NonMatchingVectorElementTypes, cspaceVectorParameterType);
+
+                return false;
+            }
+
+            return true;
         }
 
         private bool UnderlyingEnumTypesMatch(Type enumType, EnumType cspaceEnumType)
