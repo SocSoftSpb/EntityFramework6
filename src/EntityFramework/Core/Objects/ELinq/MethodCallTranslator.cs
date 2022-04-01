@@ -3945,9 +3945,9 @@ namespace System.Data.Entity.Core.Objects.ELinq
                     // translate lambda expression
                     var lambdaExpression = parent.GetLambdaExpression(call, 1);
 
-                    ValidateLambda(parent, lambdaExpression, out var clrType, out var entitySet);
+                    ValidateLambda(parent, lambdaExpression, out var clrType, out var entitySet, out var colNameMappings);
 
-                    var updateOp = new DbDmlUpdateOperation(entitySet, clrType, withRowCount, limit);
+                    var updateOp = new DbDmlUpdateOperation(entitySet, clrType, withRowCount, limit, colNameMappings);
                     parent.DmlOperation = updateOp;
                     var lambda = parent.TranslateLambda(lambdaExpression, source, out DbExpressionBinding sourceBinding);
                     updateOp.IsUnderTranslation = false;
@@ -3957,7 +3957,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
                     return projection;
                 }
 
-                private static void ValidateLambda(ExpressionConverter parent, LambdaExpression lambdaExpression, out Type clrType, out EntitySet entitySet)
+                private static void ValidateLambda(ExpressionConverter parent, LambdaExpression lambdaExpression, out Type clrType, out EntitySet entitySet, out Dictionary<string, string> colNameMappings)
                 {
                     if (lambdaExpression.Body.NodeType != ExpressionType.MemberInit)
                         throw new InvalidOperationException("MemberInitExpression expected in " + nameof(DbDmlQueryFunctions.BatchUpdate) + ".");
@@ -3981,6 +3981,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
                         throw new InvalidOperationException($"Can't find mapping information for Entity Type {typeUsage.EdmType.Name}.");
 
                     entitySet = mapInfo.GetSingleStoreEntitySet();
+                    colNameMappings = mapInfo.GetChangedColumnNames();
                 }
             }
             
@@ -4018,7 +4019,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
 
                     ValidateLambda(lambdaExpression);
 
-                    var updateOp = new DbDmlUpdateOperation(dynamicSet, lambdaExpression.ReturnType, withRowCount, limit);
+                    var updateOp = new DbDmlUpdateOperation(dynamicSet, lambdaExpression.ReturnType, withRowCount, limit, null);
                     parent.DmlOperation = updateOp;
                     var lambda = parent.TranslateLambda(lambdaExpression, source, out DbExpressionBinding sourceBinding);
                     updateOp.IsUnderTranslation = false;
@@ -4056,10 +4057,10 @@ namespace System.Data.Entity.Core.Objects.ELinq
                         throw new InvalidOperationException("Argument 2 (withRowCount) must be a boolean constant.");
 
                     var clrType = call.Method.GetGenericArguments()[0];
-                    var entitySet = FindEntitySet(parent, clrType, out var discriminators);
-                    
+                    var entitySet = FindEntitySet(parent, clrType, out var discriminators, out var colNameMappings);
+
                     // translate source
-                    var insertOp = new DbDmlInsertOperation(entitySet, clrType, withRowCount, discriminators, null);
+                    var insertOp = new DbDmlInsertOperation(entitySet, clrType, withRowCount, discriminators, colNameMappings, null);
                     parent.DmlOperation = insertOp;
                     var projection = parent.TranslateExpression(call.Arguments[0]);
                     insertOp.IsUnderTranslation = false;
@@ -4067,7 +4068,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
                     return projection;
                 }
 
-                private EntitySet FindEntitySet(ExpressionConverter parent, Type clrType, out ValueConditionMapping[] discriminators)
+                private EntitySet FindEntitySet(ExpressionConverter parent, Type clrType, out ValueConditionMapping[] discriminators, out Dictionary<string, string> colNameMappings)
                 {
                     discriminators = null;
                     var metadataWorkspace = parent._perspective.MetadataWorkspace;
@@ -4082,6 +4083,8 @@ namespace System.Data.Entity.Core.Objects.ELinq
                     if (mapInfo.BaseTypeMappingInfo != null || mapInfo.ChildTypeMappingInfos.Count > 0)
                         discriminators = mapInfo.GetDiscriminatorsForTphType();
 
+                    colNameMappings = mapInfo.GetChangedColumnNames();
+                    
                     return storeSet;
                 }
             }
@@ -4120,7 +4123,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
                         
                     if (entitySet.AllowDynamicPlanCaching() || wrappedQuery == null)
                     {
-                        var insertOp = new DbDmlInsertOperation(entitySet, entityType, withRowCount, null, null);
+                        var insertOp = new DbDmlInsertOperation(entitySet, entityType, withRowCount, null, null, null);
                         parent.DmlOperation = insertOp;
                         var projectExpr = wrappedQuery == null ? call.Arguments[0] : Expression.Constant(wrappedQuery);
                         var projection = parent.TranslateExpression(projectExpr);
@@ -4130,7 +4133,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
 
                     {
                         wrappedQuery.MergeOption = MergeOption.NoTracking;
-                        var insertOp = new DbDmlInsertOperation(entitySet, entityType, withRowCount, null, wrappedQuery);
+                        var insertOp = new DbDmlInsertOperation(entitySet, entityType, withRowCount, null, null, wrappedQuery);
                         parent.DmlOperation = insertOp;
 
                         DbExpression result = null;

@@ -54,6 +54,10 @@ namespace System.Data.Entity.Query.LinqToEntities
                 b.Entity<Book>()
                     .HasRequired(e => e.Author).WithMany().HasForeignKey(e => e.AuthorId);
 
+                b.Entity<Book>().Property(e => e.Id).HasColumnName("BookId");
+                b.Entity<Book>().Property(e => e.Title).HasColumnName("Title25");
+                b.Entity<Book>().Property(e => e.AuthorId).HasColumnName("AuthId");
+
                 b.Entity<Book>().Map(e => e.Requires("Disc").HasValue((byte)3));
                 b.Entity<Book1>().Map(e => e.Requires("Disc").HasValue((byte)11));
                 b.Entity<Book2>().Map(e => e.Requires("Disc").HasValue((byte)22));

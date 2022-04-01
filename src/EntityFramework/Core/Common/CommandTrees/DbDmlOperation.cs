@@ -55,7 +55,7 @@
 
     public sealed class DbDmlDeleteOperation : DbDmlOperation
     {
-        public DbDmlDeleteOperation(EntitySet targetEntitySet, bool withRowCount, int limit)
+        internal DbDmlDeleteOperation(EntitySet targetEntitySet, bool withRowCount, int limit)
             : base(DbDmlOperationKind.Delete, targetEntitySet, withRowCount)
         {
             Limit = limit;
@@ -78,6 +78,12 @@
         private bool _isUnderTranslation = true;
 
         public Type ClrEntityType { get; }
+        
+        /// <summary>
+        /// Mapping for column names different from Property Names. Key - CLR PropertyName, Value - Db Column Name. Contains Only changed name.
+        /// Can be null if all property names equals to column names 
+        /// </summary>
+        public Dictionary<string, string> ColNameMappings { get; }
 
         public DmlColumnMapping ColumnMap { get; private set; }
 
@@ -92,10 +98,11 @@
             }
         }
 
-        protected DbDmlUpInsOperationBase(DbDmlOperationKind kind, EntitySet targetEntitySet, Type clrEntityType, bool withRowCount)
+        protected DbDmlUpInsOperationBase(DbDmlOperationKind kind, EntitySet targetEntitySet, Type clrEntityType, bool withRowCount, Dictionary<string, string> colNameMappings)
             : base(kind, targetEntitySet, withRowCount)
         {
             ClrEntityType = clrEntityType;
+            ColNameMappings = colNameMappings;
         }
 
         public sealed override bool CanConstructEntityTypeInExpressionConverter(Type entityType)
@@ -120,7 +127,8 @@
                 if (!(map is ScalarColumnMap scalarColumnMap))
                     throw new InvalidOperationException("ScalarColumnMap expected.");
 
-                dmlMap.Mappings[index] = new DmlColumnMap(scalarColumnMap.ColumnPos, scalarColumnMap.Name);
+                var targetColumnName = (ColNameMappings != null && ColNameMappings.TryGetValue(scalarColumnMap.Name, out var colName)) ? colName : scalarColumnMap.Name;
+                dmlMap.Mappings[index] = new DmlColumnMap(scalarColumnMap.ColumnPos, scalarColumnMap.Name, targetColumnName);
             }
 
             ColumnMap = dmlMap;
@@ -129,8 +137,8 @@
 
     public sealed class DbDmlUpdateOperation : DbDmlUpInsOperationBase
     {
-        public DbDmlUpdateOperation(EntitySet targetEntitySet, Type clrEntityType, bool withRowCount, int limit)
-            : base(DbDmlOperationKind.Update, targetEntitySet, clrEntityType, withRowCount)
+        internal DbDmlUpdateOperation(EntitySet targetEntitySet, Type clrEntityType, bool withRowCount, int limit, Dictionary<string, string> colNameMappings)
+            : base(DbDmlOperationKind.Update, targetEntitySet, clrEntityType, withRowCount, colNameMappings)
         {
             Limit = limit;
         }
@@ -154,8 +162,9 @@
         public DbCommand FromStoreCommand { get; }
         internal IEnumerable<Tuple<ObjectParameter, QueryParameterExpression>> LinqParameters { get; }
 
-        public DbDmlInsertOperation(EntitySet targetEntitySet, Type clrEntityType, bool withRowCount, ValueConditionMapping[] discriminators, ObjectQuery fromObjectQuery)
-            : base(DbDmlOperationKind.Insert, targetEntitySet, clrEntityType, withRowCount)
+        internal DbDmlInsertOperation(EntitySet targetEntitySet, Type clrEntityType, bool withRowCount, ValueConditionMapping[] discriminators, 
+            Dictionary<string, string> colNameMappings, ObjectQuery fromObjectQuery)
+            : base(DbDmlOperationKind.Insert, targetEntitySet, clrEntityType, withRowCount, colNameMappings)
         {
             Discriminators = discriminators;
             FromObjectQuery = fromObjectQuery;
@@ -197,7 +206,7 @@
 
     public sealed class DmlColumnMapping
     {
-        public DmlColumnMapping(int nullSentinelOrdinal, int mappingsCount)
+        internal DmlColumnMapping(int nullSentinelOrdinal, int mappingsCount)
         {
             NullSentinelOrdinal = nullSentinelOrdinal;
             Mappings = new DmlColumnMap[mappingsCount];
@@ -209,13 +218,15 @@
 
     public readonly struct DmlColumnMap
     {
-        public DmlColumnMap(int sourceOrdinal, string targetName)
+        internal DmlColumnMap(int sourceOrdinal, string targetPropertyName, string targetColumnName)
         {
             SourceOrdinal = sourceOrdinal;
-            TargetName = targetName;
+            TargetPropertyName = targetPropertyName;
+            TargetColumnName = targetColumnName;
         }
 
         public int SourceOrdinal { get; }
-        public string TargetName { get; }
+        public string TargetPropertyName { get; }
+        public string TargetColumnName { get; }
     }
 }

@@ -167,7 +167,7 @@ namespace System.Data.Entity.SqlServer.SqlGen
             {
                 var column = selectBuilder.Columns[i];
                 var map = DmlOperation.ColumnMap.Mappings.FirstOrDefault(e => e.SourceOrdinal == i);
-                if (map.TargetName == null)
+                if (map.TargetPropertyName == null)
                 {
                     if (i == DmlOperation.ColumnMap.NullSentinelOrdinal)
                         continue;
@@ -179,7 +179,7 @@ namespace System.Data.Entity.SqlServer.SqlGen
                     writer.Write(", ");
 
                 writer.WriteLine();
-                column.WriteUpdate(writer, sqlGenerator, map.TargetName);
+                column.WriteUpdate(writer, sqlGenerator, map.TargetColumnName);
 
                 hasAnyColumn = true;
             }
@@ -233,7 +233,7 @@ namespace System.Data.Entity.SqlServer.SqlGen
                     if (mappings[iMap].SourceOrdinal == i)
                     {
                         if (outColumns[iMap] != null)
-                            throw new InvalidOperationException($"Column {mappings[iMap].TargetName} is mapped twice.");
+                            throw new InvalidOperationException($"Column {mappings[iMap].TargetPropertyName} is mapped twice.");
                         outColumns[iMap] = column;
                         found = true;
                         break;
@@ -253,7 +253,7 @@ namespace System.Data.Entity.SqlServer.SqlGen
             {
                 var outColumn = outColumns[i];
                 if (outColumn == null)
-                    throw new InvalidOperationException($"Can't find map for column {mappings[i].TargetName}.");
+                    throw new InvalidOperationException($"Can't find map for column {mappings[i].TargetPropertyName}.");
                 
                 if (i > 0)
                     writer.Write(", ");
@@ -306,7 +306,7 @@ namespace System.Data.Entity.SqlServer.SqlGen
                 if (i > 0)
                     writer.Write(", ");
                 
-                writer.Write(SqlGenerator.QuoteIdentifier(DmlOperation.ColumnMap.Mappings[i].TargetName));
+                writer.Write(SqlGenerator.QuoteIdentifier(DmlOperation.ColumnMap.Mappings[i].TargetColumnName));
             }
 
             if (DmlOperation.Discriminators != null && DmlOperation.Discriminators.Length > 0)

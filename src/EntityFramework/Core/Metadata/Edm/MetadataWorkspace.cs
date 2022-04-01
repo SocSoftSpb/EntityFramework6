@@ -1775,8 +1775,11 @@ namespace System.Data.Entity.Core.Metadata.Edm
     [SuppressMessage("Microsoft.Naming", "CA1722:IdentifiersShouldNotHaveIncorrectPrefix")]
     public sealed class CSpaceTypeMappingInfo
     {
+        private static readonly Dictionary<string, string> _changedColumnNamesNotInitialized = new Dictionary<string, string>();
+
         private DiscriminatorsInfo _discriminators;
         private SingleStoreEntitySetInfo _singleStoreEntitySetInfo;
+        private Dictionary<string, string> _changedColumnNames = _changedColumnNamesNotInitialized;
 
         internal CSpaceTypeMappingInfo(EntityType entityType, EntitySetMapping entitySetMapping, bool isFakeHierarchyMapping = false)
         {
@@ -1996,6 +1999,46 @@ namespace System.Data.Entity.Core.Metadata.Edm
 
                 return true;
             }
+        }
+
+        /// <summary>
+        /// Get Dictionary [PropertyName] => [ColumnName] contains only different Names. Null if mapping has no different names
+        /// </summary>
+        public Dictionary<string, string> GetChangedColumnNames()
+        {
+            var retVal = _changedColumnNames;
+            if (ReferenceEquals(retVal, _changedColumnNamesNotInitialized))
+            {
+                var cc = CreateChangedColumnNames();
+                Interlocked.CompareExchange(ref _changedColumnNames, cc, _changedColumnNamesNotInitialized);
+                retVal = _changedColumnNames;
+            }
+
+            return retVal;
+        }
+        
+        private Dictionary<string, string> CreateChangedColumnNames()
+        {
+            Dictionary<string, string> retVal = null;
+
+            for (var iTypeMapping = EntityTypeMappings.Count - 1; iTypeMapping >= 0; iTypeMapping--)
+            {
+                var typeMapping = EntityTypeMappings[iTypeMapping];
+                foreach (var fragment in typeMapping.Fragments)
+                {
+                    foreach (var propertyMapping in fragment.PropertyMappings)
+                    {
+                        if (propertyMapping is ScalarPropertyMapping scalarPropertyMapping
+                            && scalarPropertyMapping.Property.Name != scalarPropertyMapping.Column.Name)
+                        {
+                            if (retVal == null) retVal = new Dictionary<string, string>();
+                            retVal[scalarPropertyMapping.Property.Name] = scalarPropertyMapping.Column.Name;
+                        }
+                    }
+                }
+            }
+
+            return retVal;
         }
     }
 }
