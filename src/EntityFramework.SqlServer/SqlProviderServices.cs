@@ -711,17 +711,21 @@ namespace System.Data.Entity.SqlServer
             return value;
         }
 
-        private static IEnumerable<SqlDataRecord> BuildVectorParameterValue(MetadataWorkspace metadataWorkspace, VectorParameter vectorParameter, VectorParameterTypeMapping vectorParameterTypeMapping)
+        private static object BuildVectorParameterValue(MetadataWorkspace metadataWorkspace, VectorParameter vectorParameter, VectorParameterTypeMapping vectorParameterTypeMapping)
         {
-            SqlMetaData metadata = GetVectorColumnMetadata(metadataWorkspace, vectorParameterTypeMapping);
-            
-            var sqlRecord = new SqlDataRecord(metadata);
-            
-            foreach (var value in vectorParameter)
-            {
-                sqlRecord.SetValue(0, value);
+            return vectorParameter.Count == 0 ? (object)null : Enumerable();
 
-                yield return sqlRecord;
+            IEnumerable<SqlDataRecord> Enumerable()
+            {
+                var metadata = GetVectorColumnMetadata(metadataWorkspace, vectorParameterTypeMapping);
+                var sqlRecord = new SqlDataRecord(metadata);
+
+                foreach (var value in vectorParameter)
+                {
+                    sqlRecord.SetValue(0, value);
+
+                    yield return sqlRecord;
+                }
             }
         }
 

@@ -13,6 +13,11 @@ namespace System.Data.Entity.Core.Objects
     public abstract class VectorParameter : IEnumerable
     {
         public abstract IEnumerator GetEnumerator();
+        
+        /// <summary>
+        /// Get count of items in this VectorParameter
+        /// </summary>
+        public abstract int Count { get; }
     }
     
     /// <summary>
@@ -116,7 +121,7 @@ namespace System.Data.Entity.Core.Objects
         public bool Remove(T item) => _col.Remove(item);
 
         /// <inheritdoc/>
-        public int Count => _col.Count;
+        public override int Count => _col.Count;
         
         /// <summary>
         /// True if created from existing collection (<see cref="VectorParameter{T}(IEnumerable{T})"/>), False if created from parameterless constructor (<see cref="VectorParameter{T}()"/>)

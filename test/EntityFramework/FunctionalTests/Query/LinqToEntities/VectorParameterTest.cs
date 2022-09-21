@@ -190,5 +190,18 @@ namespace System.Data.Entity.Query.LinqToEntities
                 lst = comp(context, 1, 5, vp).ToList();
             }
         }
+
+        [Fact]
+        public void CanPassEmptyVectorParameter()
+        {
+            using (var context = new MyObjectContext())
+            {
+                var books = context.CreateObjectSet<Book>();
+                var vp = new VectorParameter<int>(new int[0]);
+                var queryable = books.Where(e => vp.Contains(e.Id));
+                var trace = ((ObjectQuery)queryable).ToTraceString();
+                var lst = queryable.ToList();
+            }
+        }
     }
 }

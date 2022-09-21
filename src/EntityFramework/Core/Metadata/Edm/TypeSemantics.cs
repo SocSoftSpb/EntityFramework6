@@ -219,7 +219,9 @@ namespace System.Data.Entity.Core.Metadata.Edm
                 (Helper.IsPrimitiveType(fromType.EdmType) && Helper.IsPrimitiveType(toType.EdmType)) ||
                 (Helper.IsPrimitiveType(fromType.EdmType) && Helper.IsEnumType(toType.EdmType)) ||
                 (Helper.IsEnumType(fromType.EdmType) && Helper.IsPrimitiveType(toType.EdmType)) ||
-                (Helper.IsEnumType(fromType.EdmType) && Helper.IsEnumType(toType.EdmType) && fromType.EdmType.Equals(toType.EdmType));
+                (Helper.IsEnumType(fromType.EdmType) && Helper.IsEnumType(toType.EdmType) && fromType.EdmType.Equals(toType.EdmType)) ||
+                (Helper.IsVectorParameterType(fromType.EdmType) && Helper.IsPrimitiveType(toType.EdmType)) ||
+                (Helper.IsPrimitiveType(fromType.EdmType) && Helper.IsVectorParameterType(toType.EdmType));
         }
 
         // <summary>

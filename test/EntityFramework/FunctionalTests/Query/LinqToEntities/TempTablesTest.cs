@@ -46,6 +46,8 @@ namespace System.Data.Entity.Query.LinqToEntities
                 b.Entity<Author>();
                 b.Entity<Book>()
                     .HasRequired(e => e.Author).WithMany().HasForeignKey(e => e.AuthorId);
+                b.VectorParameter<int>()
+                    .HasStoreType("Objects", "IntParam");
             }
 
             private IQueryProvider GetQueryProvider()
@@ -310,6 +312,49 @@ namespace System.Data.Entity.Query.LinqToEntities
             }
         }
 
+        [Fact]
+        public void CanInsertTempTableWithVectorParameter()
+        {
+            const string sqlCreate = @"CREATE " + @"TABLE #t_Books([Id] [INT] NOT NULL, [Title] [NVARCHAR](200) NULL, [AuthorId] [INT] NOT NULL);";
+            using (var context = new MyContext())
+            {
+                using (var tr = context.Database.BeginTransaction())
+                {
+                    var objectContext = ((IObjectContextAdapter)context).ObjectContext;
+                    objectContext.Connection.Open();
+                    objectContext.ExecuteStoreCommand(sqlCreate);
+
+                    IQueryable<Author> authors = objectContext.CreateObjectSet<Author>();
+                    var dynQ = context.DynamicQuery<TempBook>("TABLE:#t_Books");
+                    var strDynQ = ((ObjectQuery)dynQ).ToTraceString();
+
+                    var vp = new VectorParameter<int>(new[] { 1, 2 });
+                    var name = "Red Fox";
+                    var idid = 1;
+
+                    var toInsert = authors.Where(
+                            e => vp.Contains(e.Id) && (e.Name != name || e.Id == idid)
+                        )
+                        .Take(20)
+                        .Select(
+                            e => new TempBook
+                            {
+                                Id = e.Id + 100500,
+                                Title = "written by " + e.Name,
+                                AuthorId = e.Id
+                            });
+
+                    var fromQuery = (ObjectQuery<TempBook>)toInsert;
+                    var options = DynamicQueryUtils.CreateDynamicQueryOptions(typeof(TempBook));
+                    var insertQuery = BatchDmlFactory.CreateBatchInsertDynamicTableQuery(fromQuery, "#t_Books", options, true);
+                    var strInsert = insertQuery.ToTraceString();
+                    var result = insertQuery.Execute();
+
+                    tr.Rollback();
+                }
+            }
+        }
+        
         [Fact]
         public void CanUpdateTempTable()
         {

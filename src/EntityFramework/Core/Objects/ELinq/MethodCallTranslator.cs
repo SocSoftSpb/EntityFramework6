@@ -4139,6 +4139,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
                         DbExpression result = null;
                         if (insertOp.LinqParameters != null)
                         {
+                            // Preserve parameters from optimization - build DbExpression that use all of LinqParameters
                             foreach (var linqParameter in insertOp.LinqParameters)
                             {
                                 if (result == null)
