@@ -1874,6 +1874,21 @@ namespace System.Data.Entity.Core.Metadata.Edm
             return BaseTypeMappingInfo.GetRootTypeMapping();
         }
 
+        private CSpaceTypeMappingInfo GetFirstMappedBaseType()
+        {
+            var candidate = this;
+            var current = this;
+
+            while (current != null)
+            {
+                if (!current.IsFakeHierarchyMapping)
+                    candidate = current;
+                current = current.BaseTypeMappingInfo;
+            }
+
+            return candidate;
+        }
+
         /// <summary>
         /// Recursive enumerate all child types (in order by distance from this type)
         /// </summary>
@@ -1956,7 +1971,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
             var info = _singleStoreEntitySetInfo;
             if (info == null)
             {
-                var rootMapping = GetRootTypeMapping();
+                var rootMapping = GetFirstMappedBaseType();
                 EntitySet entitySet = null;
                 if (DoRecursive(rootMapping, ref entitySet))
                 {
