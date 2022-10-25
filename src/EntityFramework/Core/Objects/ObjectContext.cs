@@ -5043,7 +5043,7 @@ namespace System.Data.Entity.Core.Objects
                         parameterNames[i] = string.Format(CultureInfo.InvariantCulture, "p{0}", i);
                         dbParameters[i] = command.CreateParameter();
                         dbParameters[i].ParameterName = parameterNames[i];
-                        services.SetParameterValue(dbParameters[i], parameters[i]);
+                        services.SetParameterValue(MetadataWorkspace, dbParameters[i], parameters[i]);
 
                         // By default, we attempt to swap in a SQL Server friendly representation of the parameter.
                         // For other providers, users may write:

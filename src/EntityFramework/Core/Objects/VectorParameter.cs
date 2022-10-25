@@ -18,6 +18,11 @@ namespace System.Data.Entity.Core.Objects
         /// Get count of items in this VectorParameter
         /// </summary>
         public abstract int Count { get; }
+        
+        /// <summary>
+        /// Get Type of item
+        /// </summary>
+        public abstract Type ElementType { get; }
     }
     
     /// <summary>
@@ -97,6 +102,9 @@ namespace System.Data.Entity.Core.Objects
         {
             _col = new List<T>();
         }
+
+        /// <inheritdoc/>
+        public override Type ElementType => typeof(T); 
 
         private IEnumerator<T> GetEnumeratorImpl() => _col.GetEnumerator();
 

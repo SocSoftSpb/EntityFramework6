@@ -203,5 +203,25 @@ namespace System.Data.Entity.Query.LinqToEntities
                 var lst = queryable.ToList();
             }
         }
+        
+        [Fact]
+        public void CanPassVectorParameterToStoreCommand()
+        {
+            using (var context = new MyObjectContext())
+            {
+                var vp = new VectorParameter<int>(new[] { 1, 2, 3 });
+                context.ExecuteStoreCommand("SELECT * FROM dbo.Books AS b WHERE b.Id = @p0 OR b.Id = ANY (SELECT ID FROM @p1)", 1, vp);
+            }
+        }
+        
+        [Fact]
+        public void CanPassVectorParameterToStoreQuery()
+        {
+            using (var context = new MyObjectContext())
+            {
+                var vp = new VectorParameter<int>(new[] { 1, 2, 3 });
+                var lst = context.ExecuteStoreQuery<BookProj>("SELECT Id, Title FROM dbo.Books AS b WHERE b.Id = @p0 OR b.Id = ANY (SELECT ID FROM @p1)", 1, vp).ToList();
+            }
+        }
     }
 }

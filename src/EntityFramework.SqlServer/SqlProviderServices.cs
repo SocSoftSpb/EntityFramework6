@@ -341,6 +341,26 @@ namespace System.Data.Entity.SqlServer
             return command;
         }
 
+        /// <inheritdoc/>
+        public override void SetParameterValue(MetadataWorkspace metadataWorkspace, DbParameter parameter, object value)
+        {
+            if (!(parameter is SqlParameter sqlParameter))
+                throw new InvalidOperationException("SqlParameter expected.");
+            
+            if (value is VectorParameter vectorParameter)
+            {
+                var mapping = GetVectorParameterTypeMapping(metadataWorkspace, vectorParameter);
+                SetVectorParameterProperties(sqlParameter, mapping);
+                value = BuildVectorParameterValue(metadataWorkspace, vectorParameter, mapping);
+
+                sqlParameter.Value = value;
+            }
+            else
+            {
+                base.SetParameterValue(metadataWorkspace, parameter, value);
+            }
+        }
+
         /// <summary>
         /// Sets the parameter value and appropriate facets for the given <see cref="TypeUsage"/>.
         /// </summary>
@@ -533,6 +553,15 @@ namespace System.Data.Entity.SqlServer
             return tokenVersion >= SqlVersion.Sql10;
         }
 
+        private static void SetVectorParameterProperties(SqlParameter sqlParameter, VectorParameterTypeMapping mapping)
+        {
+            if (string.IsNullOrEmpty(mapping.StoreTypeName))
+                throw new InvalidOperationException(Strings.Mapping_VectorParameterType_StoreTypeNotMapped(mapping.VectorParameterType.ElementType.PrimitiveTypeKind));
+
+            sqlParameter.SqlDbType = SqlDbType.Structured;
+            sqlParameter.TypeName = mapping.StoreTypeSchema == null ? mapping.StoreTypeName : string.Concat(mapping.StoreTypeSchema, ".", mapping.StoreTypeName);
+        }
+
         // <summary>
         // Creates a SqlParameter given a name, type, and direction
         // </summary>
@@ -565,16 +594,10 @@ namespace System.Data.Entity.SqlServer
                 var vpt = (VectorParameterType)type.EdmType;
                 if (!metadataWorkspace.TryGetVectorParameterTypeMapping(vpt.ElementType.PrimitiveTypeKind, out var mapping))
                     throw new InvalidOperationException(Strings.Mapping_VectorParameterType_NotFound(vpt.ElementType.PrimitiveTypeKind));
-                
-                if (string.IsNullOrEmpty(mapping.StoreTypeName))
-                    throw new InvalidOperationException(Strings.Mapping_VectorParameterType_StoreTypeNotMapped(vpt.ElementType.PrimitiveTypeKind));
-
-                result.SqlDbType = SqlDbType.Structured;
-                result.TypeName = mapping.StoreTypeSchema == null ? mapping.StoreTypeName : string.Concat(mapping.StoreTypeSchema, ".", mapping.StoreTypeName);
-
+                SetVectorParameterProperties(result, mapping);
                 return result;
             }
-            
+
             var sqlDbType = GetSqlDbType(type, isOutParam, version, out size, out precision, out scale, out udtTypeName);
 
             if (result.SqlDbType != sqlDbType)

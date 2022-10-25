@@ -8,6 +8,7 @@ namespace System.Data.Entity.Core.Common
     using System.Data.Entity.Core.Common.CommandTrees;
     using System.Data.Entity.Core.EntityClient;
     using System.Data.Entity.Core.EntityClient.Internal;
+    using System.Data.Entity.Core.Mapping;
     using System.Data.Entity.Core.Metadata.Edm;
     using System.Data.Entity.Core.Objects;
     using System.Data.Entity.Infrastructure;
@@ -544,11 +545,30 @@ namespace System.Data.Entity.Core.Common
         /// <summary>
         /// Set the parameter value for <see cref="ObjectContext.ExecuteStoreCommand(string,object[])"/> / <see cref="ObjectContext.ExecuteStoreQuery{TElement}(string,object[])"/>.
         /// </summary>
+        /// <param name="metadataWorkspace">MetadataWorkspace for complex parameter mappings</param>
         /// <param name="parameter">The parameter.</param>
         /// <param name="value">The value of the parameter.</param>
-        public virtual void SetParameterValue(DbParameter parameter, object value)
+        public virtual void SetParameterValue(MetadataWorkspace metadataWorkspace, DbParameter parameter, object value)
         {
-            parameter.Value = value ?? DBNull.Value;
+            switch (value)
+            {
+                case null:
+                    parameter.Value = DBNull.Value;
+                    break;
+                default:
+                    parameter.Value = value;
+                    break;
+            }
+        }
+
+        protected VectorParameterTypeMapping GetVectorParameterTypeMapping(MetadataWorkspace metadataWorkspace, VectorParameter vectorParameter)
+        {
+            if (!vectorParameter.ElementType.IsPrimitiveType(out var primitiveType))
+                throw new InvalidOperationException($"Primitive type expected for element of VectorParameter (ElementType={vectorParameter.ElementType.Name}).");
+
+            return metadataWorkspace.TryGetVectorParameterTypeMapping(primitiveType.PrimitiveTypeKind, out var mapping)
+                ? mapping
+                : throw new InvalidOperationException($"Vector parameter for Primitive Type {primitiveType.PrimitiveTypeKind} is not mapped.");
         }
 
         /// <summary>Returns providers given a connection.</summary>
