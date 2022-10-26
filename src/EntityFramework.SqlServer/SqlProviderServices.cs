@@ -344,11 +344,11 @@ namespace System.Data.Entity.SqlServer
         /// <inheritdoc/>
         public override void SetParameterValue(MetadataWorkspace metadataWorkspace, DbParameter parameter, object value)
         {
-            if (!(parameter is SqlParameter sqlParameter))
-                throw new InvalidOperationException("SqlParameter expected.");
-            
             if (value is VectorParameter vectorParameter)
             {
+                if (!(parameter is SqlParameter sqlParameter))
+                    throw new InvalidOperationException("SqlParameter expected.");
+            
                 var mapping = GetVectorParameterTypeMapping(metadataWorkspace, vectorParameter);
                 SetVectorParameterProperties(sqlParameter, mapping);
                 value = BuildVectorParameterValue(metadataWorkspace, vectorParameter, mapping);
