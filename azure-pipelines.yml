@@ -9,14 +9,22 @@ variables:
     value: true
   - name: _DotNetArtifactsCategory
     value: ASPNETENTITYFRAMEWORK6
-  # used for post-build phases, internal builds only
-  - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-    - group: DotNet-EFCore-SDLValidation-Params
+  - ${{ if ne(variables['System.TeamProject'], 'public') }}:
+    - group: DotNet-MSRC-Storage
+    - name: _InternalRuntimeDownloadArgs
+      value: /p:DotNetRuntimeSourceFeed=https://dotnetclimsrc.blob.core.windows.net/dotnet
+             /p:DotNetRuntimeSourceFeedKey=$(dotnetclimsrc-read-sas-token-base64)
+  - ${{ if eq(variables['System.TeamProject'], 'public') }}:
+    - name: _InternalRuntimeDownloadArgs
+      value: ''
 
 trigger:
-  - master
-  - release/*
-  - internal/release/6.*
+  batch: true
+  branches:
+    include:
+      - master
+      - release/*
+      - internal/release/6.*
 
 pr: ['*']
 
@@ -32,17 +40,17 @@ stages:
         enablePublishTestResults: true
         enablePublishUsingPipelines: ${{ variables._PublishUsingPipelines }}
         enableTelemetry: true
-        helixRepo: aspnet/EntityFramework6
+        helixRepo: dotnet/ef6
         jobs:
           - job: Windows
             timeoutInMinutes: 180
             pool:
               ${{ if eq(variables['System.TeamProject'], 'public') }}:
                 name: NetCorePublic-Pool
-                queue: BuildPool.Windows.10.Amd64.VS2017.Open
+                queue: BuildPool.Server.Amd64.VS2017.Open
               ${{ if ne(variables['System.TeamProject'], 'public') }}:
                 name: NetCoreInternal-Pool
-                queue: BuildPool.Windows.10.Amd64.VS2017
+                queue: BuildPool.Server.Amd64.VS2017
             variables:
               - _InternalBuildArgs: ''
               - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
@@ -61,21 +69,29 @@ stages:
             steps:
               - checkout: self
                 clean: true
-              - powershell: |
-                  SqlLocalDB stop
-                  SqlLocalDB delete
-                  Remove-Item "$env:USERPROFILE\*.mdf"
-                  Remove-Item "$env:USERPROFILE\*.ldf"
-                  SqlLocalDB create
-                  SqlLocalDB start
-                displayName: Cleanup databases
+              - powershell: >
+                  Get-ChildItem -ErrorAction SilentlyContinue -Recurse 'C:\Program Files\Microsoft SQL Server\sqlcmd.exe' |
+                  Sort-Object -Property @{Expression={$_.FullName.Length}; Descending=$true},@{Expression={$_.FullName}; Descending=$true} |
+                  Select-Object -First 1 |
+                  Foreach-Object {Write-Host "##vso[task.prependpath]$($_.DirectoryName)"}
+                displayName: Add SqlCmd to path
+              - script: tools\CleanMSSQLLocalDB.cmd
+                displayName: Cleanup LocalDB databases
               - task: NuGetCommand@2
                 displayName: 'Clear NuGet caches'
                 condition: succeeded()
                 inputs:
                   command: custom
                   arguments: 'locals all -clear'
-              - script: eng\common\cibuild.cmd -configuration $(_BuildConfig) -prepareMachine $(_InternalBuildArgs)
+              - ${{ if ne(variables['System.TeamProject'], 'public') }}:
+                - task: PowerShell@2
+                  displayName: Setup Private Feeds Credentials
+                  inputs:
+                    filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.ps1
+                    arguments: -ConfigFile $(Build.SourcesDirectory)/NuGet.config -Password $Env:Token
+                  env:
+                    Token: $(dn-bot-dnceng-artifact-feeds-rw)
+              - script: eng\common\cibuild.cmd -configuration $(_BuildConfig) -prepareMachine $(_InternalBuildArgs) $(_InternalRuntimeDownloadArgs)
                 name: Build
               - task: PublishBuildArtifacts@1
                 displayName: Upload TestResults
@@ -101,17 +117,3 @@ stages:
       # Symbol validation isn't being very reliable lately. This should be enabled back
       # once this issue is resolved: https://github.com/dotnet/arcade/issues/2871
       enableSymbolValidation: false 
-      # This is to enable SDL runs part of Post-Build Validation Stage
-      SDLValidationParameters:
-        enable: true
-        continueOnError: false
-        params: ' -SourceToolsList @("policheck","credscan")
-        -TsaInstanceURL $(_TsaInstanceURL)
-        -TsaProjectName $(_TsaProjectName)
-        -TsaNotificationEmail $(_TsaNotificationEmail)
-        -TsaCodebaseAdmin $(_TsaCodebaseAdmin)
-        -TsaBugAreaPath $(_TsaBugAreaPath)
-        -TsaIterationPath $(_TsaIterationPath)
-        -TsaRepositoryName "EntityFramework6"
-        -TsaCodebaseName "EntityFramework6"
-        -TsaPublish $True'
