@@ -1606,7 +1606,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
                         typeof(String).GetDeclaredMethod("Concat", typeof(object), typeof(object));
                     yield return
                         typeof(String).GetDeclaredMethod("Concat", typeof(object), typeof(object), typeof(object));
-#if !NETSTANDARD2_1
+#if NETSTANDARD2_1_OR_GREATER  // TODO: Framework version
                     yield return
                         typeof(String).GetDeclaredMethod("Concat", typeof(object), typeof(object), typeof(object), typeof(object));
 #endif
@@ -1757,7 +1757,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
 
                 private static IEnumerable<MethodInfo> GetMethods()
                 {
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1_OR_GREATER  // TODO: Framework version 
                     yield return
                         typeof(String).GetDeclaredMethod("Trim", typeof(Char));
 #endif
@@ -1775,7 +1775,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
 
                 private static IEnumerable<MethodInfo> GetMethods()
                 {
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1_OR_GREATER  // TODO: Framework version
                     yield return
                         typeof(String).GetDeclaredMethod("TrimStart");
                     yield return
@@ -1795,7 +1795,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
 
                 private static IEnumerable<MethodInfo> GetMethods()
                 {
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1_OR_GREATER  // TODO: Framework version
                     yield return
                         typeof(String).GetDeclaredMethod("TrimEnd");
                     yield return

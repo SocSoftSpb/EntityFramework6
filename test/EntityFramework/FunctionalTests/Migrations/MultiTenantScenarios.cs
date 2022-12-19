@@ -1,5 +1,7 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
+#if NET45_OR_GREATER
+
 namespace System.Data.Entity.Migrations
 {
     using System.Data.Common;
@@ -8,9 +10,7 @@ namespace System.Data.Entity.Migrations
     using Xunit;
 
     [Variant(DatabaseProvider.SqlClient, ProgrammingLanguage.CSharp)]
-#if NET452
     [Variant(DatabaseProvider.SqlServerCe, ProgrammingLanguage.CSharp)]
-#endif
     [Variant(DatabaseProvider.SqlClient, ProgrammingLanguage.VB)]
     public class MultiTenantScenarios : DbTestCase
     {
@@ -73,7 +73,6 @@ namespace System.Data.Entity.Migrations
             }
         }
 
-#if NET452
         [MigrationsTheory]
         public void Can_update_when_explicit_migrations()
         {
@@ -112,7 +111,6 @@ namespace System.Data.Entity.Migrations
             Assert.False(TableExists("TenantAs"));
             Assert.False(TableExists("TenantBs"));
         }
-#endif
 
         [MigrationsTheory]
         public void Can_update_when_auto_migrations()
@@ -164,7 +162,6 @@ namespace System.Data.Entity.Migrations
             Assert.True(TableExists("TenantBs"));
         }
 
-#if NET452
         [MigrationsTheory]
         [Variant(DatabaseProvider.SqlClient, ProgrammingLanguage.CSharp)]
         [Variant(DatabaseProvider.SqlClient, ProgrammingLanguage.VB)]
@@ -258,6 +255,6 @@ namespace System.Data.Entity.Migrations
             Assert.False(TableExists("foo.TenantBs"));
             Assert.False(TableExists("foo." + HistoryContext.DefaultTableName));
         }
-#endif
     }
 }
+#endif

@@ -1,5 +1,7 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
+#if NET45_OR_GREATER
+
 namespace System.Data.Entity.Migrations
 {
     using System.Data.Common;
@@ -11,17 +13,12 @@ namespace System.Data.Entity.Migrations
     using System.Linq;
     using Xunit;
 
-#if NET452
     using System.Data.SqlServerCe;
-#endif
 
     [Variant(DatabaseProvider.SqlClient, ProgrammingLanguage.CSharp)]
-#if NET452
     [Variant(DatabaseProvider.SqlServerCe, ProgrammingLanguage.CSharp)]
-#endif
     public class CustomHistoryScenarios : DbTestCase
     {
-#if NET452
         private class NonStandardColumnWidthsContext : HistoryContext
         {
             public NonStandardColumnWidthsContext(DbConnection existingConnection, string defaultSchema)
@@ -75,7 +72,6 @@ namespace System.Data.Entity.Migrations
 
             migrator.Update("0");
         }
-#endif
 
         private class TestHistoryContextA : HistoryContext
         {
@@ -121,7 +117,6 @@ namespace System.Data.Entity.Migrations
         {
         }
 
-#if NET452
         [MigrationsTheory]
         public void Can_auto_update_after_explicit_update_when_custom_history_factory()
         {
@@ -211,7 +206,6 @@ namespace System.Data.Entity.Migrations
             Assert.False(TableExists("dbo.OrderLines"));
             Assert.False(TableExists("__Migrations"));
         }
-#endif
 
         [MigrationsTheory]
         public void Auto_update_when_initial_move_should_not_throw()
@@ -256,7 +250,6 @@ namespace System.Data.Entity.Migrations
             Assert.Throws<EntityCommandExecutionException>(() => migrator.Update());
         }
 
-#if NET452
         [MigrationsTheory]
         public void Explicit_update_when_factory_changed_move_should_fail()
         {
@@ -315,7 +308,6 @@ namespace System.Data.Entity.Migrations
 
             Assert.Throws<EntityCommandExecutionException>(() => migrator.Update());
         }
-#endif
 
         [MigrationsTheory]
         public void Get_database_migrations_when_no_migrations_should_not_throw()
@@ -369,7 +361,6 @@ namespace System.Data.Entity.Migrations
             Assert.Empty(migrator.GetPendingMigrations());
         }
 
-#if NET452
         [MigrationsTheory]
         public void Can_use_per_provider_factory()
         {
@@ -436,6 +427,7 @@ namespace System.Data.Entity.Migrations
 
             AssertHistoryContextDoesNotExist();
         }
-#endif
     }
 }
+
+#endif

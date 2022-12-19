@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
+#if NET45_OR_GREATER
+
 namespace System.Data.Entity.Migrations
 {
     using System.Collections.Generic;
@@ -26,16 +28,16 @@ namespace System.Data.Entity.Migrations
             IAttributeInfo factAttribute)
         {
             return ShouldRun(factAttribute, factAttribute.GetNamedArgument<TestGroup>(nameof(ExtendedFactAttribute.SlowGroup)))
-                       ? from providerLanguageCombination in GetCombinations(testMethod.Method)
-                         where ShouldRun(factAttribute, providerLanguageCombination.Slow ? TestGroup.MigrationsTests : TestGroup.Default)
-                         select new MigrationsTestCase(
-                             DiagnosticMessageSink,
-                             discoveryOptions.MethodDisplayOrDefault(),
-                             discoveryOptions.MethodDisplayOptionsOrDefault(),
-                             testMethod,
-                             providerLanguageCombination.DatabaseProvider,
-                             providerLanguageCombination.ProgrammingLanguage)
-                       : Enumerable.Empty<IXunitTestCase>();
+                ? from providerLanguageCombination in GetCombinations(testMethod.Method)
+                where ShouldRun(factAttribute, providerLanguageCombination.Slow ? TestGroup.MigrationsTests : TestGroup.Default)
+                select new MigrationsTestCase(
+                    DiagnosticMessageSink,
+                    discoveryOptions.MethodDisplayOrDefault(),
+                    discoveryOptions.MethodDisplayOptionsOrDefault(),
+                    testMethod,
+                    providerLanguageCombination.DatabaseProvider,
+                    providerLanguageCombination.ProgrammingLanguage)
+                : Enumerable.Empty<IXunitTestCase>();
         }
 
         private static IEnumerable<VariantAttribute> GetCombinations(IMethodInfo method)
@@ -66,3 +68,5 @@ namespace System.Data.Entity.Migrations
         }
     }
 }
+
+#endif

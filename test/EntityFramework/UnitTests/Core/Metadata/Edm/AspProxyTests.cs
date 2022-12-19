@@ -7,7 +7,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
 
     public class AspProxyTests : TestBase
     {
-#if NET452
+#if NET45_OR_GREATER
         public class TryInitializeWebAssembly
         {
             [Fact]

@@ -2,7 +2,7 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <TargetFrameworks>net45;net40;$(DefaultNetCoreTargetFramework)</TargetFrameworks>
+    <TargetFrameworks>net472;net40;$(DefaultNetCoreTargetFramework)</TargetFrameworks>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <IncludeSource>false</IncludeSource>
     <IsPackable>True</IsPackable>

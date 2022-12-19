@@ -1221,8 +1221,8 @@ namespace System.Data.Entity.Core.Common.CommandTrees
                 var groupOutput =
                     TypeHelpers.GetEdmType<RowType>(TypeHelpers.GetEdmType<CollectionType>(expression.ResultType).TypeUsage);
 
-                var boundKeys = groupOutput.Properties.Take(newKeys.Count).Select(p => p.Name).Zip(newKeys).ToList();
-                var boundAggs = groupOutput.Properties.Skip(newKeys.Count).Select(p => p.Name).Zip(newAggs).ToList();
+                var boundKeys = groupOutput.Properties.Take(newKeys.Count).Select(p => p.Name).ZipToKeyValuePair(newKeys).ToList();
+                var boundAggs = groupOutput.Properties.Skip(newKeys.Count).Select(p => p.Name).ZipToKeyValuePair(newAggs).ToList();
 
                 result = CqtBuilder.GroupBy(newInput, boundKeys, boundAggs);
             }

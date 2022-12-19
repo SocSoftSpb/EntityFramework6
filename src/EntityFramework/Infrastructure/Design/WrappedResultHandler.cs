@@ -13,7 +13,7 @@ namespace System.Data.Entity.Infrastructure.Design
 
         public WrappedResultHandler(object handler)
         {
-#if NET45 || NET40
+#if NETFRAMEWORK
             var handlerBase = handler as HandlerBase
                 ?? new ForwardingProxy<HandlerBase>(handler).GetTransparentProxy();
 

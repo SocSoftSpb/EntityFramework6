@@ -139,7 +139,7 @@ namespace System.Data.Entity.Infrastructure.Interception
         /// Sends <see cref="IDbTransactionInterceptor.RollingBack" /> and
         /// <see cref="IDbTransactionInterceptor.RolledBack" /> to any <see cref="IDbConnectionInterceptor" />
         /// registered on <see cref="DbInterception" /> before/after making a
-        /// call to <see cref="DbTransaction.Rollback" />.
+        /// call to <see cref="DbTransaction.Rollback()" />.
         /// </summary>
         /// <param name="transaction">The transaction on which the operation will be executed.</param>
         /// <param name="interceptionContext">Optional information about the context of the call being made.</param>

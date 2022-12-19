@@ -2167,7 +2167,7 @@ namespace System.Data.Entity.Migrations.Infrastructure
                 from ats in associationTypePairs
                 let rc1 = ats.Item1.Constraint
                 let rc2 = ats.Item2.Constraint
-                from ps in rc1.ToProperties.Zip(rc2.ToProperties)
+                from ps in rc1.ToProperties.ZipToKeyValuePair(rc2.ToProperties)
                 where !ps.Key.Name.EqualsIgnoreCase(ps.Value.Name)
                         && (!rc2.DependentEnd.GetEntityType().Properties
                                 .Any(p => p.Name.EqualsIgnoreCase(ps.Key.Name))

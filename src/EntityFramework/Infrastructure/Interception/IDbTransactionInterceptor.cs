@@ -71,14 +71,14 @@ namespace System.Data.Entity.Infrastructure.Interception
         void Disposed(DbTransaction transaction, DbTransactionInterceptionContext interceptionContext);
 
         /// <summary>
-        /// This method is called before <see cref="DbTransaction.Rollback" /> is invoked.
+        /// This method is called before <see cref="DbTransaction.Rollback()" /> is invoked.
         /// </summary>
         /// <param name="transaction">The transaction being rolled back.</param>
         /// <param name="interceptionContext">Contextual information associated with the call.</param>
         void RollingBack(DbTransaction transaction, DbTransactionInterceptionContext interceptionContext);
 
         /// <summary>
-        /// This method is called after <see cref="DbTransaction.Rollback" /> is invoked.
+        /// This method is called after <see cref="DbTransaction.Rollback()" /> is invoked.
         /// </summary>
         /// <param name="transaction">The transaction that was rolled back.</param>
         /// <param name="interceptionContext">Contextual information associated with the call.</param>

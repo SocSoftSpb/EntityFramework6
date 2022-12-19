@@ -849,7 +849,7 @@ namespace System.Data.Entity.Infrastructure.Interception
         }
 
         /// <summary>
-        /// This method is called after <see cref="DbTransaction.Rollback" /> is invoked.
+        /// This method is called after <see cref="DbTransaction.Rollback()" /> is invoked.
         /// The default implementation of this method filters by <see cref="DbContext" /> set into
         /// <see cref="Context" />, if any, and then logs the event.
         /// </summary>

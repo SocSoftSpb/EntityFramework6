@@ -19,7 +19,7 @@ namespace System.Data.Entity.Tools
 
         private static int Main(string[] args)
         {
-#if NET45 || NETCOREAPP
+#if NET45 || NET472 || NETCOREAPP
             if (Console.IsOutputRedirected)
             {
                 Console.OutputEncoding = Encoding.UTF8;

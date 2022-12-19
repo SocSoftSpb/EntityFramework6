@@ -3,7 +3,7 @@
   <PropertyGroup>
     <AssemblyName>EntityFramework.SqlServer</AssemblyName>
     <RootNamespace>System.Data.Entity.SqlServer</RootNamespace>
-    <TargetFrameworks>net45;netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>net472;net5.0</TargetFrameworks>
     <AssemblyVersion>6.0.0.0</AssemblyVersion>
     <DefineConstants>$(DefineConstants);SQLSERVER</DefineConstants>
   </PropertyGroup>

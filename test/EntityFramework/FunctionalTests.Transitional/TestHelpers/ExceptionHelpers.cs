@@ -196,10 +196,14 @@ namespace System.Data.Entity
             var stream = new MemoryStream();
             var formatter = new BinaryFormatter();
 
+#pragma warning disable SYSLIB0011
             formatter.Serialize(stream, exception);
+#pragma warning restore SYSLIB0011
             stream.Seek(0, SeekOrigin.Begin);
 
+#pragma warning disable SYSLIB0011
             return (TException)formatter.Deserialize(stream);
+#pragma warning restore SYSLIB0011
         }
 
         /// <summary>

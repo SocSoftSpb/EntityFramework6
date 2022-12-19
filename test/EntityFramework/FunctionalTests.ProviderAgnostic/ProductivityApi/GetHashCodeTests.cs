@@ -267,7 +267,9 @@ namespace System.Data.Entity.ProductivityApi
                 var stream = new MemoryStream();
                 var formatter = new BinaryFormatter();
 
+#pragma warning disable SYSLIB0011
                 formatter.Serialize(stream, skuProxy);
+#pragma warning restore SYSLIB0011
             }
         }
     }

@@ -17,7 +17,7 @@ namespace System.Data.Entity.Objects
 
     public class AttributeBasedOCLoading : FunctionalTestBase
     {
-#if NET452
+#if NET45_OR_GREATER
         [Fact]
         public void O_space_types_are_discovered_when_using_attribute_based_mapping()
         {
@@ -137,6 +137,11 @@ namespace System.Data.Entity.Objects
 
         public Assembly BuildEntitiesAssembly(string source)
         {
+#if NETCOREAPP
+            if (OperatingSystem.IsIOS())
+                throw new NotSupportedException();
+#endif
+            
             var options = new CompilerParameters
                 {
                     GenerateExecutable = false,

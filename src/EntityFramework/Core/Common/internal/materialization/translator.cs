@@ -830,7 +830,7 @@ namespace System.Data.Entity.Core.Common.Internal.Materialization
             {
                 var propertyReaders = new List<TranslatorResult>(columnMap.Properties.Length);
 
-                foreach (var pair in columnMap.Properties.Zip(initializerMetadata.GetChildTypes()))
+                foreach (var pair in columnMap.Properties.ZipToKeyValuePair(initializerMetadata.GetChildTypes()))
                 {
                     var propertyColumnMap = pair.Key;
                     var type = pair.Value;

@@ -28,7 +28,7 @@ namespace System.Data.Entity.Migrations
     public enum DatabaseProvider
     {
         SqlClient,
-#if NET452
+#if NET45_OR_GREATER
         SqlServerCe
 #endif
     }
@@ -98,7 +98,7 @@ namespace System.Data.Entity.Migrations
 
         public bool IsSqlCe
         {
-#if NET452
+#if NET45_OR_GREATER
             get { return _databaseProvider == DatabaseProvider.SqlServerCe; }
 #else
             get => false;

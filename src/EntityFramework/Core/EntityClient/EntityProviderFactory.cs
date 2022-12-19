@@ -107,7 +107,7 @@ namespace System.Data.Entity.Core.EntityClient
             return new EntityParameter();
         }
 
-#if NET45 || NET40
+#if NETFRAMEWORK
         /// <summary>
         /// Throws a <see cref="T:System.NotSupportedException" />. This method is currently not supported.
         /// </summary>

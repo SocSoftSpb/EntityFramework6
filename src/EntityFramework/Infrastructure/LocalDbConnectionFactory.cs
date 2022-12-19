@@ -96,7 +96,7 @@ namespace System.Data.Entity.Infrastructure
             Check.NotEmpty(nameOrConnectionString, "nameOrConnectionString");
 
             var attachDb = " ";
-#if !NETSTANDARD2_1
+#if NETFRAMEWORK
             if (!string.IsNullOrEmpty(AppDomain.CurrentDomain.GetData("DataDirectory") as string))
             {
                 attachDb = string.Format(

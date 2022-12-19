@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
+#if NET45_OR_GREATER
+
 namespace System.Data.Entity.Migrations
 {
     [Variant(DatabaseProvider.SqlClient, ProgrammingLanguage.CSharp)]
-#if NET452
     [Variant(DatabaseProvider.SqlServerCe, ProgrammingLanguage.CSharp)]
-#endif
     [Variant(DatabaseProvider.SqlClient, ProgrammingLanguage.VB)]
     public class DropIndexScenarios : DbTestCase
     {
@@ -84,3 +84,5 @@ namespace System.Data.Entity.Migrations
         }
     }
 }
+
+#endif

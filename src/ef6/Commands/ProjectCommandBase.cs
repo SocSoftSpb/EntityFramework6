@@ -74,7 +74,7 @@ namespace System.Data.Entity.Tools.Commands
         {
             try
             {
-#if NET40 || NET45
+#if NETFRAMEWORK
                 return new AppDomainExecutor(
                     Assembly.Value(),
                     DataDir.Value(),

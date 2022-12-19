@@ -744,9 +744,11 @@ namespace ProductivityApiTests
             var stream = new MemoryStream();
             var formatter = new BinaryFormatter();
 
+#pragma warning disable SYSLIB0011
             formatter.Serialize(stream, exception);
             stream.Seek(0, SeekOrigin.Begin);
             var deserializedException = (TException)formatter.Deserialize(stream);
+#pragma warning restore SYSLIB0011
 
             Assert.Null(deserializedException.Entries.SingleOrDefault());
         }
@@ -762,9 +764,11 @@ namespace ProductivityApiTests
                     var stream = new MemoryStream();
                     var formatter = new BinaryFormatter();
 
+#pragma warning disable SYSLIB0011
                     formatter.Serialize(stream, ex);
                     stream.Seek(0, SeekOrigin.Begin);
                     var deserializedException = (DbUpdateException)formatter.Deserialize(stream);
+#pragma warning restore SYSLIB0011
 
                     VerifyIndependentAssociationUpdateMessage(deserializedException.Message);
                     Assert.Null(deserializedException.Entries.SingleOrDefault());

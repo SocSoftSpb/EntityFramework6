@@ -249,7 +249,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
                 var parameterLookup = query
                     .Parameters
                     .Skip(1)
-                    .Zip(parameterValues)
+                    .ZipToKeyValuePair(parameterValues)
                     .ToDictionary(pair => pair.Key, pair => pair.Value);
                 parameterLookup.Add(query.Parameters.First(), objectContext);
                 var replacer = new CreateDonateableExpressionVisitor(parameterLookup);

@@ -25,7 +25,6 @@ namespace System.Data.Entity
         /// <returns> True if path refers to an existing directory; otherwise, false. </returns>
         [SecuritySafeCritical]
         // Calling Directory.Exists demands FileIOPermission (Read flag) for the specified path.
-        [PermissionSet(SecurityAction.Assert, Unrestricted = true)]
         public static bool DirectoryExists(string path)
         {
             return Directory.Exists(path);
@@ -37,7 +36,6 @@ namespace System.Data.Entity
         /// <param name="path"> Path to directory to create. </param>
         [SecuritySafeCritical]
         // Calling Directory.Exists demands FileIOPermission (Read flag) for the specified path.
-        [PermissionSet(SecurityAction.Assert, Unrestricted = true)]
         public static void EnsureDirectoryEmpty(string path)
         {
             if (Directory.Exists(path))
@@ -53,8 +51,6 @@ namespace System.Data.Entity
         /// </summary>
         /// <param name="path"> Path to directory to create. </param>
         [SecuritySafeCritical]
-        // Calling Directory.Exists and Directory.CreateDirectory demands FileIOPermission (Read | Write) for the specified path.
-        [PermissionSet(SecurityAction.Assert, Unrestricted = true)]
         public static void EnsureDirectoryExists(string path)
         {
             if (!Directory.Exists(path))
@@ -69,8 +65,6 @@ namespace System.Data.Entity
         /// <param name="path"> The file to check. </param>
         /// <returns> True if the caller has the required permissions and path contains the name of an existing file; otherwise, false. This method also returns false if path is null, an invalid path, or a zero-length string. If the caller does not have sufficient permissions to read the specified file, no exception is thrown and the method returns false regardless of the existence of path. </returns>
         [SecuritySafeCritical]
-        // Calling File.Exists demands FileIOPermission (Read flag) for the specified path.
-        [PermissionSet(SecurityAction.Assert, Unrestricted = true)]
         public static bool FileExists(string path)
         {
             return File.Exists(path);
@@ -82,8 +76,6 @@ namespace System.Data.Entity
         /// <param name="path"> The file or directory for which to obtain absolute path information. </param>
         /// <returns> A string containing the fully qualified location of path, such as "C:\MyFile.txt". </returns>
         [SecuritySafeCritical]
-        // Calling Path.GetFullPath demands FileIOPermission (PathDiscovery flag) for the specified path.
-        [PermissionSet(SecurityAction.Assert, Unrestricted = true)]
         public static string GetFullPath(string path)
         {
             return Path.GetFullPath(path);
@@ -94,8 +86,6 @@ namespace System.Data.Entity
         /// </summary>
         /// <param name="path"> The directory to delete. </param>
         [SecuritySafeCritical]
-        // Calling File.Delete demands FileIOPermission (Write flag) for the specified path.
-        [PermissionSet(SecurityAction.Assert, Unrestricted = true)]
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Need to catch everything here.")]
         public static void SafeDeleteFile(string path)
         {
@@ -114,8 +104,6 @@ namespace System.Data.Entity
         /// </summary>
         /// <param name="path"> The directory to delete. </param>
         [SecuritySafeCritical]
-        // Calling Directory.Delete demands FileIOPermission (Write flag) for the specified path.
-        [PermissionSet(SecurityAction.Assert, Unrestricted = true)]
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Need to catch everything here.")]
         public static void SafeDeleteDirectory(string path)
         {
@@ -171,8 +159,6 @@ namespace System.Data.Entity
         /// <param name="destinationDirectory"> The destination directory. </param>
         /// <param name="sourceFiles"> The source files. </param>
         [SecuritySafeCritical]
-        // Calling File.Copy demands FileIOPermission (Write flag) for the destination file path.
-        [PermissionSet(SecurityAction.Assert, Unrestricted = true)]
         public static void CopyToDirectory(string destinationDirectory, params string[] sourceFiles)
         {
             foreach (var sourceFile in sourceFiles)
@@ -244,8 +230,6 @@ namespace System.Data.Entity
         /// <param name="assembly"> Assembly to extract resource from </param>
 #if !SILVERLIGHT
         [SecuritySafeCritical]
-        // Calling File.Open demands FileIOPermission (Append flag) for the destination file path.
-        [PermissionSet(SecurityAction.Assert, Unrestricted = true)]
 #endif
         public static void WriteResourceToFile(string resourceName, string fileName, Assembly assembly)
         {

@@ -17,6 +17,7 @@ namespace System.Data.Entity.Migrations.Design
     using System.Linq;
     using System.Text.RegularExpressions;
     using Microsoft.VisualBasic;
+    using Strings = System.Data.Entity.Resources.Strings;
 
     /// <summary>
     /// Generates VB.Net code for a code-based migration.
@@ -1549,6 +1550,11 @@ namespace System.Data.Entity.Migrations.Design
 
             name = invalidChars.Replace(name, string.Empty);
 
+#if NETCOREAPP
+            if (OperatingSystem.IsIOS())
+                throw new InvalidOperationException("VBCodeProvider is not supported.");
+#endif
+            
             using (var codeProvider = new VBCodeProvider())
             {
                 if ((!char.IsLetter(name[0]) && name[0] != '_')

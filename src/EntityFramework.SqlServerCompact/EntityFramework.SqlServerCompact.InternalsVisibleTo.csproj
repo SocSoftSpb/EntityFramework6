@@ -3,7 +3,7 @@
   <PropertyGroup>
     <AssemblyName>EntityFramework.SqlServerCompact</AssemblyName>
     <RootNamespace>System.Data.Entity.SqlServerCompact</RootNamespace>
-    <TargetFrameworks>net45</TargetFrameworks>
+    <TargetFrameworks>net472</TargetFrameworks>
     <AssemblyVersion>6.0.0.0</AssemblyVersion>
     <DefineConstants>$(DefineConstants);SQLSERVERCOMPACT</DefineConstants>
   </PropertyGroup>

@@ -203,7 +203,7 @@ namespace System.Data.Entity.Objects
                 proxy.Id = 77;
                 proxy.Name = "Entity";
                 proxy.MeComplexTypeS.Number = 88;
-#if NET452
+#if NET45_OR_GREATER
                 proxy.Geometry = DbGeometry.FromText("POINT (30 10)");
 #endif
                 proxy.Enum = MeSimpleEntitiesS.EnumType.ZERO;
@@ -214,7 +214,7 @@ namespace System.Data.Entity.Objects
                 Assert.Equal(77, deserialized.Id);
                 Assert.Equal("Entity", deserialized.Name);
                 Assert.Equal(88, deserialized.MeComplexTypeS.Number);
-#if NET452
+#if NET45_OR_GREATER
                 Assert.Equal(DbGeometry.FromText("POINT (30 10)").AsText(), deserialized.Geometry.AsText());
 #endif
                 Assert.Equal(MeSimpleEntitiesS.EnumType.ZERO, deserialized.Enum);
@@ -251,7 +251,7 @@ namespace System.Data.Entity.Objects
                 proxy.Id = 77;
                 proxy.Name = "Entity";
                 proxy.MeComplexTypeS.Number = 88;
-#if NET452
+#if NET45_OR_GREATER
                 proxy.Geometry = DbGeometry.FromText("POINT (30 10)");
 #endif
                 proxy.Enum = MeSimpleEntitiesS.EnumType.ZERO;
@@ -265,7 +265,7 @@ namespace System.Data.Entity.Objects
                 Assert.Equal(77, deserialized.Id);
                 Assert.Equal("Entity", deserialized.Name);
                 Assert.Equal(88, deserialized.MeComplexTypeS.Number);
-#if NET452
+#if NET45_OR_GREATER
                 Assert.Equal(DbGeometry.FromText("POINT (30 10)").AsText(), deserialized.Geometry.AsText());
 #endif
                 Assert.Equal(MeSimpleEntitiesS.EnumType.ZERO, deserialized.Enum);
@@ -603,7 +603,9 @@ namespace System.Data.Entity.Objects
             var formatter = new BinaryFormatter();
             var stream = BuildStreamFromBase64String(base64String);
 
+#pragma warning disable SYSLIB0011
             return (T)formatter.Deserialize(stream);           
+#pragma warning restore SYSLIB0011
         }
         
         private T DeserializeStringWithDatacontractSerializer<T>(string base64String, DataContractSerializer serializer)
@@ -629,10 +631,12 @@ namespace System.Data.Entity.Objects
             var stream = new MemoryStream();
             var formatter = new BinaryFormatter();
 
+#pragma warning disable SYSLIB0011
             formatter.Serialize(stream, proxy);
             stream.Seek(0, SeekOrigin.Begin);
 
             return (T)formatter.Deserialize(stream);
+#pragma warning restore SYSLIB0011
         }
 
         private T DeserializeWithDatacontractSerializer<T>(T proxy, DataContractSerializer serializer)

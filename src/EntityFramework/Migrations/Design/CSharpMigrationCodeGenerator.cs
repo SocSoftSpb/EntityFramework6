@@ -1508,6 +1508,10 @@ namespace System.Data.Entity.Migrations.Design
 
             name = invalidChars.Replace(name, string.Empty);
 
+#if NETCOREAPP
+            if (OperatingSystem.IsIOS())
+                throw new InvalidOperationException("CSharpCodeProvider is not supported.");
+#endif
             using (var codeProvider = new CSharpCodeProvider())
             {
                 if ((!char.IsLetter(name[0]) && name[0] != '_')

@@ -11,7 +11,7 @@ namespace System.Data.Entity.Infrastructure
     using System.Threading.Tasks;
     using System.Transactions;
 
-#if NET45 || NET40
+#if NETFRAMEWORK
     using System.Runtime.Remoting.Messaging;
 #endif
 
@@ -34,7 +34,7 @@ namespace System.Data.Entity.Infrastructure
         private readonly int _maxRetryCount;
         private readonly TimeSpan _maxDelay;
 
-#if NET45 || NET40
+#if NETFRAMEWORK
         private const string ContextName = "ExecutionStrategySuspended";
 #else
         private static readonly AsyncLocal<bool> _suspended = new AsyncLocal<bool>();
@@ -110,7 +110,7 @@ namespace System.Data.Entity.Infrastructure
         /// </summary>
         protected internal static bool Suspended
         {
-#if NET45 || NET40
+#if NETFRAMEWORK
             get { return (bool?)CallContext.LogicalGetData(ContextName) ?? false; }
             set { CallContext.LogicalSetData(ContextName, value); }
 #else

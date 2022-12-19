@@ -1368,7 +1368,7 @@ namespace System.Data.Entity.Core.Common.EntitySql
                 // Sanity check - argument types must agree.
                 Debug.Assert(
                     argTypes.Count == aggArgTypes.Count &&
-                    argTypes.Zip(aggArgTypes).All(
+                    argTypes.ZipToKeyValuePair(aggArgTypes).All(
                         types => types.Key == null && types.Value == null || TypeSemantics.IsStructurallyEqual(types.Key, types.Value)),
                     "argument types resolved for the collection aggregate calls must match");
             }

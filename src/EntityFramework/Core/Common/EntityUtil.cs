@@ -30,7 +30,7 @@ namespace System.Data.Entity.Core
         // <summary>
         // Zips two enumerables together (e.g., given {1, 3, 5} and {2, 4, 6} returns {{1, 2}, {3, 4}, {5, 6}})
         // </summary>
-        internal static IEnumerable<KeyValuePair<T1, T2>> Zip<T1, T2>(this IEnumerable<T1> first, IEnumerable<T2> second)
+        internal static IEnumerable<KeyValuePair<T1, T2>> ZipToKeyValuePair<T1, T2>(this IEnumerable<T1> first, IEnumerable<T2> second)
         {
             if (null == first
                 || null == second)

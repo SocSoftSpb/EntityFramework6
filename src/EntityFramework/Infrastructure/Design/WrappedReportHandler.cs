@@ -12,7 +12,7 @@ namespace System.Data.Entity.Infrastructure.Design
 
         public WrappedReportHandler(object handler)
         {
-#if NET45 || NET40
+#if NETFRAMEWORK
             if (handler != null)
             {
                 var handlerBase = handler as HandlerBase

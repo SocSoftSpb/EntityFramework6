@@ -23,11 +23,20 @@ namespace System.Data.Entity.Migrations
 
         public MigrationCompiler(string language)
         {
+#if NETCOREAPP
+            if (OperatingSystem.IsIOS())
+                throw new NotSupportedException();
+#endif
             _codeProvider = CodeDomProvider.CreateProvider(language);
         }
 
         public Assembly Compile(string @namespace, params ScaffoldedMigration[] scaffoldedMigrations)
         {
+#if NETCOREAPP
+            if (OperatingSystem.IsIOS())
+                throw new NotSupportedException();
+#endif
+            
             var options = new CompilerParameters
                               {
                                   GenerateExecutable = false,
@@ -75,6 +84,10 @@ namespace System.Data.Entity.Migrations
 
         private static string BuildCompileErrorMessage(CompilerErrorCollection errors)
         {
+#if NETCOREAPP
+            if (OperatingSystem.IsIOS())
+                throw new NotSupportedException();
+#endif
             var stringBuilder = new StringBuilder();
 
             foreach (CompilerError error in errors)

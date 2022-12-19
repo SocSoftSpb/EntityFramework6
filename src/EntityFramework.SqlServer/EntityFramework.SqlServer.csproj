@@ -3,7 +3,7 @@
   <PropertyGroup>
     <RootNamespace>System.Data.Entity.SqlServer</RootNamespace>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
-    <TargetFrameworks>net45;net40;netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>net472;net40;net5.0;netstandard2.1</TargetFrameworks>
     <Description>EntityFramework.SqlServer.dll</Description>
     <AssemblyVersion>6.0.0.0</AssemblyVersion>
     <DefineConstants>$(DefineConstants);SQLSERVER;INTERNALS_INVISIBLE</DefineConstants>

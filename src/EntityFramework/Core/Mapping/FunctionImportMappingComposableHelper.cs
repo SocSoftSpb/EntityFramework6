@@ -412,7 +412,7 @@ namespace System.Data.Entity.Core.Mapping
             Debug.Assert(
                 errorFound ||
                 TypeHelpers.GetAllStructuralMembers(structuralType).Count == propertyMappings.Count &&
-                TypeHelpers.GetAllStructuralMembers(structuralType).Cast<EdmMember>().Zip(propertyMappings)
+                TypeHelpers.GetAllStructuralMembers(structuralType).Cast<EdmMember>().ZipToKeyValuePair(propertyMappings)
                            .All(ppm => ppm.Key.EdmEquals(ppm.Value.Property)),
                 "propertyMappings order does not correspond to the order of properties in the structuredType.");
 

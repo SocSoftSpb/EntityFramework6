@@ -33,8 +33,6 @@ namespace System.Data.Entity
         /// and appends '.gz' to it. You should use gzip to produce compressed files.
         /// </remarks>
         [SecuritySafeCritical]
-        // Calling File.Create demands FileIOPermission (Write flag) for the file path to which the resource is extracted.
-        [PermissionSet(SecurityAction.Assert, Unrestricted = true)]
         [SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "gz",
             Justification = ".gz is GZIP file extension")]
         [SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times",
