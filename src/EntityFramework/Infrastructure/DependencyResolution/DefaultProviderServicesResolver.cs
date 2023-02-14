@@ -13,6 +13,12 @@ namespace System.Data.Entity.Infrastructure.DependencyResolution
         {
             if (type == typeof(DbProviderServices))
             {
+                if (DefaultSqlClientFactory.ProviderServices != null 
+                    && key is string strKey
+                    && (string.Equals(strKey, "System.Data.SqlClient", StringComparison.OrdinalIgnoreCase)
+                        || string.Equals(strKey, "Microsoft.Data.SqlClient", StringComparison.OrdinalIgnoreCase)))
+                    return DefaultSqlClientFactory.ProviderServices;
+
                 throw new InvalidOperationException(Strings.EF6Providers_NoProviderFound(CheckKey(key)));
             }
 

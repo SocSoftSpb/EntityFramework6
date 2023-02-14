@@ -7,7 +7,11 @@
     using System.Data.Entity.Functionals.Utilities;
     using System.Data.Entity.Infrastructure;
     using System.Data.Entity.Objects;
+#if USES_MICROSOFT_DATA_SQLCLIENT
+    using Microsoft.Data.SqlClient;
+#else
     using System.Data.SqlClient;
+#endif
     using System.Linq;
     using System.Linq.Expressions;
     using Xunit;
@@ -51,7 +55,11 @@
             _connectionString = data.ConnectionString;
 
             _entityConnectionString = string.Format(
+#if USES_MICROSOFT_DATA_SQLCLIENT
+                @"metadata=res://Microsoft.EntityFramework.FunctionalTests/System.Data.Entity.Query.CompiledQuery.CompiledQueryModel.csdl|res://Microsoft.EntityFramework.FunctionalTests/System.Data.Entity.Query.CompiledQuery.CompiledQueryModel.ssdl|res://Microsoft.EntityFramework.FunctionalTests/System.Data.Entity.Query.CompiledQuery.CompiledQueryModel.msl;provider=Microsoft.Data.SqlClient;provider connection string=""{0}""",
+#else
                 @"metadata=res://EntityFramework.FunctionalTests/System.Data.Entity.Query.CompiledQuery.CompiledQueryModel.csdl|res://EntityFramework.FunctionalTests/System.Data.Entity.Query.CompiledQuery.CompiledQueryModel.ssdl|res://EntityFramework.FunctionalTests/System.Data.Entity.Query.CompiledQuery.CompiledQueryModel.msl;provider=System.Data.SqlClient;provider connection string=""{0}""",
+#endif
                 _connectionString);
         }
 

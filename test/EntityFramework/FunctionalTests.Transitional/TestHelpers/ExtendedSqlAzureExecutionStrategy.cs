@@ -3,9 +3,18 @@
 namespace System.Data.Entity.TestHelpers
 {
     using System.Data.Entity.SqlServer;
+#if USES_MICROSOFT_DATA_SQLCLIENT
+    using Microsoft.Data.SqlClient;
+#else
     using System.Data.SqlClient;
+#endif
 
-    public class ExtendedSqlAzureExecutionStrategy : SqlAzureExecutionStrategy
+    public class ExtendedSqlAzureExecutionStrategy :
+#if USES_MICROSOFT_DATA_SQLCLIENT
+        MicrosoftSqlAzureExecutionStrategy
+#else
+        SqlAzureExecutionStrategy
+#endif
     {
         public ExtendedSqlAzureExecutionStrategy()
             : base(maxRetryCount: 6, maxDelay: TimeSpan.FromMinutes(1))

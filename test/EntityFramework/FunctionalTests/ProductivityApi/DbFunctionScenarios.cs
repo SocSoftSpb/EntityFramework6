@@ -12,7 +12,11 @@ namespace FunctionalTests.ProductivityApi
     using System.Data.Entity.ModelConfiguration.Conventions;
     using System.Data.Entity.TestHelpers;
     using System.Data.Entity.WrappingProvider;
+#if USES_MICROSOFT_DATA_SQLCLIENT
+    using Microsoft.Data.SqlClient;
+#else
     using System.Data.SqlClient;
+#endif
     using System.Linq;
     using Xunit;
 

@@ -10,7 +10,11 @@ namespace System.Data.Entity
     using Xunit.Abstractions;
     using Xunit.Sdk;
 
+#if USES_MICROSOFT_DATA_SQLCLIENT
+    [XunitTestCaseDiscoverer("System.Data.Entity.ExtendedFactDiscoverer", "Microsoft.EntityFramework.FunctionalTests.Transitional")]
+#else
     [XunitTestCaseDiscoverer("System.Data.Entity.ExtendedFactDiscoverer", "EntityFramework.FunctionalTests.Transitional")]
+#endif
     public class ExtendedFactAttribute : FactAttribute
     {
         public TestGroup SlowGroup { get; set; }

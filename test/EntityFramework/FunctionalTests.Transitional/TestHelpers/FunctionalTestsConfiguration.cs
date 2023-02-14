@@ -11,6 +11,16 @@ namespace System.Data.Entity.TestHelpers
     using System.Data.Entity.SqlServerCompact;
 #endif
 
+#if USES_MICROSOFT_DATA_SQLCLIENT
+    using SqlConnectionFactory= System.Data.Entity.Infrastructure.MicrosoftSqlConnectionFactory;
+    using SqlProviderServices = System.Data.Entity.SqlServer.MicrosoftSqlProviderServices;
+#else
+    using SqlConnectionFactory = System.Data.Entity.Infrastructure.SqlConnectionFactory;
+    using SqlProviderServices = System.Data.Entity.SqlServer.SqlProviderServices;
+#endif
+
+
+
     public class FunctionalTestsConfiguration : DbConfiguration
     {
         private static volatile IList<IDbConnectionFactory> _originalConnectionFactories = new List<IDbConnectionFactory>();
@@ -71,11 +81,11 @@ namespace System.Data.Entity.TestHelpers
 
             if (DatabaseTestHelpers.IsSqlAzure(ModelHelpers.BaseConnectionString))
             {
-                SetExecutionStrategy("System.Data.SqlClient", () => new SuspendableSqlAzureExecutionStrategy());
+                SetExecutionStrategy(SqlProviderServices.ProviderInvariantName, () => new SuspendableSqlAzureExecutionStrategy());
             }
             else
             {
-                SetExecutionStrategy("System.Data.SqlClient", () => new DefaultExecutionStrategy());
+                SetExecutionStrategy(SqlProviderServices.ProviderInvariantName, () => new DefaultExecutionStrategy());
             }
 
             SetContextFactory(() => new CodeFirstScaffoldingContext("Foo"));

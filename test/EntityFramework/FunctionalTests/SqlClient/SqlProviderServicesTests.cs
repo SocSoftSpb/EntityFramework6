@@ -7,7 +7,11 @@ namespace System.Data.Entity.SqlServer
     using System.Data.Entity.Core.Common;
     using System.Data.Entity.Core.Metadata.Edm;
     using System.Data.Entity.Infrastructure;
+#if USES_MICROSOFT_DATA_SQLCLIENT
+    using Microsoft.Data.SqlClient;
+#else
     using System.Data.SqlClient;
+#endif
     using Moq;
     using Xunit;
 

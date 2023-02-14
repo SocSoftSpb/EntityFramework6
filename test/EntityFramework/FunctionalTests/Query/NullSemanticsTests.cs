@@ -7,7 +7,11 @@ namespace System.Data.Entity.Query
     using System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder;
     using System.Data.Entity.Core.EntityClient;
     using System.Data.Entity.Core.Metadata.Edm;
+#if USES_MICROSOFT_DATA_SQLCLIENT
+    using Microsoft.Data.SqlClient;
+#else
     using System.Data.SqlClient;
+#endif
     using System.Linq;
     using Xunit;
     using System.Data.Entity.Core.Common.CommandTrees;

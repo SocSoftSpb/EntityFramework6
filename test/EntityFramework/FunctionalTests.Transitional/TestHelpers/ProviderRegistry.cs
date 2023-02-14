@@ -4,13 +4,19 @@ namespace System.Data.Entity
 {
     using System.Data.Entity.Core.Common;
     using System.Data.Entity.Infrastructure;
+#if USES_MICROSOFT_DATA_SQLCLIENT
+    using Microsoft.Data.SqlClient;
+    using SqlProviderServices = System.Data.Entity.SqlServer.MicrosoftSqlProviderServices;
+#else
     using System.Data.SqlClient;
+    using SqlProviderServices = System.Data.Entity.SqlServer.SqlProviderServices;
+#endif
 
     public static class ProviderRegistry
     {
         public static DbProviderInfo Sql2008_ProviderInfo
         {
-            get { return new DbProviderInfo("System.Data.SqlClient", "2008"); }
+            get { return new DbProviderInfo(SqlProviderServices.ProviderInvariantName, "2008"); }
         }
 
         public static DbProviderManifest Sql2008_ProviderManifest
@@ -20,7 +26,7 @@ namespace System.Data.Entity
         
         public static DbProviderInfo SqlAzure2012_ProviderInfo
         {
-            get { return new DbProviderInfo("System.Data.SqlClient", "2012.Azure"); }
+            get { return new DbProviderInfo(SqlProviderServices.ProviderInvariantName, "2012.Azure"); }
         }
 
         public static DbProviderManifest SqlAzure2012_ProviderManifest

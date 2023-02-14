@@ -10,7 +10,13 @@ namespace ProductivityApiTests
     using System.Data.Entity.Core.Metadata.Edm;
     using System.Data.Entity.Core.Objects;
     using System.Data.Entity.Infrastructure;
+#if USES_MICROSOFT_DATA_SQLCLIENT
+    using Microsoft.Data.SqlClient;
+    using SqlConnectionFactory = System.Data.Entity.Infrastructure.MicrosoftSqlConnectionFactory;
+#else
     using System.Data.SqlClient;
+    using SqlConnectionFactory = System.Data.Entity.Infrastructure.SqlConnectionFactory;
+#endif
     using System.Linq;
     using System.Text.RegularExpressions;
     using SimpleModel;

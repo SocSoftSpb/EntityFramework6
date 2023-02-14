@@ -7,9 +7,17 @@ namespace ProductivityApiTests
     using System.Data.Entity;
     using System.Data.Entity.Infrastructure;
     using System.Data.Entity.Infrastructure.DependencyResolution;
-    using System.Data.Entity.SqlServer;
     using System.Data.Entity.TestHelpers;
+    using System.Data.Entity.SqlServer;
+#if USES_MICROSOFT_DATA_SQLCLIENT
+    using Microsoft.Data.SqlClient;
+    using SqlProviderServices = System.Data.Entity.SqlServer.MicrosoftSqlProviderServices;
+    using SqlAzureExecutionStrategy = System.Data.Entity.SqlServer.MicrosoftSqlAzureExecutionStrategy;
+#else
     using System.Data.SqlClient;
+    using SqlProviderServices = System.Data.Entity.SqlServer.SqlProviderServices;
+    using SqlAzureExecutionStrategy = System.Data.Entity.SqlServer.SqlAzureExecutionStrategy;
+#endif
     using System.IO;
     using SimpleModel;
     using Xunit;

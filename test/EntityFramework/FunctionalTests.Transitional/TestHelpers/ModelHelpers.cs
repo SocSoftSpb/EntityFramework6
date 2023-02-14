@@ -9,7 +9,14 @@ namespace System.Data.Entity
     using System.Data.Entity.Core.Objects;
     using System.Data.Entity.Infrastructure;
     using System.Data.Entity.Utilities;
+#if USES_MICROSOFT_DATA_SQLCLIENT
+    using Microsoft.Data.SqlClient;
+    using SqlProviderServices = System.Data.Entity.SqlServer.MicrosoftSqlProviderServices;
+#else
     using System.Data.SqlClient;
+    using SqlProviderServices = System.Data.Entity.SqlServer.SqlProviderServices;
+#endif
+
     using System.Diagnostics;
     using System.Globalization;
     using System.IO;
@@ -427,7 +434,7 @@ namespace System.Data.Entity
         public static void WriteEdmx(DbModelBuilder builder, string filename)
         {
             EdmxWriter.WriteEdmx(
-                builder.Build(new DbProviderInfo("System.Data.SqlClient", "2008")),
+                builder.Build(new DbProviderInfo(SqlProviderServices.ProviderInvariantName, "2008")),
                 XmlWriter.Create(filename));
         }
 
@@ -441,7 +448,7 @@ namespace System.Data.Entity
         {
             var xml = new StringBuilder();
             EdmxWriter.WriteEdmx(
-                builder.Build(new DbProviderInfo("System.Data.SqlClient", "2008")),
+                builder.Build(new DbProviderInfo(SqlProviderServices.ProviderInvariantName, "2008")),
                 XmlWriter.Create(xml));
 
             WriteMetadataFiles(xml.ToString(), filename);

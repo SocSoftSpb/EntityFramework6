@@ -6,7 +6,11 @@ namespace FunctionalTests
     using System.Data;
     using System.Data.Common;
     using System.Data.Entity;
+#if USES_MICROSOFT_DATA_SQLCLIENT
+    using Microsoft.Data.SqlClient;
+#else
     using System.Data.SqlClient;
+#endif
 
     public abstract class EndToEndFunctionsTest : TestBase, IDisposable
     {

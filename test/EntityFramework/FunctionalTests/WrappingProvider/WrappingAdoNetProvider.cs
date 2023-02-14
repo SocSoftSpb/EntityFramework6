@@ -8,7 +8,13 @@ namespace System.Data.Entity.WrappingProvider
     using System.Data.Entity.Infrastructure;
     using System.Data.Entity.Migrations.Sql;
     using System.Data.Entity.SqlServer;
+#if USES_MICROSOFT_DATA_SQLCLIENT
+    using Microsoft.Data.SqlClient;
+    using SqlProviderServices = System.Data.Entity.SqlServer.MicrosoftSqlProviderServices;
+#else
     using System.Data.SqlClient;
+    using SqlProviderServices = System.Data.Entity.SqlServer.SqlProviderServices;
+#endif
     using System.Reflection;
 
     public class WrappingAdoNetProvider<TBase> : DbProviderFactory where TBase : DbProviderFactory
@@ -38,7 +44,7 @@ namespace System.Data.Entity.WrappingProvider
             MutableResolver.AddResolver<IProviderInvariantName>(
                 k => new WrappingProviderInvariantName
                 {
-                    Name = "System.Data.SqlClient"
+                    Name = SqlProviderServices.ProviderInvariantName
                 });
         }
         public override DbCommand CreateCommand()

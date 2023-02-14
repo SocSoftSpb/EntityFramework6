@@ -15,7 +15,11 @@ namespace ProductivityApiTests
     using System.Data.Entity.ModelConfiguration.Conventions;
     using System.Data.Entity.SqlServer;
     using System.Data.Entity.TestHelpers;
+#if USES_MICROSOFT_DATA_SQLCLIENT
+    using Microsoft.Data.SqlClient;
+#else
     using System.Data.SqlClient;
+#endif
     using System.Linq;
     using System.Transactions;
     using BadMappingModel;

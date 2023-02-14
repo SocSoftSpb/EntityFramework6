@@ -12,6 +12,11 @@ namespace System.Data.Entity.Query
     using System.Data.Entity.TestModels.ArubaModel;
     using System.Linq;
     using Xunit;
+#if USES_MICROSOFT_DATA_SQLCLIENT
+    using Microsoft.Data.SqlClient;
+#else
+    using System.Data.SqlClient;
+#endif
 
     public class SqlGeneratorTests : FunctionalTestBase
     {
@@ -1549,7 +1554,7 @@ ORDER BY [Intersect1].[Id] ASC";
                 using (var db = new ArubaContext())
                 {
                     var exception = Assert.Throws<System.Data.Entity.Core.EntityCommandExecutionException>(() => QueryTestHelpers.EntityCommandSetup(db, query));
-                    var sqlException = exception.InnerException as System.Data.SqlClient.SqlException;
+                    var sqlException = exception.InnerException as SqlException;
                     Assert.NotNull(sqlException);
                     // error message number for "Some part of your SQL statement is nested too deeply..." see http://technet.microsoft.com/en-us/library/cc917589.aspx
                     Assert.Equal(191, sqlException.Number);

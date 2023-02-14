@@ -3,7 +3,7 @@
   <PropertyGroup>
     <RootNamespace>System.Data.Entity</RootNamespace>
     <AssemblyName>EntityFramework.FunctionalTests.Transitional</AssemblyName>
-    <TargetFrameworks>net6.0;net10.0</TargetFrameworks>
+    <TargetFrameworks>net10.0</TargetFrameworks>
   </PropertyGroup>
 
   <!-- <ItemGroup Condition="'$(TargetFramework)' == 'net472'"> -->

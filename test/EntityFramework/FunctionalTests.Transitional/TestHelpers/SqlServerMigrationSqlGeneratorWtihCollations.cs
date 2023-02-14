@@ -8,10 +8,15 @@ namespace System.Data.Entity.TestHelpers
     using System.Data.Entity.Migrations;
     using System.Data.Entity.Migrations.Model;
     using System.Data.Entity.Migrations.Utilities;
-    using System.Data.Entity.SqlServer;
     using System.Linq;
+    using System.Data.Entity.SqlServer;
 
-    public class SqlServerMigrationSqlGeneratorWtihCollations : SqlServerMigrationSqlGenerator
+    public class SqlServerMigrationSqlGeneratorWithCollations :
+#if USES_MICROSOFT_DATA_SQLCLIENT
+        MicrosoftSqlServerMigrationSqlGenerator
+#else
+        SqlServerMigrationSqlGenerator
+#endif
     {
         private CollationAttribute _tableCollation;
 

@@ -11,6 +11,11 @@ namespace ProductivityApiTests
 
     public class ScaffoldingScenarioTests : FunctionalTestBase
     {
+#if USES_MICROSOFT_DATA_SQLCLIENT
+        private const string providerName = "Microsoft.Data.SqlClient";
+#else
+        private const string providerName = "System.Data.SqlClient";
+#endif
         static ScaffoldingScenarioTests()
         {
             TemplateTestsDatabaseInitializer.InitializeModelFirstDatabases();
@@ -58,7 +63,7 @@ namespace ProductivityApiTests
 
             using (var context = new DbContextInfo(
                 typeof(CodeFirstScaffoldingContext),
-                new DbProviderInfo("System.Data.SqlClient", "2008")).CreateInstance())
+                new DbProviderInfo(providerName, "2008")).CreateInstance())
             {
                 var objectContext = ((IObjectContextAdapter)context).ObjectContext;
                 Assert.Equal("CodeFirstScaffoldingContext", objectContext.DefaultContainerName);
@@ -74,7 +79,7 @@ namespace ProductivityApiTests
             using (var context = new DbContextInfo(
                 typeof(CodeFirstScaffoldingContextWithConnection),
                 AddConnectionStrings(CreateEmptyConfig()),
-                new DbProviderInfo("System.Data.SqlClient", "2008")).CreateInstance())
+                new DbProviderInfo(providerName, "2008")).CreateInstance())
             {
                 // Will throw if CodeFirstConnectionString is not found and will throw if it is used to
                 // make a connection since it points to a server that does not exist.
@@ -89,14 +94,14 @@ namespace ProductivityApiTests
             config.ConnectionStrings.ConnectionStrings.Add(
                 new ConnectionStringSettings(
                     "DbFirstConnectionString",
-                    @"metadata=.\AdvancedPatterns.csdl|.\AdvancedPatterns.ssdl|.\AdvancedPatterns.msl;provider=System.Data.SqlClient;provider connection string='Server=.\SQLEXPRESS;Integrated Security=True;Database=AdvancedPatternsModelFirst;'",
+                    $@"metadata=.\AdvancedPatterns.csdl|.\AdvancedPatterns.ssdl|.\AdvancedPatterns.msl;provider={providerName};provider connection string='Server=.\SQLEXPRESS;Integrated Security=True;Database=AdvancedPatternsModelFirst;'",
                     "System.Data.EntityClient"));
 
             config.ConnectionStrings.ConnectionStrings.Add(
                 new ConnectionStringSettings(
                     "CodeFirstConnectionString",
                     @"Server=IIsNotAValidServer;Integrated Security=True;Database=ItMattersNot;",
-                    "System.Data.SqlClient"));
+                    providerName));
 
             return config;
         }

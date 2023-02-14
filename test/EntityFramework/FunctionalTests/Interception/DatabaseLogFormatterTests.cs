@@ -5,7 +5,11 @@ namespace System.Data.Entity.Interception
     using System.Data.Common;
     using System.Data.Entity.Infrastructure.Interception;
     using System.Data.Entity.TestHelpers;
+#if USES_MICROSOFT_DATA_SQLCLIENT
+    using Microsoft.Data.SqlClient;
+#else
     using System.Data.SqlClient;
+#endif
     using System.Globalization;
     using System.IO;
     using System.Linq;

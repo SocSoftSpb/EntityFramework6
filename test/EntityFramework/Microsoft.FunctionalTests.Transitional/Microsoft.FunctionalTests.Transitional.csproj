@@ -1,0 +1,60 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>System.Data.Entity</RootNamespace>
+    <AssemblyName>Microsoft.EntityFramework.FunctionalTests.Transitional</AssemblyName>
+    <TargetFrameworks>net10.0</TargetFrameworks>
+    <DefineConstants>$(DefineConstants);USES_MICROSOFT_DATA_SQLCLIENT</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Moq" />
+  </ItemGroup>
+
+  <!-- <ItemGroup Condition="'$(TargetFramework)' == 'net472'"> -->
+  <!--   <PackageReference Include="Microsoft.SqlServer.Compact" Version="$(MicrosoftSqlServerCompactVersion)" /> -->
+  <!--   <PackageReference Include="Microsoft.SqlServer.Types" Version="$(MicrosoftSqlServerTypesVersion)" /> -->
+  <!-- </ItemGroup> -->
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Microsoft.EntityFramework.SqlServer\Microsoft.EntityFramework.SqlServer.InternalsVisibleTo.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\FunctionalTests.Transitional\CodeFirst\**\*.cs" LinkBase="CodeFirst" />
+    <Compile Include="..\FunctionalTests.Transitional\Migrations\**\*.cs" LinkBase="Migrations" />
+    <Compile Include="..\FunctionalTests.Transitional\ProductivityApi\*.cs" LinkBase="ProductivityApi" />
+    <Compile Include="..\FunctionalTests.Transitional\TestHelpers\*.cs" LinkBase="TestHelpers" />
+    <Compile Include="..\FunctionalTests.Transitional\TestModels\ConcurrencyModel\*.cs" LinkBase="TestModels\ConcurrencyModel" />
+    <Compile Include="..\FunctionalTests.Transitional\TestModels\SimpleModel\*.cs" LinkBase="TestModels\SimpleModel" />
+    <Compile Include="..\FunctionalTests.Transitional\TestModels\StoreModel\*.cs" LinkBase="TestModels\StoreModel" />
+  </ItemGroup>
+
+  <!--
+  <ItemGroup>
+    <None Remove="MetadataMapping\Enum.csdl" />
+    <None Remove="MetadataMapping\Enum.msl" />
+    <None Remove="MetadataMapping\Enum.ssdl" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="MetadataMapping\Enum.csdl" />
+    <EmbeddedResource Include="MetadataMapping\Enum.msl" />
+    <EmbeddedResource Include="MetadataMapping\Enum.ssdl" />
+  </ItemGroup>
+  -->
+
+  <ItemGroup>
+    <Compile Update="TestHelpers\GenericConnection.cs">
+      <SubType>Component</SubType>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="App.config">
+      <Link>ReSharperTestRunner.dll.config</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

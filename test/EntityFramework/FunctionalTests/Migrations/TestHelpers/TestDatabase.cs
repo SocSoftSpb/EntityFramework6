@@ -7,7 +7,15 @@ namespace System.Data.Entity.Migrations
     using System.Data.Entity.SqlServer;
     using System.Data.Entity.TestHelpers;
     using System.Data.Entity.Utilities;
+#if USES_MICROSOFT_DATA_SQLCLIENT
+    using Microsoft.Data.SqlClient;
+    using SqlProviderServices = System.Data.Entity.SqlServer.MicrosoftSqlProviderServices;
+    using SqlServerMigrationSqlGenerator = System.Data.Entity.SqlServer.MicrosoftSqlServerMigrationSqlGenerator;
+#else
     using System.Data.SqlClient;
+    using SqlProviderServices = System.Data.Entity.SqlServer.SqlProviderServices;
+    using SqlServerMigrationSqlGenerator = System.Data.Entity.SqlServer.SqlServerMigrationSqlGenerator;
+#endif
     using System.IO;
 
 #if NET45_OR_GREATER

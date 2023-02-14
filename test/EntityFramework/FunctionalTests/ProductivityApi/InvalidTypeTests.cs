@@ -14,7 +14,11 @@ namespace ProductivityApiTests
     using System.Data.Entity.Functionals.Utilities;
     using System.Data.Entity.ModelConfiguration;
     using System.Data.Entity.ViewGeneration;
+#if USES_MICROSOFT_DATA_SQLCLIENT
+    using Microsoft.Data.SqlClient;
+#else
     using System.Data.SqlClient;
+#endif
     using System.Linq;
     using System.Reflection;
     using System.Xml.Linq;

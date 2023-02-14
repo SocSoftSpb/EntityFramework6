@@ -9,7 +9,6 @@ namespace System.Data.Entity.Utilities
     using System.Data.Entity.Infrastructure;
     using System.Data.Entity.Infrastructure.DependencyResolution;
     using System.Data.Entity.Resources;
-    using System.Data.SqlClient;
     using System.Diagnostics;
     using System.Linq;
 
@@ -30,12 +29,15 @@ namespace System.Data.Entity.Utilities
 
             if (row == null)
             {
-                if (factory.GetType() == typeof(SqlClientFactory))
+                switch (factory.GetType().FullName)
                 {
-                    return "System.Data.SqlClient";
+                    case "System.Data.SqlClient.SqlClientFactory":
+                        return "System.Data.SqlClient";
+                    case "Microsoft.Data.SqlClient.SqlClientFactory":
+                        return "Microsoft.Data.SqlClient";
+                    default:
+                        throw new NotSupportedException(Strings.ProviderNameNotFound(factory));
                 }
-
-                throw new NotSupportedException(Strings.ProviderNameNotFound(factory));
             }
 
             return (string)row[invariantNameIndex];

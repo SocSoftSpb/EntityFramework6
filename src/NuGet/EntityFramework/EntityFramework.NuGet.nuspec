@@ -3,19 +3,16 @@
   <metadata>
     $CommonMetadataElements$
     <language>$NeutralLanguage$</language>
+    <!--
     <frameworkAssemblies>
       <frameworkAssembly assemblyName="System.ComponentModel.DataAnnotations" targetFramework=".NETFramework4.0, .NETFramework4.7.2" />
     </frameworkAssemblies>
+    -->
     <dependencies>
-      <group targetFramework="net6.0">
-        <dependency id="System.CodeDom" version="$SystemCodeDomVersion$" exclude="Build,Analyzers" />
-        <dependency id="System.Configuration.ConfigurationManager" version="$SystemConfigurationConfigurationManagerVersion$" exclude="Build,Analyzers" />
-        <dependency id="System.Data.SqlClient" version="$SystemDataSqlClientVersion$" exclude="Build,Analyzers" />
-      </group>
       <group targetFramework="net10.0">
         <dependency id="System.CodeDom" version="$SystemCodeDomVersion$" exclude="Build,Analyzers" />
         <dependency id="System.Configuration.ConfigurationManager" version="$SystemConfigurationConfigurationManagerVersion$" exclude="Build,Analyzers" />
-        <dependency id="System.Data.SqlClient" version="$SystemDataSqlClientVersion$" exclude="Build,Analyzers" />
+        <!-- <dependency id="System.Data.SqlClient" version="$SystemDataSqlClientVersion$" exclude="Build,Analyzers" /> -->
       </group>
     </dependencies>
   </metadata>
@@ -24,9 +21,9 @@
     <!--
     <file src="$IntermediateOutputPath$EntityFramework6.psd1" target="tools/"/>
     <file src="$IntermediateOutputPath$EntityFramework6.PS2.psd1" target="tools/"/>
-    -->
     <file src="../../../artifacts/bin/EntityFramework/$Configuration$/net6.0/EntityFramework.dll" target="lib/net6.0/" />
     <file src="../../../artifacts/bin/EntityFramework/$Configuration$/net6.0/EntityFramework.xml" target="lib/net6.0/" />
+    -->
     <file src="../../../artifacts/bin/EntityFramework/$Configuration$/net10.0/EntityFramework.dll" target="lib/net10.0/" />
     <file src="../../../artifacts/bin/EntityFramework/$Configuration$/net10.0/EntityFramework.xml" target="lib/net10.0/" />
     <!--
@@ -42,10 +39,12 @@
     <file src="../../../artifacts/bin/ef6/x86/$Configuration$/net472/ef6.exe" target="tools/net472/win-x86/" />
     <file src="../../../artifacts/bin/ef6/x86/$Configuration$/net472/ef6.pdb" target="tools/net472/win-x86/" />
     -->
+    <!--
     <file src="../../../artifacts/bin/EntityFramework.SqlServer/$Configuration$/net6.0/EntityFramework.SqlServer.dll" target="lib/net6.0/" />
     <file src="../../../artifacts/bin/EntityFramework.SqlServer/$Configuration$/net6.0/EntityFramework.SqlServer.xml" target="lib/net6.0/" />
     <file src="../../../artifacts/bin/EntityFramework.SqlServer/$Configuration$/net10.0/EntityFramework.SqlServer.dll" target="lib/net10.0/" />
     <file src="../../../artifacts/bin/EntityFramework.SqlServer/$Configuration$/net10.0/EntityFramework.SqlServer.xml" target="lib/net10.0/" />
+    -->
     <!--
     <file src="../../../artifacts/bin/Microsoft.Data.Entity.Build.Tasks/$Configuration$/netstandard2.0/Microsoft.Data.Entity.Build.Tasks.dll" target="build/" />
     <file src="build\**\*" target="build/" />

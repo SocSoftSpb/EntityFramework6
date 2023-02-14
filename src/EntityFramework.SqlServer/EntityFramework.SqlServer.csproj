@@ -3,14 +3,35 @@
   <PropertyGroup>
     <RootNamespace>System.Data.Entity.SqlServer</RootNamespace>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
-    <TargetFrameworks>net6.0;net10.0</TargetFrameworks>
+    <TargetFrameworks>net10.0</TargetFrameworks>
     <Description>EntityFramework.SqlServer.dll</Description>
     <AssemblyVersion>6.0.0.0</AssemblyVersion>
     <DefineConstants>$(DefineConstants);SQLSERVER;INTERNALS_INVISIBLE</DefineConstants>
+    <IsPackable>true</IsPackable>
+    <NuspecFile>$(MSBuildThisFileDirectory)$(MSBuildProjectName).nuspec</NuspecFile>
   </PropertyGroup>
+
+  <Target Name="ResolvePackageVersions" BeforeTargets="Build">
+    <PropertyGroup>
+      <SystemDataSqlClientVersion>@(PackageVersion->WithMetadataValue('Identity','System.Data.SqlClient')->'%(Version)')</SystemDataSqlClientVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <NuspecProperty Include="SystemDataSqlClientVersion=$(SystemDataSqlClientVersion)" />
+    </ItemGroup>
+  </Target>
+
+  <ItemGroup>
+    <NuspecProperty Include="Configuration=$(Configuration)" />
+    <NuspecProperty Include="NeutralLanguage=$(NeutralLanguage)" />
+  </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
     <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Data.SqlClient" />
   </ItemGroup>
 
   <ItemGroup>

@@ -5,6 +5,15 @@ namespace System.Data.Entity.Migrations
     using System.Data.Entity.Functionals.Utilities;
     using System.Data.Entity.Migrations.CustomOperations;
     using System.Data.Entity.Migrations.Infrastructure;
+    using System.Data.Entity.SqlServer;
+
+#if USES_MICROSOFT_DATA_SQLCLIENT
+    using SqlProviderServices = System.Data.Entity.SqlServer.MicrosoftSqlProviderServices;
+#else
+    using SqlProviderServices = System.Data.Entity.SqlServer.SqlProviderServices;
+#endif
+
+
     using Xunit;
 
     public class CustomOperationScenarios : FunctionalTestBase
@@ -17,7 +26,7 @@ namespace System.Data.Entity.Migrations
                     MigrationsAssembly = typeof(CustomOperationMigration).Assembly(),
                     MigrationsNamespace = typeof(CustomOperationMigration).Namespace
                 };
-            configuration.SetSqlGenerator("System.Data.SqlClient", new CustomSqlGenerator());
+            configuration.SetSqlGenerator(SqlProviderServices.ProviderInvariantName, new CustomSqlGenerator());
 
             var migrator = new DbMigrator(configuration);
             var scriptor = new MigratorScriptingDecorator(migrator);

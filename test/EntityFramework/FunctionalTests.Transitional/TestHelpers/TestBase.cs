@@ -12,10 +12,15 @@ namespace System.Data.Entity
     using System.Data.Entity.Infrastructure;
     using System.Data.Entity.Internal.ConfigFile;
     using System.Data.Entity.Migrations;
-    using System.Data.Entity.SqlServer;
     using System.Data.Entity.TestHelpers;
     using System.Data.Entity.Utilities;
+#if USES_MICROSOFT_DATA_SQLCLIENT
+    using Microsoft.Data.SqlClient;
+    using SqlProviderServices = System.Data.Entity.SqlServer.MicrosoftSqlProviderServices;
+#else
     using System.Data.SqlClient;
+    using SqlProviderServices = System.Data.Entity.SqlServer.SqlProviderServices;
+#endif
     using System.IO;
     using System.Reflection;
     using System.Threading.Tasks;
@@ -26,13 +31,10 @@ namespace System.Data.Entity
     {
         static TestBase()
         {
-#if NETFRAMEWORK
-            SqlServerTypes.Utilities.LoadNativeAssemblies(
-                Path.GetDirectoryName(typeof(FunctionalTestBase).Assembly.Location));
-#endif
-
             DbConfiguration.SetConfiguration(new FunctionalTestsConfiguration());
-            DbProviderFactories.RegisterFactory("System.Data.SqlClient", SqlClientFactory.Instance);
+            DbProviderFactories.RegisterFactory(SqlProviderServices.ProviderInvariantName, SqlClientFactory.Instance);
+
+            var providerNames = DbProviderFactories.GetProviderInvariantNames();
 
             // Uncomment below to log all test generated SQL to the console.
             //DbInterception.Add(new DatabaseLogFormatter(Console.Write));

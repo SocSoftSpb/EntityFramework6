@@ -8,7 +8,11 @@ namespace System.Data.Entity.Query.LinqToEntities
     using System.Data.Entity.Core.Objects;
     using System.Data.Entity.Infrastructure;
     using System.Data.Entity.ModelConfiguration.Conventions;
+#if USES_MICROSOFT_DATA_SQLCLIENT
+    using Microsoft.Data.SqlClient;
+#else
     using System.Data.SqlClient;
+#endif
     using System.Linq;
     using System.Xml;
     using System.Xml.Linq;
@@ -16,8 +20,12 @@ namespace System.Data.Entity.Query.LinqToEntities
 
     public class VectorParameterTest : FunctionalTestBase
     {
-	    private const string ProviderName          = "System.Data.SqlClient";
-	    private const string ProviderManifestToken = "2008";
+#if USES_MICROSOFT_DATA_SQLCLIENT
+        private const string ProviderName          = "Microsoft.Data.SqlClient";
+#else
+        private const string ProviderName          = "System.Data.SqlClient";
+#endif
+        private const string ProviderManifestToken = "2008";
 
         public class Book
         {
@@ -44,9 +52,13 @@ namespace System.Data.Entity.Query.LinqToEntities
 
         public class MyContext : DbContext
         {
-	        private const string ConnectionString = "Data Source=pk8local;Initial Catalog=PK8_DATA_DEV;User ID=pk8_appserver;Password=pk8_app_pk8;Pooling=True;Min Pool Size=4;Max Pool Size=200;MultipleActiveResultSets=True;Connect Timeout=60;Application Name=Entity Framework tests";
+#if USES_MICROSOFT_DATA_SQLCLIENT
+            private const string ConnectionString = "Data Source=pk8local;Initial Catalog=PK8_DATA_DEV;User ID=pk8_appserver;Password=pk8_app_pk8;Pooling=True;Min Pool Size=4;Max Pool Size=200;MultipleActiveResultSets=True;Connect Timeout=60;Application Name=Entity Framework tests;TrustServerCertificate=True";
+#else
+            private const string ConnectionString = "Data Source=pk8local;Initial Catalog=PK8_DATA_DEV;User ID=pk8_appserver;Password=pk8_app_pk8;Pooling=True;Min Pool Size=4;Max Pool Size=200;MultipleActiveResultSets=True;Connect Timeout=60;Application Name=Entity Framework tests";
+#endif
 
-	        public MyContext() : base(CreateConnection(), true)
+            public MyContext() : base(CreateConnection(), true)
             {
                 Database.SetInitializer<MyContext>(null);
             }

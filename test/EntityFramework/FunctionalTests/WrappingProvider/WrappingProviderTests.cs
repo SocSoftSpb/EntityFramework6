@@ -13,7 +13,13 @@ namespace System.Data.Entity.WrappingProvider
     using System.Data.Entity.Migrations.Sql;
     using System.Data.Entity.SqlServer;
     using System.Data.Entity.TestHelpers;
+#if USES_MICROSOFT_DATA_SQLCLIENT
+    using Microsoft.Data.SqlClient;
+    using SqlProviderServices = System.Data.Entity.SqlServer.MicrosoftSqlProviderServices;
+#else
     using System.Data.SqlClient;
+    using SqlProviderServices = System.Data.Entity.SqlServer.SqlProviderServices;
+#endif
     using System.Linq;
     using System.Reflection;
     using FunctionalTests.SimpleMigrationsModel;
@@ -21,7 +27,7 @@ namespace System.Data.Entity.WrappingProvider
 
     public class WrappingProviderTests : FunctionalTestBase, IDisposable
     {
-        private const string SqlClientInvariantName = "System.Data.SqlClient";
+        private const string SqlClientInvariantName = SqlProviderServices.ProviderInvariantName;
 
         private static readonly DataTable _providerTable =
             (DataTable)typeof(DbProviderFactories).GetDeclaredMethod("GetProviderTable")

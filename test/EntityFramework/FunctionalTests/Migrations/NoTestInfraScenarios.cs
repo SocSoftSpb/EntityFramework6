@@ -5,7 +5,11 @@ namespace System.Data.Entity.Migrations
     using System.Data.Common;
     using System.Data.Entity.Infrastructure;
     using System.Data.Entity.Migrations.Design;
+#if USES_MICROSOFT_DATA_SQLCLIENT
+    using Microsoft.Data.SqlClient;
+#else
     using System.Data.SqlClient;
+#endif
     using System.Linq;
     using System.Reflection;
     using System.Threading.Tasks;

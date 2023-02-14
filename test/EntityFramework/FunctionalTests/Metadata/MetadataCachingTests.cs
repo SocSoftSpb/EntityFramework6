@@ -10,7 +10,11 @@ namespace System.Data.Entity.Metadata
     public class MetadataCachingTests : FunctionalTestBase, IClassFixture<MetadataCachingTestsFixture>
     {
         private static readonly string connectionString = string.Format(
+#if USES_MICROSOFT_DATA_SQLCLIENT
+            @"metadata=res://Microsoft.EntityFramework.FunctionalTests/System.Data.Entity.Metadata.MetadataCachingModel.csdl|res://Microsoft.EntityFramework.FunctionalTests/System.Data.Entity.Metadata.MetadataCachingModel.ssdl|res://Microsoft.EntityFramework.FunctionalTests/System.Data.Entity.Metadata.MetadataCachingModel.msl;provider=Microsoft.Data.SqlClient;provider connection string=""{0}""",
+#else
             @"metadata=res://EntityFramework.FunctionalTests/System.Data.Entity.Metadata.MetadataCachingModel.csdl|res://EntityFramework.FunctionalTests/System.Data.Entity.Metadata.MetadataCachingModel.ssdl|res://EntityFramework.FunctionalTests/System.Data.Entity.Metadata.MetadataCachingModel.msl;provider=System.Data.SqlClient;provider connection string=""{0}""",
+#endif
             ModelHelpers.SimpleConnectionString("MetadataCachingTests"));
 
         public MetadataCachingTests(MetadataCachingTestsFixture data)
@@ -48,7 +52,11 @@ namespace System.Data.Entity.Metadata
         public void Verify_that_conceptual_metadata_is_the_same_for_two_workspaces_created_from_two_entity_connections_with_reordered_metadata_in_connection_strings()
         {
             var connectionString2 = string.Format(
-                 @"metadata=res://EntityFramework.FunctionalTests/System.Data.Entity.Metadata.MetadataCachingModel.msl|res://EntityFramework.FunctionalTests/System.Data.Entity.Metadata.MetadataCachingModel.ssdl|res://EntityFramework.FunctionalTests/System.Data.Entity.Metadata.MetadataCachingModel.csdl;provider=System.Data.SqlClient;provider connection string=""{0}""",
+#if USES_MICROSOFT_DATA_SQLCLIENT
+                @"metadata=res://Microsoft.EntityFramework.FunctionalTests/System.Data.Entity.Metadata.MetadataCachingModel.msl|res://Microsoft.EntityFramework.FunctionalTests/System.Data.Entity.Metadata.MetadataCachingModel.ssdl|res://Microsoft.EntityFramework.FunctionalTests/System.Data.Entity.Metadata.MetadataCachingModel.csdl;provider=Microsoft.Data.SqlClient;provider connection string=""{0}""",
+#else
+                @"metadata=res://EntityFramework.FunctionalTests/System.Data.Entity.Metadata.MetadataCachingModel.msl|res://EntityFramework.FunctionalTests/System.Data.Entity.Metadata.MetadataCachingModel.ssdl|res://EntityFramework.FunctionalTests/System.Data.Entity.Metadata.MetadataCachingModel.csdl;provider=System.Data.SqlClient;provider connection string=""{0}""",
+#endif
                 ModelHelpers.SimpleConnectionString("MetadataCachingTests"));
 
             var connection1 = new EntityConnection(connectionString);

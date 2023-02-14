@@ -1,0 +1,117 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>System.Data.Entity</RootNamespace>
+    <AssemblyName>Microsoft.EntityFramework.FunctionalTests</AssemblyName>
+    <TargetFrameworks>net10.0</TargetFrameworks>
+    <LangVersion>preview</LangVersion>
+    <DefineConstants>$(DefineConstants);EF_FUNCTIONALS;USES_MICROSOFT_DATA_SQLCLIENT</DefineConstants>
+    <NoWarn>$(NoWarn);CS0169</NoWarn>
+  </PropertyGroup>
+
+  <!-- <ItemGroup Condition="'$(TargetFramework)' == 'net472'"> -->
+  <!--   <Reference Include="Microsoft.CSharp" /> -->
+  <!--   <Reference Include="System.ComponentModel.DataAnnotations" /> -->
+  <!--   <Reference Include="System.Configuration" /> -->
+  <!--   <Reference Include="System.Transactions" /> -->
+  <!--   <Reference Include="WindowsBase" /> -->
+  <!-- </ItemGroup> -->
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Microsoft.EntityFramework.SqlServer\Microsoft.EntityFramework.SqlServer.InternalsVisibleTo.csproj" />
+    <ProjectReference Include="..\Microsoft.FunctionalTests.Transitional\Microsoft.FunctionalTests.Transitional.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <RuntimeHostConfigurationOption Include="Switch.Microsoft.Data.SqlClient.TruncateScaledDecimal" Value="true" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\FunctionalTests\CodeFirst\**\*.cs" LinkBase="CodeFirst" />
+    <Compile Include="..\FunctionalTests\EntityClient\**\*.cs" LinkBase="EntityClient" />
+    <Compile Include="..\FunctionalTests\Interception\**\*.cs" LinkBase="Interception" />
+    <Compile Include="..\FunctionalTests\Metadata\**\*.cs" LinkBase="Metadata" />
+    <Compile Include="..\FunctionalTests\Migrations\**\*.cs" LinkBase="Migrations" />
+    <Compile Include="..\FunctionalTests\Objects\**\*.cs" LinkBase="Objects" />
+    <Compile Include="..\FunctionalTests\TestHelpers\**\*.cs" LinkBase="TestHelpers" />
+    <Compile Include="..\FunctionalTests\TestModels\**\*.cs" LinkBase="TestModels" />
+    <Compile Include="..\FunctionalTests\PlanCompiler\**\*.cs" LinkBase="PlanCompiler" />
+    <Compile Include="..\FunctionalTests\ProductivityApi\**\*.cs" LinkBase="ProductivityApi" />
+    <Compile Include="..\FunctionalTests\Query\**\*.cs" LinkBase="Query" />
+    <Compile Include="..\FunctionalTests\SqlClient\**\*.cs" LinkBase="SqlClient" />
+    <Compile Include="..\FunctionalTests\TestDoubles\**\*.cs" LinkBase="TestDoubles" />
+    <Compile Include="..\FunctionalTests\Update\**\*.cs" LinkBase="Update" />
+    <Compile Include="..\FunctionalTests\ViewGeneration\**\*.cs" LinkBase="ViewGeneration" />
+    <Compile Include="..\FunctionalTests\WrappingProvider\**\*.cs" LinkBase="WrappingProvider" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Objects\TransactionsModel.csdl" />
+    <None Remove="Objects\TransactionsModel.msl" />
+    <None Remove="Objects\TransactionsModel.ssdl" />
+    <None Remove="Metadata\MetadataCachingModel.csdl" />
+    <None Remove="Metadata\MetadataCachingModel.msl" />
+    <None Remove="Metadata\MetadataCachingModel.ssdl" />
+    <None Remove="TestModels\SpatialTvfsModel\226644SpatialModel.csdl" />
+    <None Remove="TestModels\SpatialTvfsModel\226644SpatialModel.msl" />
+    <None Remove="TestModels\SpatialTvfsModel\226644SpatialModel.ssdl" />
+    <None Remove="TestModels\HierarchyIdTvfsModel\226644HierarchyIdModel.csdl" />
+    <None Remove="TestModels\HierarchyIdTvfsModel\226644HierarchyIdModel.msl" />
+    <None Remove="TestModels\HierarchyIdTvfsModel\226644HierarchyIdModel.ssdl" />
+    <None Remove="Query\StoredProcedures\IceAndFireModel.csdl" />
+    <None Remove="Query\StoredProcedures\IceAndFireModel.msl" />
+    <None Remove="Query\StoredProcedures\IceAndFireModel.ssdl" />
+    <None Remove="Query\CompiledQuery\CompiledQueryModel.csdl" />
+    <None Remove="Query\CompiledQuery\CompiledQueryModel.msl" />
+    <None Remove="Query\CompiledQuery\CompiledQueryModel.ssdl" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\FunctionalTests\Metadata\MetadataCachingModel.csdl" Link="Metadata\MetadataCachingModel.csdl" />
+    <EmbeddedResource Include="..\FunctionalTests\Metadata\MetadataCachingModel.msl" Link="Metadata\MetadataCachingModel.msl" />
+    <EmbeddedResource Include="..\FunctionalTests\Metadata\MetadataCachingModel.ssdl" Link="Metadata\MetadataCachingModel.ssdl" />
+    <EmbeddedResource Include="..\FunctionalTests\Objects\TransactionsModel.csdl" Link="Objects\TransactionsModel.csdl" />
+    <EmbeddedResource Include="..\FunctionalTests\Objects\TransactionsModel.msl" Link="Objects\TransactionsModel.msl" />
+    <EmbeddedResource Include="..\FunctionalTests\Objects\TransactionsModel.ssdl" Link="Objects\TransactionsModel.ssdl" />
+
+    <EmbeddedResource Include="..\FunctionalTests\TestModels\TemplateModels\Schemas\AdvancedPatterns.edmx" Link="TestModels\TemplateModels\Schemas\AdvancedPatterns.edmx" />
+    <EmbeddedResource Include="..\FunctionalTests\TestModels\TemplateModels\Schemas\MonsterModel.csdl" Link="TestModels\TemplateModels\Schemas\MonsterModel.csdl" />
+    <EmbeddedResource Include="..\FunctionalTests\TestModels\TemplateModels\Schemas\MonsterModel.msl" Link="TestModels\TemplateModels\Schemas\MonsterModel.msl" />
+    <EmbeddedResource Include="..\FunctionalTests\TestModels\TemplateModels\Schemas\MonsterModel.ssdl" Link="TestModels\TemplateModels\Schemas\MonsterModel.ssdl" />
+
+    <EmbeddedResource Include="..\FunctionalTests\Query\CompiledQuery\CompiledQueryModel.csdl" Link="Query\CompiledQuery\CompiledQueryModel.csdl" />
+    <EmbeddedResource Include="..\FunctionalTests\Query\CompiledQuery\CompiledQueryModel.msl" Link="Query\CompiledQuery\CompiledQueryModel.msl" />
+    <EmbeddedResource Include="..\FunctionalTests\Query\CompiledQuery\CompiledQueryModel.ssdl" Link="Query\CompiledQuery\CompiledQueryModel.ssdl" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\..\src\Common\TypeExtensions.cs">
+      <Link>Utilities\TypeExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\src\Common\DebugCheck.cs">
+      <Link>Utilities\DebugCheck.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\src\Common\MemberInfoExtensions.cs">
+      <Link>Utilities\MemberInfoExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\src\Common\AssemblyExtensions.cs">
+      <Link>Utilities\AssemblyExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\src\Common\PropertyInfoExtensions.cs">
+      <Link>Utilities\PropertyInfoExtensions.cs</Link>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="xunit.console.dll.config">
+      <Link>ReSharperTestRunner.dll.config</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
+  </ItemGroup>
+
+</Project>

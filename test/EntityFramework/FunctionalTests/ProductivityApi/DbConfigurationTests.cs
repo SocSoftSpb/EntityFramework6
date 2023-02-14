@@ -11,6 +11,11 @@ namespace ProductivityApiTests
     using System.Linq;
     using SimpleModel;
     using Xunit;
+#if USES_MICROSOFT_DATA_SQLCLIENT
+    using SqlConnectionFactory = System.Data.Entity.Infrastructure.MicrosoftSqlConnectionFactory;
+#else
+    using SqlConnectionFactory = System.Data.Entity.Infrastructure.SqlConnectionFactory;
+#endif
 
     public class DbConfigurationTests : FunctionalTestBase
     {

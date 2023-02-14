@@ -7,7 +7,7 @@ namespace System.Data.Entity.Infrastructure
     using System.Data.Entity.Infrastructure.Interception;
     using System.Data.Entity.Internal;
     using System.Data.Entity.Resources;
-    using System.Data.Entity.Utilities;
+    using System.Data.Entity.SqlServer.Utilities;
     using System.Data.SqlClient;
     using System.Diagnostics.CodeAnalysis;
 
@@ -101,11 +101,11 @@ namespace System.Data.Entity.Infrastructure
 
             // If the "name or connection string" contains an '=' character then it is treated as a connection string.
             var connectionString = nameOrConnectionString;
-            if (!DbHelpers.TreatAsConnectionString(nameOrConnectionString))
+            if (!TreatAsConnectionString(nameOrConnectionString))
             {
                 if (nameOrConnectionString.EndsWith(".mdf", ignoreCase: true, culture: null))
                 {
-                    throw Error.SqlConnectionFactory_MdfNotSupported(nameOrConnectionString);
+                    throw new NotSupportedException($".mdf files are not supported: {nameOrConnectionString}");
                 }
 
                 connectionString =
@@ -135,6 +135,13 @@ namespace System.Data.Entity.Infrastructure
             }
 
             return connection;
+        }
+
+        public static bool TreatAsConnectionString(string nameOrConnectionString)
+        {
+            DebugCheck.NotNull(nameOrConnectionString);
+
+            return nameOrConnectionString.IndexOf('=') >= 0;
         }
 
         #endregion

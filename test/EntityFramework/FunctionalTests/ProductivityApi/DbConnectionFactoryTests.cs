@@ -6,10 +6,16 @@ namespace ProductivityApiTests
     using System.Data.Entity;
     using System.Data.Entity.Functionals.Utilities;
     using System.Data.Entity.Infrastructure;
-    using System.Data.SqlClient;
     using System.IO;
     using System.Reflection;
     using Xunit;
+#if USES_MICROSOFT_DATA_SQLCLIENT
+    using Microsoft.Data.SqlClient;
+    using SqlConnectionFactory = System.Data.Entity.Infrastructure.MicrosoftSqlConnectionFactory;
+#else
+    using System.Data.SqlClient;
+    using SqlConnectionFactory = System.Data.Entity.Infrastructure.SqlConnectionFactory;
+#endif
 
     /// <summary>
     /// Functional tests for implementations of IDbConnectionFactory.

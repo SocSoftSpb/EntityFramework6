@@ -10,6 +10,11 @@ namespace System.Data.Entity.Update
     using System.Transactions;
     using Xunit;
     using Xunit.Extensions;
+#if USES_MICROSOFT_DATA_SQLCLIENT
+    using SqlProviderServices = System.Data.Entity.SqlServer.MicrosoftSqlProviderServices;
+#else
+    using SqlProviderServices = System.Data.Entity.SqlServer.SqlProviderServices;
+#endif
 
     public class TruncationTests : FunctionalTestBase
     {

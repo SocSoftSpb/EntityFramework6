@@ -12,6 +12,11 @@ namespace ProductivityApiTests
     using System.Transactions;
     using SimpleModel;
     using Xunit;
+#if USES_MICROSOFT_DATA_SQLCLIENT
+    using LocalDbConnectionFactory = System.Data.Entity.Infrastructure.MicrosoftLocalDbConnectionFactory;
+#else
+    using LocalDbConnectionFactory = System.Data.Entity.Infrastructure.LocalDbConnectionFactory;
+#endif
 
     public class SimpleScenariosForLocalDb : FunctionalTestBase, IDisposable
     {

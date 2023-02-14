@@ -3,7 +3,7 @@
 namespace System.Data.Entity.Infrastructure
 {
     using System.Data.Common;
-    using System.Data.Entity.Utilities;
+    using System.Data.Entity.SqlServer.Utilities;
     using System.Globalization;
 
     /// <summary>

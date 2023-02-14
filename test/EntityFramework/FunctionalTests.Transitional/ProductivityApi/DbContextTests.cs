@@ -7,6 +7,12 @@ namespace ProductivityApiTests
     using System.Data.Entity.Internal;
     using Xunit;
 
+#if USES_MICROSOFT_DATA_SQLCLIENT
+    using SqlProviderServices = System.Data.Entity.SqlServer.MicrosoftSqlProviderServices;
+#else
+    using SqlProviderServices = System.Data.Entity.SqlServer.SqlProviderServices;
+#endif
+    
     /// <summary>
     ///     Tests for the primary methods on DbContext.
     /// </summary>
@@ -32,7 +38,7 @@ namespace ProductivityApiTests
                     context,
                     new DbConnectionInfo(
                         SimpleConnectionString("NewReplaceConnectionContextDatabase"),
-                        "System.Data.SqlClient")))
+                        SqlProviderServices.ProviderInvariantName)))
                 {
                     Can_replace_connection_implementation(context, newConnection);
                 }

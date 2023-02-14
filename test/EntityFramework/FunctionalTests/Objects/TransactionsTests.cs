@@ -11,7 +11,11 @@ namespace System.Data.Entity.Objects
     using System.Data.Entity.Functionals.Utilities;
     using System.Data.Entity.Infrastructure;
     using System.Data.Entity.TestHelpers;
+#if USES_MICROSOFT_DATA_SQLCLIENT
+    using Microsoft.Data.SqlClient;
+#else
     using System.Data.SqlClient;
+#endif
     using System.Linq;
     using System.Transactions;
     using SimpleModel;
@@ -83,8 +87,12 @@ namespace System.Data.Entity.Objects
             _connectionString = data.ConnectionString;
 
             _entityConnectionString = string.Format(
+#if USES_MICROSOFT_DATA_SQLCLIENT
+                @"metadata=res://Microsoft.EntityFramework.FunctionalTests/System.Data.Entity.Objects.TransactionsModel.csdl|res://Microsoft.EntityFramework.FunctionalTests/System.Data.Entity.Objects.TransactionsModel.ssdl|res://Microsoft.EntityFramework.FunctionalTests/System.Data.Entity.Objects.TransactionsModel.msl;provider=System.Data.SqlClient;provider connection string=""{0}""",
+#else
                 @"metadata=res://EntityFramework.FunctionalTests/System.Data.Entity.Objects.TransactionsModel.csdl|res://EntityFramework.FunctionalTests/System.Data.Entity.Objects.TransactionsModel.ssdl|res://EntityFramework.FunctionalTests/System.Data.Entity.Objects.TransactionsModel.msl;provider=System.Data.SqlClient;provider connection string=""{0}""",
-                _connectionString);
+#endif
+            _connectionString);
         }
 
         [Fact]

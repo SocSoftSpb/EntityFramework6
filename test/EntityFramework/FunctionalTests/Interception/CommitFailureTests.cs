@@ -12,7 +12,15 @@ namespace System.Data.Entity.Interception
     using System.Data.Entity.Infrastructure.Interception;
     using System.Data.Entity.SqlServer;
     using System.Data.Entity.TestHelpers;
+#if USES_MICROSOFT_DATA_SQLCLIENT
+    using Microsoft.Data.SqlClient;
+    using SqlAzureExecutionStrategy = System.Data.Entity.SqlServer.MicrosoftSqlAzureExecutionStrategy;
+    using SqlProviderServices = System.Data.Entity.SqlServer.MicrosoftSqlProviderServices;
+#else
     using System.Data.SqlClient;
+    using SqlAzureExecutionStrategy = System.Data.Entity.SqlServer.SqlAzureExecutionStrategy;
+    using SqlProviderServices = System.Data.Entity.SqlServer.SqlProviderServices;
+#endif
     using System.Linq;
     using System.Runtime.CompilerServices;
 #if !NET40

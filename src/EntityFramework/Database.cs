@@ -33,7 +33,7 @@ namespace System.Data.Entity
         // The default factory object used to create a DbConnection from a database name.
         private static readonly Lazy<IDbConnectionFactory> _defaultDefaultConnectionFactory =
             new Lazy<IDbConnectionFactory>(
-                () => AppConfig.DefaultInstance.TryGetDefaultConnectionFactory() ?? new LocalDbConnectionFactory(), isThreadSafe: true);
+                () => AppConfig.DefaultInstance.TryGetDefaultConnectionFactory() /* TODO: Microsoft.Data.SqlClient ?? new LocalDbConnectionFactory()*/, isThreadSafe: true);
 
         private static volatile Lazy<IDbConnectionFactory> _defaultConnectionFactory = _defaultDefaultConnectionFactory;
 

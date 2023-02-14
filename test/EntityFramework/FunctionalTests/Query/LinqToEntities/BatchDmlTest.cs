@@ -5,7 +5,11 @@ namespace System.Data.Entity.Query.LinqToEntities
     using System.Data.Common;
     using System.Data.Entity.Core.Objects;
     using System.Data.Entity.Infrastructure;
+#if USES_MICROSOFT_DATA_SQLCLIENT
+    using Microsoft.Data.SqlClient;
+#else
     using System.Data.SqlClient;
+#endif
     using System.Linq;
     using Xunit;
 
@@ -45,7 +49,11 @@ namespace System.Data.Entity.Query.LinqToEntities
 
             private static DbConnection CreateConnection()
             {
-                return new SqlConnection("Data Source=pk8local;Initial Catalog=PK8_DATA_DEV;User ID=pk8_appserver;Password=pk8_app_pk8;Pooling=True;Min Pool Size=4;Max Pool Size=200;MultipleActiveResultSets=True;Connect Timeout=60;Application Name=Entity Framework tests");
+                var connectionString = "Data Source=pk8local;Initial Catalog=PK8_DATA_DEV;User ID=pk8_appserver;Password=pk8_app_pk8;Pooling=True;Min Pool Size=4;Max Pool Size=200;MultipleActiveResultSets=True;Connect Timeout=60;Application Name=Entity Framework tests";
+#if USES_MICROSOFT_DATA_SQLCLIENT
+                connectionString += ";TrustServerCertificate=True";
+#endif
+                return new SqlConnection(connectionString);
             }
 
             protected override void OnModelCreating(DbModelBuilder b)

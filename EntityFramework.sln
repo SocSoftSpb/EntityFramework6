@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.14.37012.4 d17.14
+# Visual Studio Version 18
+VisualStudioVersion = 18.11.12324.101
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{6A921FFC-887B-4406-A3E6-8E41817020B5}"
 	ProjectSection(SolutionItems) = preProject
@@ -38,6 +38,16 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "InternalsVisibleTo", "InternalsVisibleTo", "{A92C22F0-200B-4C61-8544-0EAE620B8006}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EntityFramework.SqlServer.InternalsVisibleTo", "src\EntityFramework.SqlServer\EntityFramework.SqlServer.InternalsVisibleTo.csproj", "{63368BF7-E04A-4F0E-ACE7-3CC6DE7F3E93}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.EntityFramework.SqlServer", "src\Microsoft.EntityFramework.SqlServer\Microsoft.EntityFramework.SqlServer.csproj", "{1B486117-78B2-2145-8ED1-87CE7DB113E5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MicrosoftSqlProviderSmokeTest", "test\MicrosoftSqlProviderSmokeTest\MicrosoftSqlProviderSmokeTest.csproj", "{C4396BDF-24EE-5660-8F0B-541D893D4F5A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.FunctionalTests.Transitional", "test\EntityFramework\Microsoft.FunctionalTests.Transitional\Microsoft.FunctionalTests.Transitional.csproj", "{A0C79BBA-1B13-D9CD-3B61-80990B25AE3E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.EntityFramework.SqlServer.InternalsVisibleTo", "src\Microsoft.EntityFramework.SqlServer\Microsoft.EntityFramework.SqlServer.InternalsVisibleTo.csproj", "{4CF41753-B6C0-2AFD-7F9A-8BC38053E885}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.FunctionalTests", "test\EntityFramework\Microsoft.FunctionalTests\Microsoft.FunctionalTests.csproj", "{0997A064-3513-55B2-B72D-691333C6836B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -93,6 +103,26 @@ Global
 		{63368BF7-E04A-4F0E-ACE7-3CC6DE7F3E93}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{63368BF7-E04A-4F0E-ACE7-3CC6DE7F3E93}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{63368BF7-E04A-4F0E-ACE7-3CC6DE7F3E93}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1B486117-78B2-2145-8ED1-87CE7DB113E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1B486117-78B2-2145-8ED1-87CE7DB113E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1B486117-78B2-2145-8ED1-87CE7DB113E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1B486117-78B2-2145-8ED1-87CE7DB113E5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C4396BDF-24EE-5660-8F0B-541D893D4F5A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C4396BDF-24EE-5660-8F0B-541D893D4F5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C4396BDF-24EE-5660-8F0B-541D893D4F5A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C4396BDF-24EE-5660-8F0B-541D893D4F5A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A0C79BBA-1B13-D9CD-3B61-80990B25AE3E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A0C79BBA-1B13-D9CD-3B61-80990B25AE3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A0C79BBA-1B13-D9CD-3B61-80990B25AE3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A0C79BBA-1B13-D9CD-3B61-80990B25AE3E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4CF41753-B6C0-2AFD-7F9A-8BC38053E885}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4CF41753-B6C0-2AFD-7F9A-8BC38053E885}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4CF41753-B6C0-2AFD-7F9A-8BC38053E885}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4CF41753-B6C0-2AFD-7F9A-8BC38053E885}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0997A064-3513-55B2-B72D-691333C6836B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0997A064-3513-55B2-B72D-691333C6836B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0997A064-3513-55B2-B72D-691333C6836B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0997A064-3513-55B2-B72D-691333C6836B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -107,6 +137,10 @@ Global
 		{A883C5CA-53F5-41FA-9123-728F94CC6599} = {A92C22F0-200B-4C61-8544-0EAE620B8006}
 		{A92C22F0-200B-4C61-8544-0EAE620B8006} = {24A9C4D1-E189-4D3A-A2D7-36D3ED51D277}
 		{63368BF7-E04A-4F0E-ACE7-3CC6DE7F3E93} = {A92C22F0-200B-4C61-8544-0EAE620B8006}
+		{C4396BDF-24EE-5660-8F0B-541D893D4F5A} = {24A9C4D1-E189-4D3A-A2D7-36D3ED51D277}
+		{A0C79BBA-1B13-D9CD-3B61-80990B25AE3E} = {24A9C4D1-E189-4D3A-A2D7-36D3ED51D277}
+		{4CF41753-B6C0-2AFD-7F9A-8BC38053E885} = {A92C22F0-200B-4C61-8544-0EAE620B8006}
+		{0997A064-3513-55B2-B72D-691333C6836B} = {24A9C4D1-E189-4D3A-A2D7-36D3ED51D277}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D7045317-2675-4853-926A-4D4354176EEE}

@@ -27,6 +27,10 @@ namespace ProductivityApiTests
             _location = Path.GetTempPath();
 
             _store = new DefaultDbModelStore(_location);
+
+            var fileName = Path.Combine(_location, "System.Data.Entity.Migrations.Utilities.EmptyContext.edmx");
+            if (File.Exists(fileName))
+                File.Delete(fileName);
         }
 
         [Fact]

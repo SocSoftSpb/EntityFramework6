@@ -2,7 +2,7 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0;net10.0</TargetFrameworks>
+    <TargetFrameworks>net10.0</TargetFrameworks>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <IncludeSource>false</IncludeSource>
     <IsPackable>True</IsPackable>
@@ -24,13 +24,13 @@
     <PropertyGroup>
       <SystemCodeDomVersion>@(PackageVersion->WithMetadataValue('Identity','System.CodeDom')->'%(Version)')</SystemCodeDomVersion>
       <SystemConfigurationConfigurationManagerVersion>@(PackageVersion->WithMetadataValue('Identity','System.Configuration.ConfigurationManager')->'%(Version)')</SystemConfigurationConfigurationManagerVersion>
-      <SystemDataSqlClientVersion>@(PackageVersion->WithMetadataValue('Identity','System.Data.SqlClient')->'%(Version)')</SystemDataSqlClientVersion>
+      <!-- <SystemDataSqlClientVersion>@(PackageVersion->WithMetadataValue('Identity','System.Data.SqlClient')->'%(Version)')</SystemDataSqlClientVersion> -->
     </PropertyGroup>
 
     <ItemGroup>
       <NuspecProperty Include="SystemCodeDomVersion=$(SystemCodeDomVersion)" />
       <NuspecProperty Include="SystemConfigurationConfigurationManagerVersion=$(SystemConfigurationConfigurationManagerVersion)" />
-      <NuspecProperty Include="SystemDataSqlClientVersion=$(SystemDataSqlClientVersion)" />
+      <!-- <NuspecProperty Include="SystemDataSqlClientVersion=$(SystemDataSqlClientVersion)" /> -->
     </ItemGroup>
 
   </Target>
@@ -41,7 +41,7 @@
 
   <ItemGroup>
     <NuspecProperty Include="Configuration=$(Configuration)" />
-    <NuspecProperty Include="NeutralLanguage=$(NeutralLanguage)" />
+    <NuspecProperty Include="NeutralLanguage=$(NeutralLanguage)" />                               
     <NuspecProperty Include="IntermediateOutputPath=$(IntermediateOutputPath)" />
   </ItemGroup>
 

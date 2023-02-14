@@ -19,8 +19,14 @@ namespace System.Data.Entity.ViewGeneration
     using System.Data.Entity.Core.EntityClient;
     using System.Data.Entity.Core.Mapping;
     using System.Data.Entity.Core.Metadata.Edm;
-    using System.Data.Entity.Core.Objects;    
+    using System.Data.Entity.Core.Objects;
+#if USES_MICROSOFT_DATA_SQLCLIENT
+    using Microsoft.Data.SqlClient;
+    using SqlProviderServices = System.Data.Entity.SqlServer.MicrosoftSqlProviderServices;
+#else
     using System.Data.SqlClient;
+    using SqlProviderServices = System.Data.Entity.SqlServer.SqlProviderServices;
+#endif
     using System.Xml.Linq;
     using Xunit;
 
@@ -73,7 +79,7 @@ namespace System.Data.Entity.ViewGeneration
         {
             var modelBuilder = new DbModelBuilder();
             modelBuilder.Entity<PregenBlog>();
-            var compiledModel = modelBuilder.Build(new DbProviderInfo("System.Data.SqlClient", "2008")).Compile();
+            var compiledModel = modelBuilder.Build(new DbProviderInfo(SqlProviderServices.ProviderInvariantName, "2008")).Compile();
             var connection = new SqlConnection();
 
             using (var context = compiledModel.CreateObjectContext<PregenObjectContext>(connection))
@@ -191,8 +197,8 @@ namespace System.Data.Entity.ViewGeneration
                 </EntityContainerMapping>
               </Mapping>";
 
-        public const string Ssdl =
-            @"<Schema Namespace='CodeFirstDatabaseSchema' Provider='System.Data.SqlClient' ProviderManifestToken='2008' Alias='Self' xmlns='http://schemas.microsoft.com/ado/2009/11/edm/ssdl'>
+        public static string Ssdl =
+            $@"<Schema Namespace='CodeFirstDatabaseSchema' Provider='{SqlProviderServices.ProviderInvariantName}' ProviderManifestToken='2008' Alias='Self' xmlns='http://schemas.microsoft.com/ado/2009/11/edm/ssdl'>
                 <EntityType Name='PregenBlogEdmx'>
                   <Key>
                     <PropertyRef Name='Id' />
