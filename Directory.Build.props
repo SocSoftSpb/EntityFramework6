@@ -2,7 +2,7 @@
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
 
   <PropertyGroup>
-    <MyEfRevision>502</MyEfRevision>
+    <MyEfRevision>503</MyEfRevision>
     <FileVersion>46.4.1.$(MyEfRevision)</FileVersion>
     <PackageVersion>6.4.1.$(MyEfRevision)</PackageVersion>
   </PropertyGroup>
@@ -14,6 +14,10 @@
 
   <PropertyGroup>
     <DefaultNetCoreTargetFramework>net5.0</DefaultNetCoreTargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net5.0'">
+  	<CheckEolTargetFramework>false</CheckEolTargetFramework>
   </PropertyGroup>
 
   <PropertyGroup>

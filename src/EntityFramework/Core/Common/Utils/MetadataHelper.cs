@@ -765,7 +765,11 @@ namespace System.Data.Entity.Core.Common.Utils
             if (schemaVersion < XmlConstants.EdmVersionForV2)
             {
                 // v1 and v1.1 use old hash to remain compatible
+#if NET6_0_OR_GREATER
+                hashAlgorithm = MD5.Create();
+#else
                 hashAlgorithm = new MD5CryptoServiceProvider();
+#endif
             }
             else
             {
@@ -780,6 +784,9 @@ namespace System.Data.Entity.Core.Common.Utils
         internal static SHA256 CreateSHA256HashAlgorithm()
         {
             SHA256 sha256HashAlgorithm;
+#if NET6_0_OR_GREATER
+            sha256HashAlgorithm = SHA256.Create();
+#else
             try
             {
                 // use the FIPS compliant SHA256 implementation
@@ -791,6 +798,7 @@ namespace System.Data.Entity.Core.Common.Utils
                 // this will throw if FIPS only is enforced
                 sha256HashAlgorithm = new SHA256Managed();
             }
+#endif
 
             return sha256HashAlgorithm;
         }

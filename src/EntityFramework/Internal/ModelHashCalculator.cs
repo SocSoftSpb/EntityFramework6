@@ -69,6 +69,9 @@ namespace System.Data.Entity.Internal
 
         private static SHA256 GetSha256HashAlgorithm()
         {
+#if NET6_0_OR_GREATER
+            return SHA256.Create();
+#else
             try
             {
                 // Use the FIPS compliant SHA256 implementation
@@ -80,6 +83,7 @@ namespace System.Data.Entity.Internal
                 // Note: this will throw if FIPS only is enforced.
                 return new SHA256Managed();
             }
+#endif
         }
 
         #endregion
