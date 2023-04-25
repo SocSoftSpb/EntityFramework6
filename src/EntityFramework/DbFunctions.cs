@@ -563,7 +563,7 @@ namespace System.Data.Entity
         [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "length")]
         [DbFunction("Edm", "Left")]
         [SuppressMessage("Microsoft.Naming", "CA1720:IdentifiersShouldNotContainTypeNames", MessageId = "string")]
-        public static String Left(String stringArgument, long? length)
+        public static String Left(String stringArgument, int? length)
         {
             throw new NotSupportedException(Strings.ELinq_DbFunctionDirectCall);
         }
@@ -583,7 +583,7 @@ namespace System.Data.Entity
         [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "stringArgument")]
         [DbFunction("Edm", "Right")]
         [SuppressMessage("Microsoft.Naming", "CA1720:IdentifiersShouldNotContainTypeNames", MessageId = "string")]
-        public static String Right(String stringArgument, long? length)
+        public static String Right(String stringArgument, int? length)
         {
             throw new NotSupportedException(Strings.ELinq_DbFunctionDirectCall);
         }

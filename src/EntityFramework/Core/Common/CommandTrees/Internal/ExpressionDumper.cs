@@ -529,7 +529,10 @@ namespace System.Data.Entity.Core.Common.CommandTrees.Internal
         {
             Check.NotNull(e, "e");
 
-            Begin(e);
+            
+            Dictionary<string, object> attrs = null;
+            if (e.IsCommon) (attrs = new Dictionary<string, object>()).Add(nameof(e.IsCommon), e.IsCommon);
+            Begin(e, "IsCommon", attrs);
             Dump(e.Argument, "Argument");
             Dump(e.Pattern, "Pattern");
             Dump(e.Escape, "Escape");

@@ -437,6 +437,8 @@ namespace System.Data.Entity.Core.Common.CommandTrees.Internal
             _key.Append(")(");
             e.Pattern.Accept(this);
             _key.Append(")(");
+            if (e.IsCommon)
+                _key.Append("Common)(");
             if (e.Escape != null)
             {
                 e.Escape.Accept(this);

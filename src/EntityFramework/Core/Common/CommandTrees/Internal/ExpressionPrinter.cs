@@ -660,7 +660,7 @@ namespace System.Data.Entity.Core.Common.CommandTrees.Internal
             {
                 Check.NotNull(e, "e");
 
-                return Visit("Like", e.Argument, e.Pattern, e.Escape);
+                return Visit(e.IsCommon ? "LikeCommon" : "Like", e.Argument, e.Pattern, e.Escape);
             }
 
             public override TreeNode Visit(DbLimitExpression e)
