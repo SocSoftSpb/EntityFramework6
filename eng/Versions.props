@@ -22,7 +22,7 @@
     <MySqlDataEntityVersion>6.7.2-beta-ef6</MySqlDataEntityVersion>
     <MicrosoftCSharpVersion>4.7.0</MicrosoftCSharpVersion>
     <SystemCodeDomVersion>6.0.0</SystemCodeDomVersion>
-    <SystemComponentModelAnnotationsVersion>4.7.0</SystemComponentModelAnnotationsVersion>
+    <SystemComponentModelAnnotationsVersion>5.0.0</SystemComponentModelAnnotationsVersion>
     <SystemConfigurationConfigurationManagerVersion>6.0.0</SystemConfigurationConfigurationManagerVersion>
     <SystemDataSqlClientVersion>4.8.5</SystemDataSqlClientVersion>
     <MicrosoftNETCoreAppInternalPackageVersion>3.1.0-rtm.19565.2</MicrosoftNETCoreAppInternalPackageVersion>
