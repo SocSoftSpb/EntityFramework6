@@ -8,6 +8,7 @@
     using System.Data.Entity.Core.Objects;
     using System.Data.Entity.Core.Objects.ELinq;
     using System.Data.Entity.Core.Query.InternalTrees;
+    using System.Threading;
 
     public enum DbDmlOperationKind
     {
@@ -23,6 +24,7 @@
         {
             Kind = kind;
             TargetEntitySet = targetEntitySet;
+            TargetDataSpace = TargetEntitySet.ElementType.DataSpace;
             WithRowCount = withRowCount;
         }
 
@@ -37,6 +39,11 @@
         /// Target EntitySet of this operation (Storage)
         /// </summary>
         public EntitySet TargetEntitySet { get; }
+        
+        /// <summary>
+        /// Target EntitySet Element DataSpace
+        /// </summary>
+        public DataSpace TargetDataSpace { get; }
 
         public abstract bool CanConstructEntityTypeInExpressionConverter(Type entityType);
         internal abstract void AssignMapping(ColumnMap columnMap, DbQueryCommandTree commandTree);
@@ -156,12 +163,19 @@
 
     public sealed class DbDmlInsertOperation : DbDmlUpInsOperationBase
     {
+        private IList<EdmProperty> _unmappedRequiredProperties;
+#if NET40
+        private static readonly EdmProperty[] _emptyEdmProperty = new EdmProperty[0];
+#else
+        private static readonly EdmProperty[] _emptyEdmProperty = Array.Empty<EdmProperty>();
+#endif
+
         public ValueConditionMapping[] Discriminators { get; }
         public ObjectQuery FromObjectQuery { get; }
         public ObjectQueryColumnMap[] FromQueryMapping { get; }
         public DbCommand FromStoreCommand { get; }
         internal IEnumerable<Tuple<ObjectParameter, QueryParameterExpression>> LinqParameters { get; }
-
+        
         internal DbDmlInsertOperation(EntitySet targetEntitySet, Type clrEntityType, bool withRowCount, ValueConditionMapping[] discriminators, 
             Dictionary<string, string> colNameMappings, ObjectQuery fromObjectQuery)
             : base(DbDmlOperationKind.Insert, targetEntitySet, clrEntityType, withRowCount, colNameMappings)
@@ -202,6 +216,49 @@
             if (FromObjectQuery == null)
                 base.AssignMapping(columnMap, commandTree);
         }
+
+        public IList<EdmProperty> GetUnmappedRequiredProperties()
+        {
+            if (ColumnMap == null)
+                return null;
+            
+            var result = _unmappedRequiredProperties;
+            if (result == null)
+            {
+                Interlocked.CompareExchange(ref _unmappedRequiredProperties, BuildRequiredProperties(), null);
+                result = _unmappedRequiredProperties;
+            }
+            
+            return result == _emptyEdmProperty ? null : result;
+        }
+
+        private IList<EdmProperty> BuildRequiredProperties()
+        {
+            IList<EdmProperty> result = null;
+            
+            foreach (var edmProperty in TargetEntitySet.ElementType.Properties)
+            {
+                if (!edmProperty.Nullable && !ColumnMap.IsTargetMapped(edmProperty.Name) && !IsDiscriminatorMapped(edmProperty.Name))
+                {
+                    (result ?? (result = new List<EdmProperty>())).Add(edmProperty);
+                }
+            }
+
+            return result ?? _emptyEdmProperty;
+        }
+
+        private bool IsDiscriminatorMapped(string columnName)
+        {
+            if (Discriminators == null || Discriminators.Length == 0)
+                return false;
+            foreach (var discriminator in Discriminators)
+            {
+                if (discriminator.Column.Name == columnName)
+                    return true;
+            }
+
+            return false;
+        }
     }
 
     public sealed class DmlColumnMapping
@@ -210,6 +267,17 @@
         {
             NullSentinelOrdinal = nullSentinelOrdinal;
             Mappings = new DmlColumnMap[mappingsCount];
+        }
+
+        internal bool IsTargetMapped(string targetColumnName)
+        {
+            for (var i = 0; i < Mappings.Length; i++)
+            {
+                if (Mappings[i].TargetColumnName == targetColumnName)
+                    return true;
+            }
+
+            return false;
         }
 
         public int NullSentinelOrdinal { get; }

@@ -38,7 +38,7 @@ namespace System.Data.Entity.Query.LinqToEntities
 
             private static DbConnection CreateConnection()
             {
-                return new SqlConnection("Data Source=pk8dev;Initial Catalog=PK8_DATA;User ID=pk8_appserver;Password=pk8_app_pk8;Pooling=True;Min Pool Size=4;Max Pool Size=200;MultipleActiveResultSets=True;Connect Timeout=60;Application Name=Entity Framework tests");
+                return new SqlConnection("Data Source=pk8local;Initial Catalog=PK8_DATA_DEV;User ID=pk8_appserver;Password=pk8_app_pk8;Pooling=True;Min Pool Size=4;Max Pool Size=200;MultipleActiveResultSets=True;Connect Timeout=60;Application Name=Entity Framework tests");
             }
 
             protected override void OnModelCreating(DbModelBuilder b)
@@ -145,19 +145,30 @@ namespace System.Data.Entity.Query.LinqToEntities
         public void CanQueryTempTable()
         {
             const string sqlCreate = @"CREATE " + @"TABLE #t_dynamic (
-	[DatabaseVersion] [VARCHAR](50) NOT NULL,
+	[DatabaseVersionx] [VARCHAR](50) NOT NULL,
 	[IsUpdating] [BIT] NOT NULL,
 	[UpdatePackCount] [INT] NOT NULL,
-);";
+); 
+INSERT INTO #t_dynamic VALUES ('XXX', 0, 2);"; 
             using (var context = new MyContext())
             {
                 var objectContext = ((IObjectContextAdapter)context).ObjectContext;
                 objectContext.Connection.Open();
+
+                var aa = context.Set<Author>().ToList();
+
+                // var bookks = context.Set<Book>().ToList();
+                
                 objectContext.ExecuteStoreCommand(sqlCreate);
                 
-                var dynQ = context.DynamicQuery<DynamicVersion>("TABLE:#t_dynamic");
+                var opts = DynamicQueryUtils.CreateDynamicQueryOptions(typeof(DynamicVersion));
+                opts.Columns[0].ColumnName = "DatabaseVersionx";
+                var dynQ = context.DynamicQuery<DynamicVersion>("TABLE:#t_dynamic", opts);
                 var strDynQ = ((ObjectQuery)dynQ).ToTraceString();
                 var lst = dynQ.AsNoTracking().ToList();
+                
+                Assert.Equal(1, lst.Count);
+                Assert.Equal("XXX", lst[0].DatabaseVersion);
                 
                 var books = objectContext.CreateObjectSet<Book>();
                 var queryBooks = from b in books
@@ -181,7 +192,7 @@ namespace System.Data.Entity.Query.LinqToEntities
 
         private void CanInsertTempTableInternal(bool withCache)
         {
-            const string sqlCreate = @"CREATE " + @"TABLE #t_Books([Id] [INT] NOT NULL, [Title] [NVARCHAR](200) NULL, [AuthorId] [INT] NOT NULL);";
+            const string sqlCreate = @"CREATE " + @"TABLE #t_Books([Id] [INT] NOT NULL, [Title] [NVARCHAR](200) NULL, [A_Id] [INT] NOT NULL);";
             using (var context = new MyContext())
             {
                 using (var tr = context.Database.BeginTransaction())
@@ -191,7 +202,9 @@ namespace System.Data.Entity.Query.LinqToEntities
                     objectContext.ExecuteStoreCommand(sqlCreate);
 
                     IQueryable<Author> authors = objectContext.CreateObjectSet<Author>();
-                    var dynQ = context.DynamicQuery<TempBook>("TABLE:#t_Books");
+                    var options = DynamicQueryUtils.CreateDynamicQueryOptions(typeof(TempBook));
+                    options.Columns[2].ColumnName = "A_Id";
+                    var dynQ = context.DynamicQuery<TempBook>("TABLE:#t_Books", options);
                     var strDynQ = ((ObjectQuery)dynQ).ToTraceString();
                 
                     var toInsert = authors.Where(
@@ -207,7 +220,6 @@ namespace System.Data.Entity.Query.LinqToEntities
                             });
                 
                     var fromQuery = (ObjectQuery<TempBook>)toInsert;
-                    var options = DynamicQueryUtils.CreateDynamicQueryOptions(typeof(TempBook));
                     if (withCache)
                         options.UniqueSetName = "UUQ_t_Books";
                     var insertQuery = BatchDmlFactory.CreateBatchInsertDynamicTableQuery(fromQuery, "#t_Books", options, true);
@@ -358,7 +370,7 @@ namespace System.Data.Entity.Query.LinqToEntities
         [Fact]
         public void CanUpdateTempTable()
         {
-            const string sqlCreate = @"CREATE " + @"TABLE #t_Books([Id] [INT] NOT NULL, [Title] [NVARCHAR](200) NULL, [AuthorId] [INT] NOT NULL);";
+            const string sqlCreate = @"CREATE " + @"TABLE #t_Books([Id] [INT] NOT NULL, [Title_X] [NVARCHAR](200) NULL, [AuthorId] [INT] NOT NULL);";
             const string sqlInsert = @"INSERT " + @"INTO #t_Books
 VALUES (1, 'Book 1', 1), (2, 'Book 2', 1), (3, 'Book 3', 2), (4, 'Book 4', 3)";
             using (var context = new MyContext())
@@ -371,6 +383,7 @@ VALUES (1, 'Book 1', 1), (2, 'Book 2', 1), (3, 'Book 3', 2), (4, 'Book 4', 3)";
                     objectContext.ExecuteStoreCommand(sqlInsert);
 
                     var options = DynamicQueryUtils.CreateDynamicQueryOptions(typeof(TempBook));
+                    options.Columns[1].ColumnName = "Title_X";
                     var tempBooks = context.DynamicQuery<TempBook>("TABLE:#t_Books", options);
                     
                     var toUpdate = tempBooks.Where(
@@ -398,7 +411,7 @@ VALUES (1, 'Book 1', 1), (2, 'Book 2', 1), (3, 'Book 3', 2), (4, 'Book 4', 3)";
         [Fact]
         public void CanUpdateTempTableWithJoin()
         {
-            const string sqlCreate = @"CREATE " + @"TABLE #t_Books([Id] [INT] NOT NULL, [Title] [NVARCHAR](200) NULL, [AuthorId] [INT] NOT NULL);";
+            const string sqlCreate = @"CREATE " + @"TABLE #t_Books([Id] [INT] NOT NULL, [Title_X] [NVARCHAR](200) NULL, [AuthorId_Y] [INT] NOT NULL);";
             const string sqlInsert = @"INSERT " + @"INTO #t_Books
 VALUES (1, 'Book 1', 1), (2, 'Book 2', 1), (3, 'Book 3', 2), (4, 'Book 4', 3)";
             using (var context = new MyContext())
@@ -412,6 +425,8 @@ VALUES (1, 'Book 1', 1), (2, 'Book 2', 1), (3, 'Book 3', 2), (4, 'Book 4', 3)";
 
                     IQueryable<Author> authors = objectContext.CreateObjectSet<Author>();
                     var options = DynamicQueryUtils.CreateDynamicQueryOptions(typeof(TempBook));
+                    options.Columns[1].ColumnName = "Title_X";
+                    options.Columns[2].ColumnName = "AuthorId_Y";
                     var tempBooks = context.DynamicQuery<TempBook>("TABLE:#t_Books", options);
                     
                     var toUpdate = tempBooks.Join(authors, b => b.AuthorId, a => a.Id, (b, a) => new BatchDmlFactory.JoinTuple<TempBook, Author>{Entity = b, Source = a})
@@ -440,7 +455,7 @@ VALUES (1, 'Book 1', 1), (2, 'Book 2', 1), (3, 'Book 3', 2), (4, 'Book 4', 3)";
         [Fact]
         public void CanDeleteTempTable()
         {
-            const string sqlCreate = @"CREATE " + @"TABLE #t_Books([Id] [INT] NOT NULL, [Title] [NVARCHAR](200) NULL, [AuthorId] [INT] NOT NULL);";
+            const string sqlCreate = @"CREATE " + @"TABLE #t_Books([Id] [INT] NOT NULL, [Title_X] [NVARCHAR](200) NULL, [AuthorId] [INT] NOT NULL);";
             const string sqlInsert = @"INSERT " + @"INTO #t_Books VALUES (1, 'Book 1', 1), (2, 'Book 2', 1), (3, 'Book 3', 2), (4, 'Book 4', 3)";
             using (var context = new MyContext())
             {
@@ -452,6 +467,7 @@ VALUES (1, 'Book 1', 1), (2, 'Book 2', 1), (3, 'Book 3', 2), (4, 'Book 4', 3)";
                     objectContext.ExecuteStoreCommand(sqlInsert);
 
                     var options = DynamicQueryUtils.CreateDynamicQueryOptions(typeof(TempBook));
+                    options.Columns[1].ColumnName = "Title_X"; 
                     var tempBooks = context.DynamicQuery<TempBook>("TABLE:#t_Books", options);
                     
                     var toDelete = tempBooks.Where(

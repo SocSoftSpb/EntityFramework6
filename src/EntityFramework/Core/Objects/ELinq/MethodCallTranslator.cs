@@ -3912,8 +3912,9 @@ namespace System.Data.Entity.Core.Objects.ELinq
 
                     if (dynamicSet == null)
                         throw new InvalidOperationException("Can't find DynamicEntitySet for given tempTableOptions.");
-                    
-                    var deleteOp = new DbDmlDeleteOperation(dynamicSet, withRowCount, limit);
+
+                    var targetSet = dynamicSet.DynamicEntitySetMapper?.StoreEntitySet ?? dynamicSet;
+                    var deleteOp = new DbDmlDeleteOperation(targetSet, withRowCount, limit);
                     parent.DmlOperation = deleteOp;
 
                     return source;
@@ -4011,12 +4012,20 @@ namespace System.Data.Entity.Core.Objects.ELinq
                     if (dynamicSet == null)
                         throw new InvalidOperationException("Can't find DynamicEntitySet for given tempTableOptions.");
                     
+                    var targetSet = dynamicSet;
+                    Dictionary<string, string> colNameMappings = null;
+                    if (dynamicSet.DynamicEntitySetMapper != null)
+                    {
+                        targetSet = dynamicSet.DynamicEntitySetMapper.StoreEntitySet ?? dynamicSet;
+                        colNameMappings = dynamicSet.DynamicEntitySetMapper.GetDifferentColumnMappings();
+                    }
+                    
                     // translate lambda expression
                     var lambdaExpression = parent.GetLambdaExpression(call, 2);
 
                     ValidateLambda(lambdaExpression);
 
-                    var updateOp = new DbDmlUpdateOperation(dynamicSet, lambdaExpression.ReturnType, withRowCount, limit, null);
+                    var updateOp = new DbDmlUpdateOperation(targetSet, lambdaExpression.ReturnType, withRowCount, limit, colNameMappings);
                     parent.DmlOperation = updateOp;
                     var lambda = parent.TranslateLambda(lambdaExpression, source, out DbExpressionBinding sourceBinding);
                     updateOp.IsUnderTranslation = false;
@@ -4110,6 +4119,8 @@ namespace System.Data.Entity.Core.Objects.ELinq
                         throw new InvalidOperationException("Argument 4 (withRowCount) must be a boolean constant.");
 
                     var entitySet = DynamicSqlTranslator.CreateDynamicEntitySet(parent, entityType, "TABLE:" + tableName, tempTableOptions);
+                    var storeSet = entitySet.DynamicEntitySetMapper.StoreEntitySet ?? entitySet;
+                    var colNameMappings = entitySet.DynamicEntitySetMapper.GetDifferentColumnMappings();
 
                     parent._mergeOption = MergeOption.NoTracking;
 
@@ -4120,7 +4131,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
                         
                     if (entitySet.AllowDynamicPlanCaching() || wrappedQuery == null)
                     {
-                        var insertOp = new DbDmlInsertOperation(entitySet, entityType, withRowCount, null, null, null);
+                        var insertOp = new DbDmlInsertOperation(storeSet, entityType, withRowCount, null, colNameMappings, null);
                         parent.DmlOperation = insertOp;
                         var projectExpr = wrappedQuery == null ? call.Arguments[0] : Expression.Constant(wrappedQuery);
                         var projection = parent.TranslateExpression(projectExpr);
@@ -4130,7 +4141,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
 
                     {
                         wrappedQuery.MergeOption = MergeOption.NoTracking;
-                        var insertOp = new DbDmlInsertOperation(entitySet, entityType, withRowCount, null, null, wrappedQuery);
+                        var insertOp = new DbDmlInsertOperation(storeSet, entityType, withRowCount, null, colNameMappings, wrappedQuery);
                         parent.DmlOperation = insertOp;
 
                         DbExpression result = null;
@@ -4317,7 +4328,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
 
 		private static class DynamicSqlTranslator
 		{
-			const string DynamicEntityTypeNamespace = "DynamicNamespace";
+			const string DynamicEntityTypeNamespace = "DynamicNamespace_C";
 			private static long _entitySetKey;
 
 			public static bool IsCandidateMethod(MethodInfo method)
@@ -4374,14 +4385,8 @@ namespace System.Data.Entity.Core.Objects.ELinq
 				var lstEdmProperties = options.Columns.Select(option => CreateEdmProperty(parent, option)).ToList();
 				if (lstEdmProperties.Count == 0)
 					throw new InvalidOperationException("No any property is mapped.");
-                
-				var col = parent._perspective.MetadataWorkspace.GetItemCollection(DataSpace.SSpace, true);
 
-				var container = col.GetItems<EntityContainer>().FirstOrDefault();
-				if (container == null)
-					throw new InvalidOperationException("Can't get container.");
-
-				var entitySetName = options.UniqueSetName;
+                var entitySetName = options.UniqueSetName;
 				if (entitySetName == null)
 				{
 					var nextId = Interlocked.Increment(ref _entitySetKey);
@@ -4414,14 +4419,12 @@ namespace System.Data.Entity.Core.Objects.ELinq
 
 				var entityTypeName = "Dyn_" + entityType.Name;
 
-				var et = new EntityType(entityTypeName, DynamicEntityTypeNamespace, DataSpace.CSpace, options.KeyMemberNames, lstEdmProperties);
-				var es = new EntitySet(entitySetName, schemaName, tableName, sqlDefinition, et) {Database = database};
-                es.DynamicEntitySetMapper = new DynamicEntitySetMapper(es, options, entityType);
-				es.ChangeEntityContainerWithoutCollectionFixup(container);
-				es.SetReadOnly();
-                et.DynamicEntitySet = es;
+				var typeCSpace = new EntityType(entityTypeName, DynamicEntityTypeNamespace, DataSpace.CSpace, options.KeyMemberNames, lstEdmProperties);
+				var setCSpace = new EntitySet(entitySetName, schemaName, tableName, sqlDefinition, typeCSpace) {Database = database};
+                var mapper = new DynamicEntitySetMapper(setCSpace, options, entityType, parent._perspective.MetadataWorkspace);
+                mapper.ProcessMapping();
 
-                return es;
+                return setCSpace;
             }
 
 			private static EdmProperty CreateEdmProperty(ExpressionConverter parent, ColumnOption option)
@@ -4442,14 +4445,14 @@ namespace System.Data.Entity.Core.Objects.ELinq
 
                     tu = TypeUsage.Create(tu.EdmType, facets);
                 }
-				return new EdmProperty(option.ColumnName, tu);
+				return new EdmProperty(option.Property.Name, tu);
 			}
 
 			public static bool TryGetMember(StructuralType structuralType, string name, out EdmMember member)
 			{
 				member = null;
 				var et = structuralType as EntityType;
-				if (et == null || et.NamespaceName != DynamicEntityTypeNamespace)
+				if (et == null || !Helper.IsDynamicType(et))
 					return false;
 				member = et.Properties.FirstOrDefault(e => e.Name == name);
 				return member != null;

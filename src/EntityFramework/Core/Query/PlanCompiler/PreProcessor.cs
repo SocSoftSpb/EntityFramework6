@@ -222,6 +222,36 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
 
         #region View Expansion
 
+        private Node ExpandViewOfDynamicType(ScanTableOp scanTableOp, ref IsOfOp typeFilter)
+        {
+            var entitySet = scanTableOp.Table.TableMetadata.Extent as EntitySet;
+            if (entitySet == null)
+                throw new InvalidOperationException("The target of a ScanTableOp must reference an EntitySet to be used with ExpandViewOfDynamicType");
+            var dynMapper = entitySet.DynamicEntitySetMapper;
+            if (dynMapper == null)
+                throw new InvalidOperationException("The target of a ScanTableOp must reference an Dynamic EntitySet to be used with ExpandViewOfDynamicType");
+            PlanCompiler.Assert(
+                entitySet.EntityContainer.DataSpace == DataSpace.CSpace,
+                "Store entity sets cannot have Query Mapping Views and should not be used with ExpandView");
+
+            PlanCompiler.Assert(typeFilter == null, "The ScanTableOp of Dynamic EntitySet does not supported type filters");
+
+            var ret = dynMapper.GetInternalTree(m_command, scanTableOp.Hints);
+
+            //
+            // Make sure we're tracking what we've asked any discriminator maps to contain.
+            //
+            // DetermineDiscriminatorMapUsage(ret, entitySet, requiredType, includeSubtypes);
+
+            //
+            // Build up a ScanViewOp to "cap" the defining query below
+            //
+            var scanViewOp = m_command.CreateScanViewOp(scanTableOp.Table, scanTableOp.Hints);
+            ret = m_command.CreateNode(scanViewOp, ret);
+
+            return ret;
+        }
+
         // <summary>
         // Gets the "expanded" query mapping view for the specified C-Space entity set
         // </summary>
@@ -2105,11 +2135,11 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             {
                 return scanTableNode;
             }
-            else
-            {
-                // "Expand" the C-Space view
-                ret = ExpandView(scanTableOp, ref typeFilter);
-            }
+
+            // "Expand" the C-Space view
+            ret = scanTableOp.Table.TableMetadata.Extent is EntitySet es && es.DynamicEntitySetMapper != null
+                ? ExpandViewOfDynamicType(scanTableOp, ref typeFilter)
+                : ExpandView(scanTableOp, ref typeFilter);
 
             // Rerun the processor over the resulting subtree
             ret = VisitNode(ret);

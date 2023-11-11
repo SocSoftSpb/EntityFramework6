@@ -45,7 +45,7 @@ namespace System.Data.Entity.Query.LinqToEntities
 
             private static DbConnection CreateConnection()
             {
-                return new SqlConnection("Data Source=pk8dev;Initial Catalog=PK8_DATA;User ID=pk8_appserver;Password=pk8_app_pk8;Pooling=True;Min Pool Size=4;Max Pool Size=200;MultipleActiveResultSets=True;Connect Timeout=60;Application Name=Entity Framework tests");
+                return new SqlConnection("Data Source=pk8local;Initial Catalog=PK8_DATA_DEV;User ID=pk8_appserver;Password=pk8_app_pk8;Pooling=True;Min Pool Size=4;Max Pool Size=200;MultipleActiveResultSets=True;Connect Timeout=60;Application Name=Entity Framework tests");
             }
 
             protected override void OnModelCreating(DbModelBuilder b)
@@ -53,10 +53,6 @@ namespace System.Data.Entity.Query.LinqToEntities
                 b.Entity<Author>();
                 b.Entity<Book>()
                     .HasRequired(e => e.Author).WithMany().HasForeignKey(e => e.AuthorId);
-
-                b.Entity<Book>().Property(e => e.Id).HasColumnName("BookId");
-                b.Entity<Book>().Property(e => e.Title).HasColumnName("Title25");
-                b.Entity<Book>().Property(e => e.AuthorId).HasColumnName("AuthId");
 
                 b.Entity<Book>().Map(e => e.Requires("Disc").HasValue((byte)3));
                 b.Entity<Book1>().Map(e => e.Requires("Disc").HasValue((byte)11));

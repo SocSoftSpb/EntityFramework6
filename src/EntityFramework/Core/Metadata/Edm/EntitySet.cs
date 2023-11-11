@@ -4,6 +4,8 @@ namespace System.Data.Entity.Core.Metadata.Edm
 {
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
+    using System.Data.Entity.Core.Common.CommandTrees;
+    using System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder;
     using System.Data.Entity.Core.Common.Utils;
     using System.Data.Entity.Core.Mapping;
     using System.Data.Entity.Core.Metadata.Edm.Provider;
@@ -12,6 +14,13 @@ namespace System.Data.Entity.Core.Metadata.Edm
     using System.Diagnostics;
     using System.Linq;
     using System.Threading;
+    
+    using ITreeGenerator = System.Data.Entity.Core.Query.PlanCompiler.ITreeGenerator;
+    using PlanCompiler = System.Data.Entity.Core.Query.PlanCompiler.PlanCompiler;
+    using OpCopier = System.Data.Entity.Core.Query.InternalTrees.OpCopier;
+    using Node = System.Data.Entity.Core.Query.InternalTrees.Node;
+    using OpType = System.Data.Entity.Core.Query.InternalTrees.OpType;
+    using Command = System.Data.Entity.Core.Query.InternalTrees.Command;
 
     /// <summary>
     /// Represents a particular usage of a structure defined in EntityType. In the conceptual-model, this represents a set that can 
@@ -242,17 +251,130 @@ namespace System.Data.Entity.Core.Metadata.Edm
 
     internal class DynamicEntitySetMapper
     {
+        const string DynamicEntityTypeNamespace = "DynamicNamespace_S";
+
         private readonly EntitySet _entitySet;
         private readonly DynamicEntitySetOptions _options;
         private readonly Type _clrType;
+        private readonly MetadataWorkspace _metadataWorkspace;
         private volatile ClrEntityType _clrEntityType;
         private volatile ObjectTypeMapping _dynamicObjectMapping;
+        private Node _internalTree;
 
-        public DynamicEntitySetMapper(EntitySet entitySet, DynamicEntitySetOptions options, Type clrType)
+        public DynamicEntitySetMapper(EntitySet entitySet, DynamicEntitySetOptions options, Type clrType, MetadataWorkspace metadataWorkspace)
         {
+            _metadataWorkspace = metadataWorkspace;
             _entitySet = entitySet;
             _options = options;
             _clrType = clrType;
+        }
+
+        public EntitySet StoreEntitySet { get; private set; }
+
+        public void ProcessMapping()
+        {
+            var storeItemCollection = (StoreItemCollection)_metadataWorkspace.GetItemCollection(DataSpace.SSpace);
+            var containerSSpase = GetContainer(storeItemCollection);
+            if (containerSSpase == null)
+                throw new InvalidOperationException("Can't get container in SSpace.");
+
+            var hasDifferentColumns = _options.Columns.Any(e => e.Property.Name != e.ColumnName); 
+
+            _entitySet.DynamicEntitySetMapper = this;
+            var typeCSpace = _entitySet.ElementType;
+            typeCSpace.DynamicEntitySet = _entitySet;
+            
+            if (hasDifferentColumns)
+            {
+                var containerCSpase = GetContainer(_metadataWorkspace.GetItemCollection(DataSpace.CSpace));
+                _entitySet.ChangeEntityContainerWithoutCollectionFixup(containerCSpase);
+                string[] keyMemberNames = null;
+                if (_options.KeyMemberNames != null)
+                    keyMemberNames = new string[_options.KeyMemberNames.Length];
+                var lstEdmProperties = new List<EdmMember>(typeCSpace.Properties.Count);
+                var iKeyMember = 0;
+                
+                foreach (var cProperty in typeCSpace.Properties)
+                {
+                    var colOption = _options.Columns.Single(e => e.Property.Name == cProperty.Name);
+                    var underlyingTypeUsage = TypeUsage.Create(cProperty.UnderlyingPrimitiveType, cProperty.TypeUsage.Facets);
+                    var storeTypeUsage = storeItemCollection.ProviderManifest.GetStoreType(underlyingTypeUsage);
+                    var sProperty = new EdmProperty(colOption.ColumnName, storeTypeUsage)
+                    {
+                        Nullable = cProperty.Nullable
+                    };
+                    lstEdmProperties.Add(sProperty);
+                    
+                    if (_options.KeyMemberNames != null && keyMemberNames != null && _options.KeyMemberNames.Contains(cProperty.Name))
+                    {
+                        keyMemberNames[iKeyMember++] = sProperty.Name;
+                    }
+                }
+                
+                var typeSSpace = new EntityType(typeCSpace.Name, DynamicEntityTypeNamespace, DataSpace.SSpace, keyMemberNames, lstEdmProperties);
+                var setSSpace = new EntitySet(_entitySet.Name, _entitySet.Schema, _entitySet.Table, _entitySet.DefiningQuery, typeSSpace)
+                {
+                    Database = _entitySet.Database,
+                    DynamicEntitySetMapper = this
+                };
+                typeSSpace.DynamicEntitySet = setSSpace;
+
+                setSSpace.ChangeEntityContainerWithoutCollectionFixup(containerSSpase);
+                setSSpace.SetReadOnly();
+                StoreEntitySet = setSSpace;
+                
+                _entitySet.ChangeEntityContainerWithoutCollectionFixup(containerCSpase);
+            }
+            else
+            {
+                _entitySet.ChangeEntityContainerWithoutCollectionFixup(containerSSpase);
+            }
+            
+            _entitySet.SetReadOnly();
+        }
+
+        private Node BuildInternalTree()
+        {
+            var sourceType = StoreEntitySet.ElementType;
+            var input = StoreEntitySet.Scan().BindAs("row");
+            var resultType = TypeUsage.Create(_entitySet.ElementType);
+            var projection = resultType.New(sourceType.Properties.Select(p => input.Variable.Property(p)));
+
+            var query = input.Project(projection);
+
+            var commandTree = DbQueryCommandTree.FromValidExpression(
+                _metadataWorkspace, TargetPerspective.TargetPerspectiveDataSpace, query,
+                useDatabaseNullSemantics: true, disableFilterOverProjectionSimplificationForCustomFunctions: false);
+
+            // Convert this into an ITree first
+            var itree = ITreeGenerator.Generate(commandTree, discriminatorMap: null);
+            // Pull out the root physical project-op, and copy this itree into our own itree
+            PlanCompiler.Assert(
+                itree.Root.Op.OpType == OpType.PhysicalProject,
+                "Expected a physical projectOp at the root of the tree - found " + itree.Root.Op.OpType);
+            // #554756: VarVec enumerators are not cached on the shared Command instance.
+            itree.DisableVarVecEnumCaching();
+            return itree.Root.Child0;
+        }
+        
+        internal Node GetInternalTree(Command targetIqtCommand, TableHints hints)
+        {
+            var internalTree = _internalTree;
+            if (internalTree == null)
+            {
+                Interlocked.CompareExchange(ref _internalTree, BuildInternalTree(), null);
+                internalTree = _internalTree;
+            }
+            Debug.Assert(internalTree != null, "m_internalTreeNode != null");
+            return OpCopier.Copy(targetIqtCommand, internalTree, hints);
+        }
+
+        private EntityContainer GetContainer(ItemCollection itemCollection)
+        {
+            var container = itemCollection.GetItems<EntityContainer>().FirstOrDefault();
+            if (container == null)
+                throw new InvalidOperationException($"Can't get container in DataSpace {itemCollection.DataSpace}.");
+            return container;
         }
 
         public ObjectTypeMapping GetDynamicObjectMapping()
@@ -296,7 +418,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
             foreach (var optionsColumn in _options.Columns)
             {
                 var clrProperty = clrEntityType.Properties[optionsColumn.Property.Name];
-                var edmProperty = entityType.Properties[optionsColumn.ColumnName];
+                var edmProperty = entityType.Properties[optionsColumn.Property.Name];
 
                 mapping.AddMemberMap(new ObjectPropertyMapping(edmProperty, clrProperty));
             }
@@ -312,6 +434,21 @@ namespace System.Data.Entity.Core.Metadata.Edm
         public bool AllowDynamicPlanCaching()
         {
             return _options.UniqueSetName != null;
+        }
+
+        public Dictionary<string, string> GetDifferentColumnMappings()
+        {
+            if (StoreEntitySet == null)
+                return null;
+
+            Dictionary<string, string> res = null;
+            foreach (var col in _options.Columns)
+            {
+                if (col.Property.Name != col.ColumnName)
+                    (res ?? (res = new Dictionary<string, string>())).Add(col.Property.Name, col.ColumnName);
+            }
+
+            return res;
         }
     }
 }

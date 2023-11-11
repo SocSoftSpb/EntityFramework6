@@ -657,7 +657,7 @@ namespace System.Data.Entity.SqlServer.SqlGen
             foreach (var clm in entitySet.ElementType.Properties)
             {
                 var mp = mapInfo.FirstOrDefault(e => e.TargetName == clm.Name);
-                if (mp == null && clm.TypeUsage.IsNullable())
+                if (mp == null && clm.Nullable)
                     continue;
                 
                 if (nColumn > 0)
@@ -668,7 +668,9 @@ namespace System.Data.Entity.SqlServer.SqlGen
                 insertColumnList.Append(QuoteIdentifier(clm.Name));
                 if (mp == null)
                 {
-                    var sqlType = GetSqlPrimitiveType(clm.TypeUsage);
+                    var sqlType = opInsert.TargetDataSpace == DataSpace.CSpace
+                        ? GetSqlPrimitiveType(clm.TypeUsage)
+                        : GenerateSqlForStoreType(_sqlVersion, clm.TypeUsage);
                     selectColumnList.Append("CAST(").Append(GetDefaultPrimitiveLiteral(clm.TypeUsage)).Append(" AS ").Append(sqlType).Append(")");
                 }
                 else
@@ -4173,7 +4175,7 @@ namespace System.Data.Entity.SqlServer.SqlGen
         // It will include size, precision or scale depending on type information present in the
         // type facets
         // </summary>
-        private string GetSqlPrimitiveType(TypeUsage type)
+        internal string GetSqlPrimitiveType(TypeUsage type)
         {
             Debug.Assert(type.EdmType.GetMetadataPropertyValue<DataSpace>("DataSpace") == DataSpace.CSpace);
 
@@ -4181,6 +4183,8 @@ namespace System.Data.Entity.SqlServer.SqlGen
             return GenerateSqlForStoreType(_sqlVersion, storeTypeUsage);
         }
 
+        internal string GenerateSqlForStoreType(TypeUsage storeTypeUsage) => GenerateSqlForStoreType(_sqlVersion, storeTypeUsage);
+        
         internal static string GenerateSqlForStoreType(SqlVersion sqlVersion, TypeUsage storeTypeUsage)
         {
             Debug.Assert(BuiltInTypeKind.PrimitiveType == storeTypeUsage.EdmType.BuiltInTypeKind, "Type must be primitive type");
@@ -4245,7 +4249,7 @@ namespace System.Data.Entity.SqlServer.SqlGen
             return typeName;
         }
 
-        private static string GetDefaultPrimitiveLiteral(TypeUsage storeTypeUsage)
+        internal static string GetDefaultPrimitiveLiteral(TypeUsage storeTypeUsage)
         {
             Debug.Assert(BuiltInTypeKind.PrimitiveType == storeTypeUsage.EdmType.BuiltInTypeKind, "Type must be primitive type");
 

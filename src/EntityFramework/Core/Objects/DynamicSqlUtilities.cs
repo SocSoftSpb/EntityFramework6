@@ -69,6 +69,7 @@ namespace System.Data.Entity.Core.Objects
         public ColumnOption(PropertyInfo propertyInfo)
         {
             Property = propertyInfo;
+            ColumnName = propertyInfo.Name;
 
             var propertyType = propertyInfo.PropertyType;
             if (propertyType.IsValueType)
@@ -84,7 +85,7 @@ namespace System.Data.Entity.Core.Objects
         /// <summary>
         /// CLR Property for this column
         /// </summary>
-        public PropertyInfo Property { get; private set; }
+        public PropertyInfo Property { get; }
 
         /// <summary>
         /// Column allows null values
@@ -94,10 +95,7 @@ namespace System.Data.Entity.Core.Objects
         /// <summary>
         /// Name of table column
         /// </summary>
-        public string ColumnName
-        {
-            get { return Property.Name; }
-        }
+        public string ColumnName { get; set; }
     }
 
 }

@@ -4,6 +4,7 @@ namespace System.Data.Entity.SqlServer.SqlGen
 {
     using System.Data.Entity.Core.Common.CommandTrees;
     using System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder;
+    using System.Data.Entity.Core.Metadata.Edm;
     using System.Linq;
 
     internal abstract class SqlSelectDmlModificator
@@ -261,6 +262,25 @@ namespace System.Data.Entity.SqlServer.SqlGen
                 writer.WriteLine();
                 outColumn.WriteSql(writer, sqlGenerator);
             }
+            
+            var unmappedRequiredProperties = DmlOperation.GetUnmappedRequiredProperties();
+            if (unmappedRequiredProperties != null)
+            {
+                foreach (var edmProperty in unmappedRequiredProperties)
+                {
+                    writer.Write(", ");
+                    writer.WriteLine();
+                    
+                    var sqlType = DmlOperation.TargetDataSpace == DataSpace.CSpace
+                        ? sqlGenerator.GetSqlPrimitiveType(edmProperty.TypeUsage)
+                        : sqlGenerator.GenerateSqlForStoreType(edmProperty.TypeUsage);
+                    writer.Write("CAST(");
+                    writer.Write(SqlGenerator.GetDefaultPrimitiveLiteral(edmProperty.TypeUsage));
+                    writer.Write(" AS ");
+                    writer.Write(sqlType);
+                    writer.Write(")");
+                }
+            }
 
             if (DmlOperation.Discriminators != null && DmlOperation.Discriminators.Length > 0)
             {
@@ -300,13 +320,25 @@ namespace System.Data.Entity.SqlServer.SqlGen
 
             if (DmlOperation.ColumnMap == null || DmlOperation.ColumnMap.Mappings.Length == 0)
                 throw new InvalidOperationException("Column mapping is not set for Insert operation.");
-
-            for (var i = 0; i < DmlOperation.ColumnMap.Mappings.Length; i++)
+            
+            var mappings = DmlOperation.ColumnMap.Mappings;
+            for (var i = 0; i < mappings.Length; i++)
             {
                 if (i > 0)
                     writer.Write(", ");
-                
-                writer.Write(SqlGenerator.QuoteIdentifier(DmlOperation.ColumnMap.Mappings[i].TargetColumnName));
+
+                var map = mappings[i];
+                writer.Write(SqlGenerator.QuoteIdentifier(map.TargetColumnName));
+            }
+
+            var unmappedRequiredProperties = DmlOperation.GetUnmappedRequiredProperties();
+            if (unmappedRequiredProperties != null)
+            {
+                foreach (var edmProperty in unmappedRequiredProperties)
+                {
+                    writer.Write(", ");
+                    writer.Write(SqlGenerator.QuoteIdentifier(edmProperty.Name));
+                }
             }
 
             if (DmlOperation.Discriminators != null && DmlOperation.Discriminators.Length > 0)
