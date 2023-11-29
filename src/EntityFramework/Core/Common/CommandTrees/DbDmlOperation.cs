@@ -8,6 +8,7 @@
     using System.Data.Entity.Core.Objects;
     using System.Data.Entity.Core.Objects.ELinq;
     using System.Data.Entity.Core.Query.InternalTrees;
+    using System.Linq;
     using System.Threading;
 
     public enum DbDmlOperationKind
@@ -187,10 +188,19 @@
             {
                 if (!(fromObjectQuery.QueryState is ELinqQueryState linqState))
                     throw new NotSupportedException("Insert operation supporter only for Linq-to-Entities.");
-                
+
                 var plan = fromObjectQuery.QueryState.GetExecutionPlan(MergeOption.NoTracking);
                 var commandDefinition = (EntityCommandDefinition)(plan.CommandDefinition);
-                FromQueryMapping =  commandDefinition.GetProjectionMapping();
+                FromQueryMapping = commandDefinition.GetProjectionMapping();
+                if (ColNameMappings != null && ColNameMappings.Count > 0)
+                {
+                    foreach (var map in FromQueryMapping)
+                    {
+                        if (ColNameMappings.TryGetValue(map.TargetName, out var storeColumnName))
+                            map.TargetStoreName = storeColumnName;
+                    }
+                }
+
                 FromStoreCommand = commandDefinition.CreateStoreCommand();
                 LinqParameters = linqState.GetLinqParameters(plan);
             }

@@ -443,6 +443,8 @@ namespace System.Data.Entity.Core.Objects
     /// </summary>
     public sealed class ObjectQueryColumnMap
     {
+        private string _targetStoreName;
+
         internal ObjectQueryColumnMap(EdmProperty sourceProperty, int sourceOrdinal, string targetName, TypeUsage targetType)
         {
             SourceProperty = sourceProperty;
@@ -463,6 +465,16 @@ namespace System.Data.Entity.Core.Objects
         /// Name of projected CLR property
         /// </summary>
         public string TargetName { get; }
+
+        /// <summary>
+        /// Name of property in SSDL (if detected)
+        /// </summary>
+        public string TargetStoreName
+        {
+            get => _targetStoreName ?? TargetName;
+            set => _targetStoreName = value;
+        }
+
         /// <summary>
         /// Type of projected CLR property
         /// </summary>

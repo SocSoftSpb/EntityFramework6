@@ -522,5 +522,55 @@ VALUES (1, 'Book 1', 1), (2, 'Book 2', 1), (3, 'Book 3', 2), (4, 'Book 4', 3)";
                 }
             }
         }
+
+        [Fact]
+        public void CanInsertTempTableWithChangedColumnName()
+        {
+            const string sqlCreate = @"CREATE " + @"TABLE #t_Books([Id] [INT] NOT NULL, [Title] [NVARCHAR](200) NULL, [A_Id] [INT] NOT NULL);";
+            using (var context = new MyContext())
+            {
+                using (var tr = context.Database.BeginTransaction())
+                {
+                    var objectContext = ((IObjectContextAdapter)context).ObjectContext;
+                    objectContext.Connection.Open();
+                    objectContext.ExecuteStoreCommand(sqlCreate);
+
+                    IQueryable<Book> books = objectContext.CreateObjectSet<Book>();
+                    var options = DynamicQueryUtils.CreateDynamicQueryOptions(typeof(TempBook));
+                    options.Columns[2].ColumnName = "A_Id";
+                    var dynQ = context.DynamicQuery<TempBook>("TABLE:#t_Books", options);
+                    var strDynQ = ((ObjectQuery)dynQ).ToTraceString();
+
+                    var books2 = books.Where(e => e.AuthorId == 2);
+                    var books2Cnt = books2.Count();
+                    Assert.NotEqual(0, books2Cnt);
+                    
+                    var toInsert = books2.Where(
+                            e => !e.Author.Name.Contains("aaa")
+                        )
+                        .Take(20)
+                        .Select(
+                            e => new TempBook
+                            {
+                                Id = e.Id + 100500,
+                                Title = "Book " + e.Title,
+                                AuthorId = e.AuthorId
+                            });
+
+                    var toInsertCount = toInsert.Count();
+                    Assert.Equal(books2Cnt, toInsertCount);
+                    
+                    var fromQuery = (ObjectQuery<TempBook>)toInsert;
+                    var insertQuery = BatchDmlFactory.CreateBatchInsertDynamicTableQuery(fromQuery, "#t_Books", options, true);
+                    var strInsert = insertQuery.ToTraceString();
+                    var result = insertQuery.Execute();
+
+                    var cntTemp = dynQ.Count(e => e.AuthorId == 2);
+                    Assert.Equal(books2Cnt, cntTemp);
+
+                    tr.Rollback();
+                }
+            }
+        }
     }
 }
