@@ -67,11 +67,27 @@ namespace System.Data.Entity.Core.Metadata.Edm
         // <returns> The identity of the resulting ref type </returns>
         private static string GetIdentity(EntityTypeBase entityTypeBase)
         {
+#if NET5_0_OR_GREATER
+            Span<char> buffer = stackalloc char[128];
+            var builder = new ValueStringBuilder(buffer);
+            try
+            {
+                builder.Append("reference[");
+                entityTypeBase.BuildIdentity(ref builder);
+                builder.Append("]");
+                return builder.ToString();
+            }
+            finally
+            {
+                builder.Dispose();
+            }
+#else
             var builder = new StringBuilder(50);
             builder.Append("reference[");
             entityTypeBase.BuildIdentity(builder);
             builder.Append("]");
             return builder.ToString();
+#endif
         }
 
         /// <inheritdoc />

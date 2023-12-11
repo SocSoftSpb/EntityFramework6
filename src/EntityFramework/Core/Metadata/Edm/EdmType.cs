@@ -88,9 +88,23 @@ namespace System.Data.Entity.Core.Metadata.Edm
             {
                 if (CacheIdentity == null)
                 {
+#if NET5_0_OR_GREATER
+                    Span<char> buffer = stackalloc char[128];
+                    var builder = new ValueStringBuilder(buffer);
+                    try
+                    {
+                        BuildIdentity(ref builder);
+                        CacheIdentity = builder.ToString();
+                    }
+                    finally
+                    {
+                        builder.Dispose();
+                    }
+#else
                     var builder = new StringBuilder(50);
                     BuildIdentity(builder);
                     CacheIdentity = builder.ToString();
+#endif
                 }
 
                 return CacheIdentity;
@@ -195,7 +209,11 @@ namespace System.Data.Entity.Core.Metadata.Edm
             get { return null; }
         }
 
+#if NET5_0_OR_GREATER
+        internal override void BuildIdentity(ref ValueStringBuilder builder)
+#else
         internal override void BuildIdentity(StringBuilder builder)
+#endif
         {
             // if we already know the identity, simply append it
             if (null != CacheIdentity)

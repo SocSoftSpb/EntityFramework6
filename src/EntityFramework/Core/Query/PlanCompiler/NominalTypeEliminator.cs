@@ -2572,7 +2572,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
                 var structuredVarInfo = (StructuredVarInfo)varInfo;
 
                 var newOp = m_command.CreateNewRecordOp(structuredVarInfo.NewTypeUsage, structuredVarInfo.Fields);
-                var newNodeChildren = new List<Node>();
+                var newNodeChildren = new List<Node>(varInfo.NewVars.Count);
                 foreach (var v in varInfo.NewVars)
                 {
                     var newVarRefOp = m_command.CreateVarRefOp(v);

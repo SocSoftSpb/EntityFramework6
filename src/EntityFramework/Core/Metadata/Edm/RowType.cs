@@ -149,34 +149,57 @@ namespace System.Data.Entity.Core.Metadata.Edm
         {
             // The row type identity is formed as follows:
             // "rowtype[" + a comma-separated list of property identities + "]"
-            var identity = new StringBuilder("rowtype[");
-
-            if (null != properties)
+#if NET5_0_OR_GREATER
+            Span<char> buffer = stackalloc char[1024];
+            var identity = new ValueStringBuilder(buffer);
+            try
+#else
+            var identity = new StringBuilder(1024);
+#endif
             {
-                var i = 0;
-                // For each property, append the type name and facets.
-                foreach (var property in properties)
+                identity.Append("rowtype[");
+
+                if (null != properties)
                 {
-                    if (i > 0)
+                    var i = 0;
+                    // For each property, append the type name and facets.
+                    foreach (var property in properties)
                     {
+                        if (i > 0)
+                        {
+                            identity.Append(",");
+                        }
+
+                        identity.Append("(");
+                        identity.Append(property.Name);
                         identity.Append(",");
+                        property.TypeUsage.BuildIdentity(
+#if NET5_0_OR_GREATER
+                            ref
+#endif
+                            identity
+                            );
+                        identity.Append(")");
+                        i++;
                     }
-                    identity.Append("(");
-                    identity.Append(property.Name);
-                    identity.Append(",");
-                    property.TypeUsage.BuildIdentity(identity);
-                    identity.Append(")");
-                    i++;
                 }
-            }
-            identity.Append("]");
 
-            if (null != initializerMetadata)
+                identity.Append("]");
+
+                if (null != initializerMetadata)
+                {
+                    identity.Append(",");
+                    identity.Append(initializerMetadata.Identity);
+                }
+
+                return identity.ToString();
+            }
+#if NET5_0_OR_GREATER
+            finally
             {
-                identity.Append(",").Append(initializerMetadata.Identity);
+                identity.Dispose();
             }
-
-            return identity.ToString();
+#endif
         }
 
         private static IEnumerable<EdmProperty> CheckProperties(IEnumerable<EdmProperty> properties)

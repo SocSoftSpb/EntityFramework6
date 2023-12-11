@@ -238,7 +238,11 @@ namespace System.Data.Entity.Core.Metadata.Edm
         // <summary>
         // Builds identity string for this item. By default, the method calls the identity property.
         // </summary>
+#if NET5_0_OR_GREATER
+        internal virtual void BuildIdentity(ref ValueStringBuilder builder)
+#else
         internal virtual void BuildIdentity(StringBuilder builder)
+#endif
         {
             builder.Append(Identity);
         }

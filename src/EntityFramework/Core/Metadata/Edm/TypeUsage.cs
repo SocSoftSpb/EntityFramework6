@@ -656,10 +656,25 @@ namespace System.Data.Entity.Core.Metadata.Edm
 
                 if (_identity == null)
                 {
+#if NET5_0_OR_GREATER
+                    Span<char> buffer = stackalloc char[128];
+                    var builder = new ValueStringBuilder(buffer);
+                    try
+                    {
+                        BuildIdentity(ref builder);
+                        var identity = builder.ToString();
+                        Interlocked.CompareExchange(ref _identity, identity, null);
+                    }
+                    finally
+                    {
+                        builder.Dispose();
+                    }
+#else
                     var builder = new StringBuilder(128);
                     BuildIdentity(builder);
                     var identity = builder.ToString();
                     Interlocked.CompareExchange(ref _identity, identity, null);
+#endif
                 }
                 return _identity;
             }
@@ -706,7 +721,11 @@ namespace System.Data.Entity.Core.Metadata.Edm
             }
         }
 
+#if NET5_0_OR_GREATER
+        internal override void BuildIdentity(ref ValueStringBuilder builder)
+#else
         internal override void BuildIdentity(StringBuilder builder)
+#endif
         {
             // if we've already cached the identity, simply append it
             if (null != _identity)
@@ -738,7 +757,8 @@ namespace System.Data.Entity.Core.Metadata.Edm
                     builder.Append("=");
                     // If the facet is present, add its value to the identity
                     // We only include built-in system facets for the identity
-                    builder.Append(facet.Value ?? String.Empty);
+                    if (facet.Value != null)
+                        builder.Append(facet.Value.ToString());
                 }
             }
             builder.Append(")");

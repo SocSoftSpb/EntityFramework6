@@ -21,7 +21,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
     // the node factory methods
     // </summary>
     [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
-    internal class Command
+    internal sealed class Command
     {
         #region private state
 
@@ -97,7 +97,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <summary>
         // Gets the metadata workspace associated with this command
         // </summary>
-        internal virtual MetadataWorkspace MetadataWorkspace
+        internal MetadataWorkspace MetadataWorkspace
         {
             get { return m_metadataWorkspace; }
         }
@@ -105,9 +105,9 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <summary>
         // Gets/sets the root node of the query
         // </summary>
-        internal virtual Node Root { get; set; }
+        internal Node Root { get; set; }
 
-        internal virtual void DisableVarVecEnumCaching()
+        internal void DisableVarVecEnumCaching()
         {
             m_disableVarVecEnumCaching = true;
         }
@@ -115,7 +115,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <summary>
         // Returns the next value for a UnionAll BranchDiscriminator.
         // </summary>
-        internal virtual int NextBranchDiscriminatorValue
+        internal int NextBranchDiscriminatorValue
         {
             get { return m_nextBranchDiscriminatorValue++; }
         }
@@ -123,7 +123,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <summary>
         // Returns the next value for a node id, without incrementing it.
         // </summary>
-        internal virtual int NextNodeId
+        internal int NextNodeId
         {
             get { return m_nextNodeId; }
         }
@@ -133,7 +133,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <summary>
         // Helper routine to get the metadata representation for the bool type
         // </summary>
-        internal virtual TypeUsage BooleanType
+        internal TypeUsage BooleanType
         {
             get { return m_boolType; }
         }
@@ -141,7 +141,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <summary>
         // Helper routine to get the metadata representation of the int type
         // </summary>
-        internal virtual TypeUsage IntegerType
+        internal TypeUsage IntegerType
         {
             get { return m_intType; }
         }
@@ -149,7 +149,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <summary>
         // Helper routine to get the metadata representation of the string type
         // </summary>
-        internal virtual TypeUsage StringType
+        internal TypeUsage StringType
         {
             get { return m_stringType; }
         }
@@ -189,7 +189,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // VarVec constructor
         // </summary>
         // <returns> A new, empty, VarVec </returns>
-        internal virtual VarVec CreateVarVec()
+        internal VarVec CreateVarVec()
         {
             VarVec vec;
             if (m_freeVarVecs.Count == 0)
@@ -207,7 +207,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <summary>
         // Create a VarVec with a single Var
         // </summary>
-        internal virtual VarVec CreateVarVec(Var v)
+        internal VarVec CreateVarVec(Var v)
         {
             var varset = CreateVarVec();
             varset.Set(v);
@@ -217,7 +217,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <summary>
         // Create a VarVec with the set of specified vars
         // </summary>
-        internal virtual VarVec CreateVarVec(IEnumerable<Var> v)
+        internal VarVec CreateVarVec(IEnumerable<Var> v)
         {
             var vec = CreateVarVec();
             vec.InitFrom(v);
@@ -227,7 +227,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <summary>
         // Create a new VarVec from the input VarVec
         // </summary>
-        internal virtual VarVec CreateVarVec(VarVec v)
+        internal VarVec CreateVarVec(VarVec v)
         {
             var vec = CreateVarVec();
             vec.InitFrom(v);
@@ -237,7 +237,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <summary>
         // Release a VarVec to the freelist
         // </summary>
-        internal virtual void ReleaseVarVec(VarVec vec)
+        internal void ReleaseVarVec(VarVec vec)
         {
             m_freeVarVecs.Push(vec);
         }
@@ -250,7 +250,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // Create a new enumerator for a VarVec; use a free one if its
         // available; otherwise, create a new one
         // </summary>
-        internal virtual VarVec.VarVecEnumerator GetVarVecEnumerator(VarVec vec)
+        internal VarVec.VarVecEnumerator GetVarVecEnumerator(VarVec vec)
         {
             VarVec.VarVecEnumerator enumerator;
 
@@ -270,7 +270,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <summary>
         // Release an enumerator; keep it in a local stack for future use
         // </summary>
-        internal virtual void ReleaseVarVecEnumerator(VarVec.VarVecEnumerator enumerator)
+        internal void ReleaseVarVecEnumerator(VarVec.VarVecEnumerator enumerator)
         {
             if (!m_disableVarVecEnumCaching)
             {
@@ -338,7 +338,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // </summary>
         // <param name="type"> the shape of each row of the table </param>
         // <returns> the table definition </returns>
-        internal virtual TableMD CreateFlatTableDefinition(RowType type)
+        internal TableMD CreateFlatTableDefinition(RowType type)
         {
             return CreateFlatTableDefinition(type.Properties, new List<EdmMember>(), null);
         }
@@ -351,7 +351,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <param name="properties"> list of columns for the table </param>
         // <param name="keyMembers"> the key columns (if any) </param>
         // <param name="entitySet"> (OPTIONAL) entityset corresponding to this table </param>
-        internal virtual TableMD CreateFlatTableDefinition(
+        internal TableMD CreateFlatTableDefinition(
             IEnumerable<EdmProperty> properties, IEnumerable<EdmMember> keyMembers, EntitySetBase entitySet)
         {
             return new TableMD(properties, keyMembers, entitySet);
@@ -362,7 +362,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // </summary>
         // <param name="tableMetadata"> table metadata </param>
         // <returns> A new Table instance with columns as defined in the specified metadata </returns>
-        internal virtual Table CreateTableInstance(TableMD tableMetadata)
+        internal Table CreateTableInstance(TableMD tableMetadata)
         {
             var t = new Table(this, tableMetadata, NewTableId());
             m_tables.Add(t);
@@ -376,7 +376,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <summary>
         // All vars in the query
         // </summary>
-        internal virtual IEnumerable<Var> Vars
+        internal IEnumerable<Var> Vars
         {
             get { return m_vars.Where(v => v.VarType != VarType.NotValid); }
         }
@@ -386,7 +386,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // </summary>
         // <param name="id"> The ID of the variable to retrieve </param>
         // <returns> The variable with the specified ID </returns>
-        internal virtual Var GetVar(int id)
+        internal Var GetVar(int id)
         {
             Debug.Assert(m_vars[id].VarType != VarType.NotValid, "The var has been replaced by a different var and is no longer valid.");
 
@@ -398,7 +398,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // </summary>
         // <param name="paramName"> The name of the parameter for which to retrieve the ParameterVar </param>
         // <returns> The ParameterVar that corresponds to the specified parameter </returns>
-        internal virtual ParameterVar GetParameter(string paramName)
+        internal ParameterVar GetParameter(string paramName)
         {
             return m_parameterMap[paramName];
         }
@@ -418,7 +418,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <param name="parameterName"> The name of the parameter for which to create the var </param>
         // <param name="parameterType"> The type of the parameter, and therefore the new var </param>
         // <returns> A new ParameterVar instance with the specified name and type </returns>
-        internal virtual ParameterVar CreateParameterVar(
+        internal ParameterVar CreateParameterVar(
             string parameterName,
             TypeUsage parameterType)
         {
@@ -472,7 +472,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // The operation invalidates the <paramref name="oldVar" />. After the operation has completed
         // the <paramref name="oldVar" />) is invalidated internally and should no longer be used.
         // </remarks>
-        internal virtual ParameterVar ReplaceEnumParameterVar(ParameterVar oldVar)
+        internal ParameterVar ReplaceEnumParameterVar(ParameterVar oldVar)
         {
             return ReplaceParameterVar(oldVar, t => TypeHelpers.CreateEnumUnderlyingTypeUsage(t));
         }
@@ -490,7 +490,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // The operation invalidates the <paramref name="oldVar" />. After the operation has completed
         // the <paramref name="oldVar" />) is invalidated internally and should no longer be used.
         // </remarks>
-        internal virtual ParameterVar ReplaceStrongSpatialParameterVar(ParameterVar oldVar)
+        internal ParameterVar ReplaceStrongSpatialParameterVar(ParameterVar oldVar)
         {
             return ReplaceParameterVar(oldVar, t => TypeHelpers.CreateSpatialUnionTypeUsage(t));
         }
@@ -501,7 +501,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <param name="table"> The table instance that produces the column </param>
         // <param name="columnMD"> column metadata </param>
         // <returns> A new ColumnVar instance that references the specified column in the given table </returns>
-        internal virtual ColumnVar CreateColumnVar(Table table, ColumnMD columnMD)
+        internal ColumnVar CreateColumnVar(Table table, ColumnMD columnMD)
         {
             // create a new column var now
             var c = new ColumnVar(NewVarId(), table, columnMD);
@@ -515,7 +515,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // </summary>
         // <param name="type"> The type of the result produced by the expression that defines the variable </param>
         // <returns> A new ComputedVar instance with the specified result type </returns>
-        internal virtual ComputedVar CreateComputedVar(TypeUsage type)
+        internal ComputedVar CreateComputedVar(TypeUsage type)
         {
             var v = new ComputedVar(NewVarId(), type);
             m_vars.Add(v);
@@ -527,7 +527,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // </summary>
         // <param name="type"> Datatype of the Var </param>
         // <returns> A new SetOp Var with the specified result type </returns>
-        internal virtual SetOpVar CreateSetOpVar(TypeUsage type)
+        internal SetOpVar CreateSetOpVar(TypeUsage type)
         {
             var v = new SetOpVar(NewVarId(), type);
             m_vars.Add(v);
@@ -549,7 +549,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // </summary>
         // <param name="op"> The operator that the Node should reference </param>
         // <returns> A new Node with zero children that references the specified Op </returns>
-        internal virtual Node CreateNode(Op op)
+        internal Node CreateNode(Op op)
         {
             return CreateNode(op, new List<Node>());
         }
@@ -560,7 +560,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <param name="op"> The operator that the Node should reference </param>
         // <param name="arg1"> The single child Node </param>
         // <returns> A new Node with the specified child Node, that references the specified Op </returns>
-        internal virtual Node CreateNode(Op op, Node arg1)
+        internal Node CreateNode(Op op, Node arg1)
         {
             var l = new List<Node>();
             l.Add(arg1);
@@ -574,7 +574,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <param name="arg1"> The first child Node </param>
         // <param name="arg2"> the second child Node </param>
         // <returns> A new Node with the specified child Nodes, that references the specified Op </returns>
-        internal virtual Node CreateNode(Op op, Node arg1, Node arg2)
+        internal Node CreateNode(Op op, Node arg1, Node arg2)
         {
             var l = new List<Node>();
             l.Add(arg1);
@@ -590,7 +590,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <param name="arg2"> The second child Node </param>
         // <param name="arg3"> The third child Node </param>
         // <returns> A new Node with the specified child Nodes, that references the specified Op </returns>
-        internal virtual Node CreateNode(Op op, Node arg1, Node arg2, Node arg3)
+        internal Node CreateNode(Op op, Node arg1, Node arg2, Node arg3)
         {
             var l = new List<Node>();
             l.Add(arg1);
@@ -605,7 +605,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <param name="op"> The operator that the Node should reference </param>
         // <param name="args"> The list of child Nodes </param>
         // <returns> A new Node with the specified child nodes, that references the specified Op </returns>
-        internal virtual Node CreateNode(Op op, IList<Node> args)
+        internal Node CreateNode(Op op, IList<Node> args)
         {
             return new Node(m_nextNodeId++, op, new List<Node>(args));
         }
@@ -616,7 +616,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <param name="op"> The operator that the Node should reference </param>
         // <param name="args"> The list of child Nodes </param>
         // <returns> A new Node with the specified child nodes, that references the specified Op </returns>
-        internal virtual Node CreateNode(Op op, List<Node> args)
+        internal Node CreateNode(Op op, List<Node> args)
         {
             return new Node(m_nextNodeId++, op, args);
         }
@@ -631,7 +631,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <param name="type"> The type of the constant value </param>
         // <param name="value"> The constant value (may be null) </param>
         // <returns> A new ConstantOp with the specified type and value </returns>
-        internal virtual ConstantBaseOp CreateConstantOp(TypeUsage type, object value)
+        internal ConstantBaseOp CreateConstantOp(TypeUsage type, object value)
         {
             // create a NullOp if necessary
             if (value == null)
@@ -658,7 +658,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <param name="type"> datatype of the constant </param>
         // <param name="value"> constant value </param>
         // <returns> a new "internal" constant op that represents the constant </returns>
-        internal virtual InternalConstantOp CreateInternalConstantOp(TypeUsage type, object value)
+        internal InternalConstantOp CreateInternalConstantOp(TypeUsage type, object value)
         {
             return new InternalConstantOp(type, value);
         }
@@ -667,7 +667,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // An internal constant that serves as a null sentinel, i.e. it is only ever used
         // to be checked whether it is null
         // </summary>
-        internal virtual NullSentinelOp CreateNullSentinelOp()
+        internal NullSentinelOp CreateNullSentinelOp()
         {
             return new NullSentinelOp(IntegerType, 1);
         }
@@ -677,7 +677,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // </summary>
         // <param name="type"> datatype of the null constant </param>
         // <returns> a new "internal" null constant op </returns>
-        internal virtual NullOp CreateNullOp(TypeUsage type)
+        internal NullOp CreateNullOp(TypeUsage type)
         {
             return new NullOp(type);
         }
@@ -686,7 +686,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // Create a constant predicateOp
         // </summary>
         // <param name="value"> value of the constant predicate </param>
-        internal virtual ConstantPredicateOp CreateConstantPredicateOp(bool value)
+        internal ConstantPredicateOp CreateConstantPredicateOp(bool value)
         {
             return value ? m_trueOp : m_falseOp;
         }
@@ -694,7 +694,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <summary>
         // Create a constant predicate with value=true
         // </summary>
-        internal virtual ConstantPredicateOp CreateTrueOp()
+        internal ConstantPredicateOp CreateTrueOp()
         {
             return m_trueOp;
         }
@@ -702,7 +702,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <summary>
         // Create a constant predicateOp with the value false
         // </summary>
-        internal virtual ConstantPredicateOp CreateFalseOp()
+        internal ConstantPredicateOp CreateFalseOp()
         {
             return m_falseOp;
         }
@@ -712,7 +712,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // </summary>
         // <param name="function"> EdmFunction metadata that represents the function that is invoked by the Op </param>
         // <returns> A new FunctionOp that references the specified function metadata </returns>
-        internal virtual FunctionOp CreateFunctionOp(EdmFunction function)
+        internal FunctionOp CreateFunctionOp(EdmFunction function)
         {
             return new FunctionOp(function);
         }
@@ -722,7 +722,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // </summary>
         // <param name="type"> Type metadata that specifies the type that the child of the treat node should be treated as </param>
         // <returns> A new TreatOp that references the specified type metadata </returns>
-        internal virtual TreatOp CreateTreatOp(TypeUsage type)
+        internal TreatOp CreateTreatOp(TypeUsage type)
         {
             return new TreatOp(type, false);
         }
@@ -730,7 +730,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <summary>
         // Create a "dummy" treatOp (i.e.) we can actually ignore the treatOp.
         // </summary>
-        internal virtual TreatOp CreateFakeTreatOp(TypeUsage type)
+        internal TreatOp CreateFakeTreatOp(TypeUsage type)
         {
             return new TreatOp(type, true);
         }
@@ -740,7 +740,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // </summary>
         // <param name="isOfType"> Type metadata that specifies the type with which the type of the argument should be compared </param>
         // <returns> A new IsOfOp that references the specified type metadata </returns>
-        internal virtual IsOfOp CreateIsOfOp(TypeUsage isOfType)
+        internal IsOfOp CreateIsOfOp(TypeUsage isOfType)
         {
             return new IsOfOp(isOfType, false /*only*/, m_boolType);
         }
@@ -750,7 +750,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // </summary>
         // <param name="isOfType"> Type metadata that specifies the type with which the type of the argument should be compared </param>
         // <returns> A new IsOfOp that references the specified type metadata </returns>
-        internal virtual IsOfOp CreateIsOfOnlyOp(TypeUsage isOfType)
+        internal IsOfOp CreateIsOfOnlyOp(TypeUsage isOfType)
         {
             return new IsOfOp(isOfType, true /* "only" */, m_boolType);
         }
@@ -760,7 +760,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // </summary>
         // <param name="type"> Type metadata that represents the type to which the argument should be cast </param>
         // <returns> A new CastOp that references the specified type metadata </returns>
-        internal virtual CastOp CreateCastOp(TypeUsage type)
+        internal CastOp CreateCastOp(TypeUsage type)
         {
             return new CastOp(type);
         }
@@ -771,7 +771,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // </summary>
         // <param name="type"> Type metadata that represents the type to which the argument should be cast </param>
         // <returns> A new CastOp that references the specified type metadata </returns>
-        internal virtual SoftCastOp CreateSoftCastOp(TypeUsage type)
+        internal SoftCastOp CreateSoftCastOp(TypeUsage type)
         {
             return new SoftCastOp(type);
         }
@@ -782,7 +782,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <param name="opType"> An OpType that specifies one of the valid comparison OpTypes: EQ, GT, GE, NE, LT, LE </param>
         // <param name="useDatabaseNullSemantics"> Specifies whether database null comparison behavior is enabled. </param>
         // <returns> A new ComparisonOp of the specified comparison OpType </returns>
-        internal virtual ComparisonOp CreateComparisonOp(OpType opType, bool useDatabaseNullSemantics = false)
+        internal ComparisonOp CreateComparisonOp(OpType opType, bool useDatabaseNullSemantics = false)
         {
             return new ComparisonOp(opType, BooleanType) { UseDatabaseNullSemantics = useDatabaseNullSemantics };
         }
@@ -791,7 +791,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // Creates a new LikeOp
         // </summary>
         // <returns> The new LikeOp </returns>
-        internal virtual LikeOp CreateLikeOp(bool isCommon)
+        internal LikeOp CreateLikeOp(bool isCommon)
         {
             return new LikeOp(BooleanType, isCommon);
         }
@@ -801,7 +801,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // </summary>
         // <param name="opType"> An OpType that specifies one of the valid condition operations: And, Or, Not, IsNull </param>
         // <returns> A new ConditionalOp with the specified conditional OpType </returns>
-        internal virtual ConditionalOp CreateConditionalOp(OpType opType)
+        internal ConditionalOp CreateConditionalOp(OpType opType)
         {
             return new ConditionalOp(opType, BooleanType);
         }
@@ -811,7 +811,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // </summary>
         // <param name="type"> The result type of the CaseOp </param>
         // <returns> A new CaseOp with the specified result type </returns>
-        internal virtual CaseOp CreateCaseOp(TypeUsage type)
+        internal CaseOp CreateCaseOp(TypeUsage type)
         {
             return new CaseOp(type);
         }
@@ -822,7 +822,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <param name="aggFunc"> EdmFunction metadata that specifies the aggregate function </param>
         // <param name="distinctAgg"> Indicates whether or not the aggregate is a distinct aggregate </param>
         // <returns> A new AggregateOp with the specified function metadata and distinct property </returns>
-        internal virtual AggregateOp CreateAggregateOp(EdmFunction aggFunc, bool distinctAgg)
+        internal AggregateOp CreateAggregateOp(EdmFunction aggFunc, bool distinctAgg)
         {
             return new AggregateOp(aggFunc, distinctAgg);
         }
@@ -832,7 +832,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // </summary>
         // <param name="type"> Type metadata that specifies the type of the instance to construct </param>
         // <returns> A new NewInstanceOp with the specified result type </returns>
-        internal virtual NewInstanceOp CreateNewInstanceOp(TypeUsage type)
+        internal NewInstanceOp CreateNewInstanceOp(TypeUsage type)
         {
             return new NewInstanceOp(type);
         }
@@ -843,7 +843,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         //     name="entitySet" />
         // .
         // </summary>
-        internal virtual NewEntityOp CreateScopedNewEntityOp(TypeUsage type, List<RelProperty> relProperties, EntitySet entitySet)
+        internal NewEntityOp CreateScopedNewEntityOp(TypeUsage type, List<RelProperty> relProperties, EntitySet entitySet)
         {
             return new NewEntityOp(type, relProperties, true, entitySet);
         }
@@ -851,7 +851,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <summary>
         // Build out a new NewEntityOp constructing the unscoped entity <paramref name="type" />.
         // </summary>
-        internal virtual NewEntityOp CreateNewEntityOp(TypeUsage type, List<RelProperty> relProperties)
+        internal NewEntityOp CreateNewEntityOp(TypeUsage type, List<RelProperty> relProperties)
         {
             return new NewEntityOp(type, relProperties, false, null);
         }
@@ -864,7 +864,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <param name="entitySet"> the entityset that this instance belongs to </param>
         // <param name="relProperties"> list of rel properties that have corresponding values </param>
         // <returns> A new DiscriminatedNewInstanceOp with the specified result type and discrimination behavior </returns>
-        internal virtual DiscriminatedNewEntityOp CreateDiscriminatedNewEntityOp(
+        internal DiscriminatedNewEntityOp CreateDiscriminatedNewEntityOp(
             TypeUsage type, ExplicitDiscriminatorMap discriminatorMap,
             EntitySet entitySet, List<RelProperty> relProperties)
         {
@@ -876,7 +876,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // </summary>
         // <param name="type"> Type metadata that specifies the type of the multiset to construct </param>
         // <returns> A new NewMultiSetOp with the specified result type </returns>
-        internal virtual NewMultisetOp CreateNewMultisetOp(TypeUsage type)
+        internal NewMultisetOp CreateNewMultisetOp(TypeUsage type)
         {
             return new NewMultisetOp(type);
         }
@@ -886,7 +886,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // </summary>
         // <param name="type"> Type metadata that specifies that record type to construct </param>
         // <returns> A new NewRecordOp with the specified result type </returns>
-        internal virtual NewRecordOp CreateNewRecordOp(TypeUsage type)
+        internal NewRecordOp CreateNewRecordOp(TypeUsage type)
         {
             return new NewRecordOp(type);
         }
@@ -896,7 +896,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // </summary>
         // <param name="type"> Type metadata that specifies that record type to construct </param>
         // <returns> A new NewRecordOp with the specified result type </returns>
-        internal virtual NewRecordOp CreateNewRecordOp(RowType type)
+        internal NewRecordOp CreateNewRecordOp(RowType type)
         {
             return new NewRecordOp(TypeUsage.Create(type));
         }
@@ -907,7 +907,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // have any values specified as part of the Node. All other fields are
         // considered to be null.
         // </summary>
-        internal virtual NewRecordOp CreateNewRecordOp(
+        internal NewRecordOp CreateNewRecordOp(
             TypeUsage type,
             List<EdmProperty> fields)
         {
@@ -919,7 +919,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // </summary>
         // <param name="v"> The variable to reference </param>
         // <returns> A new VarRefOp that references the specified variable </returns>
-        internal virtual VarRefOp CreateVarRefOp(Var v)
+        internal VarRefOp CreateVarRefOp(Var v)
         {
             return new VarRefOp(v);
         }
@@ -930,7 +930,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <param name="opType"> An OpType that specifies one of the valid arithmetic operations: Plus, Minus, Multiply, Divide, Modulo, UnaryMinus </param>
         // <param name="type"> Type metadata that specifies the result type of the arithmetic operation </param>
         // <returns> A new ArithmeticOp of the specified arithmetic OpType </returns>
-        internal virtual ArithmeticOp CreateArithmeticOp(OpType opType, TypeUsage type)
+        internal ArithmeticOp CreateArithmeticOp(OpType opType, TypeUsage type)
         {
             return new ArithmeticOp(opType, type);
         }
@@ -975,7 +975,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <param name="entitySet"> The EntitySet to which the ref refers </param>
         // <param name="type"> The result type of the RefOp </param>
         // <returns> A new RefOp that references the specified EntitySet and has the specified result type </returns>
-        internal virtual RefOp CreateRefOp(EntitySet entitySet, TypeUsage type)
+        internal RefOp CreateRefOp(EntitySet entitySet, TypeUsage type)
         {
             return new RefOp(entitySet, type);
         }
@@ -994,7 +994,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // </summary>
         // <param name="type"> Type metadata that specifies the result (element) type </param>
         // <returns> A new ElementOp with the specified result type </returns>
-        internal virtual ElementOp CreateElementOp(TypeUsage type)
+        internal ElementOp CreateElementOp(TypeUsage type)
         {
             return new ElementOp(type);
         }
@@ -1004,7 +1004,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // </summary>
         // <param name="type"> Type metadata that specifies the result type </param>
         // <returns> A new GetEntityKeyOp with the specified result type </returns>
-        internal virtual GetEntityRefOp CreateGetEntityRefOp(TypeUsage type)
+        internal GetEntityRefOp CreateGetEntityRefOp(TypeUsage type)
         {
             return new GetEntityRefOp(type);
         }
@@ -1014,7 +1014,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // </summary>
         // <param name="type"> Type metadata that specifies the result type </param>
         // <returns> A new GetRefKeyOp with the specified result type </returns>
-        internal virtual GetRefKeyOp CreateGetRefKeyOp(TypeUsage type)
+        internal GetRefKeyOp CreateGetRefKeyOp(TypeUsage type)
         {
             return new GetRefKeyOp(type);
         }
@@ -1024,7 +1024,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // </summary>
         // <param name="type"> Type metadata that specifies the result type of the Nest operation </param>
         // <returns> A new NestOp with the specified result type </returns>
-        internal virtual CollectOp CreateCollectOp(TypeUsage type)
+        internal CollectOp CreateCollectOp(TypeUsage type)
         {
             return new CollectOp(type);
         }
@@ -1034,7 +1034,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // </summary>
         // <param name="type"> Entity type of the target entity </param>
         // <returns> a DerefOp </returns>
-        internal virtual DerefOp CreateDerefOp(TypeUsage type)
+        internal DerefOp CreateDerefOp(TypeUsage type)
         {
             return new DerefOp(type);
         }
@@ -1060,7 +1060,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // Creates a VarDefListOp
         // </summary>
         // <returns> A new VarDefListOp </returns>
-        internal virtual VarDefListOp CreateVarDefListOp()
+        internal VarDefListOp CreateVarDefListOp()
         {
             return VarDefListOp.Instance;
         }
@@ -1070,7 +1070,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // </summary>
         // <param name="v"> The computed var </param>
         // <returns> A new VarDefOp that references the computed var </returns>
-        internal virtual VarDefOp CreateVarDefOp(Var v)
+        internal VarDefOp CreateVarDefOp(Var v)
         {
             return new VarDefOp(v);
         }
@@ -1128,7 +1128,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <param name="table"> The table instance </param>
         // <param name="hints">A Table scan operation hints (i.e. NOLOCK)</param>
         // <returns> a new ScanTableOp </returns>
-        internal virtual ScanTableOp CreateScanTableOp(Table table, TableHints hints)
+        internal ScanTableOp CreateScanTableOp(Table table, TableHints hints)
         {
             return new ScanTableOp(table, hints);
         }
@@ -1139,7 +1139,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <param name="table"> the table instance </param>
         // <param name="hints">A Table scan operation hints (i.e. NOLOCK)</param>
         // <returns> a new ScanViewOp </returns>
-        internal virtual ScanViewOp CreateScanViewOp(Table table, TableHints hints)
+        internal ScanViewOp CreateScanViewOp(Table table, TableHints hints)
         {
             return new ScanViewOp(table, hints);
         }
@@ -1150,7 +1150,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <param name="tableMetadata"> the table metadata </param>
         // <param name="hints">A Table scan operation hints (i.e. NOLOCK)</param>
         // <returns> a new ScanViewOp </returns>
-        internal virtual ScanViewOp CreateScanViewOp(TableMD tableMetadata, TableHints hints)
+        internal ScanViewOp CreateScanViewOp(TableMD tableMetadata, TableHints hints)
         {
             var table = CreateTableInstance(tableMetadata);
             return CreateScanViewOp(table, hints);
@@ -1161,7 +1161,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // </summary>
         // <param name="v"> The Var that indicates the value to unnest </param>
         // <returns> A new UnnestOp that targets the specified Var </returns>
-        internal virtual UnnestOp CreateUnnestOp(Var v)
+        internal UnnestOp CreateUnnestOp(Var v)
         {
             var t = CreateTableInstance(Command.CreateTableDefinition(TypeHelpers.GetEdmType<CollectionType>(v.Type).TypeUsage));
             return CreateUnnestOp(v, t);
@@ -1173,7 +1173,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <param name="v"> the unnest Var </param>
         // <param name="t"> the table instance </param>
         // <returns> a new UnnestOp </returns>
-        internal virtual UnnestOp CreateUnnestOp(Var v, Table t)
+        internal UnnestOp CreateUnnestOp(Var v, Table t)
         {
             return new UnnestOp(v, t);
         }
@@ -1182,7 +1182,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // Creates a new FilterOp
         // </summary>
         // <returns> A new FilterOp </returns>
-        internal virtual FilterOp CreateFilterOp()
+        internal FilterOp CreateFilterOp()
         {
             return FilterOp.Instance;
         }
@@ -1192,7 +1192,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // </summary>
         // <param name="vars"> A VarSet that specifies the Vars produced by the projection </param>
         // <returns> A new ProjectOp with the specified output VarSet </returns>
-        internal virtual ProjectOp CreateProjectOp(VarVec vars)
+        internal ProjectOp CreateProjectOp(VarVec vars)
         {
             return new ProjectOp(vars);
         }
@@ -1200,7 +1200,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <summary>
         // A variant of the above where the ProjectOp produces exactly one var
         // </summary>
-        internal virtual ProjectOp CreateProjectOp(Var v)
+        internal ProjectOp CreateProjectOp(Var v)
         {
             var varSet = CreateVarVec();
             varSet.Set(v);
@@ -1213,7 +1213,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // Creates a new InnerJoinOp
         // </summary>
         // <returns> A new InnerJoinOp </returns>
-        internal virtual InnerJoinOp CreateInnerJoinOp()
+        internal InnerJoinOp CreateInnerJoinOp()
         {
             return InnerJoinOp.Instance;
         }
@@ -1222,7 +1222,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // Creates a new LeftOuterJoinOp
         // </summary>
         // <returns> A new LeftOuterJoinOp </returns>
-        internal virtual LeftOuterJoinOp CreateLeftOuterJoinOp()
+        internal LeftOuterJoinOp CreateLeftOuterJoinOp()
         {
             return LeftOuterJoinOp.Instance;
         }
@@ -1231,7 +1231,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // Creates a new FullOuterJoinOp
         // </summary>
         // <returns> A new FullOuterJoinOp </returns>
-        internal virtual FullOuterJoinOp CreateFullOuterJoinOp()
+        internal FullOuterJoinOp CreateFullOuterJoinOp()
         {
             return FullOuterJoinOp.Instance;
         }
@@ -1240,7 +1240,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // Creates a new CrossJoinOp
         // </summary>
         // <returns> A new CrossJoinOp </returns>
-        internal virtual CrossJoinOp CreateCrossJoinOp()
+        internal CrossJoinOp CreateCrossJoinOp()
         {
             return CrossJoinOp.Instance;
         }
@@ -1253,7 +1253,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // Creates a new CrossApplyOp
         // </summary>
         // <returns> A new CrossApplyOp </returns>
-        internal virtual CrossApplyOp CreateCrossApplyOp()
+        internal CrossApplyOp CreateCrossApplyOp()
         {
             return CrossApplyOp.Instance;
         }
@@ -1262,7 +1262,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // Creates a new OuterApplyOp
         // </summary>
         // <returns> A new OuterApplyOp </returns>
-        internal virtual OuterApplyOp CreateOuterApplyOp()
+        internal OuterApplyOp CreateOuterApplyOp()
         {
             return OuterApplyOp.Instance;
         }
@@ -1311,7 +1311,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // </summary>
         // <param name="sortKeys"> The list of SortKeys that define the sort var, order and collation for each sort key </param>
         // <returns> A new SortOp with the specified sort keys </returns>
-        internal virtual SortOp CreateSortOp(List<SortKey> sortKeys)
+        internal SortOp CreateSortOp(List<SortKey> sortKeys)
         {
             return new SortOp(sortKeys);
         }
@@ -1321,7 +1321,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // </summary>
         // <param name="sortKeys"> The list of SortKeys that define the sort var, order and collation for each sort key </param>
         // <returns> A new ConstrainedSortOp with the specified sort keys and a default WithTies value of false </returns>
-        internal virtual ConstrainedSortOp CreateConstrainedSortOp(List<SortKey> sortKeys)
+        internal ConstrainedSortOp CreateConstrainedSortOp(List<SortKey> sortKeys)
         {
             return new ConstrainedSortOp(sortKeys, false);
         }
@@ -1332,7 +1332,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <param name="sortKeys"> The list of SortKeys that define the sort var, order and collation for each sort key </param>
         // <param name="withTies"> The value to use for the WithTies property of the new ConstrainedSortOp </param>
         // <returns> A new ConstrainedSortOp with the specified sort keys and WithTies value </returns>
-        internal virtual ConstrainedSortOp CreateConstrainedSortOp(List<SortKey> sortKeys, bool withTies)
+        internal ConstrainedSortOp CreateConstrainedSortOp(List<SortKey> sortKeys, bool withTies)
         {
             return new ConstrainedSortOp(sortKeys, withTies);
         }
@@ -1343,7 +1343,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <param name="gbyKeys"> A VarSet that specifies the Key variables produced by the GroupByOp </param>
         // <param name="outputs"> A VarSet that specifies all (Key and Aggregate) variables produced by the GroupByOp </param>
         // <returns> A new GroupByOp with the specified key and output VarSets </returns>
-        internal virtual GroupByOp CreateGroupByOp(VarVec gbyKeys, VarVec outputs)
+        internal GroupByOp CreateGroupByOp(VarVec gbyKeys, VarVec outputs)
         {
             return new GroupByOp(gbyKeys, outputs);
         }
@@ -1355,7 +1355,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <param name="inputs"> A VarSet that specifies all (Key and Aggregate) variables produced by the GroupByOp </param>
         // <param name="outputs"> A VarSet that specifies the vars from the input that represent the real grouping input </param>
         // <returns> A new GroupByOp with the specified key and output VarSets </returns>
-        internal virtual GroupByIntoOp CreateGroupByIntoOp(VarVec gbyKeys, VarVec inputs, VarVec outputs)
+        internal GroupByIntoOp CreateGroupByIntoOp(VarVec gbyKeys, VarVec inputs, VarVec outputs)
         {
             return new GroupByIntoOp(gbyKeys, inputs, outputs);
         }
@@ -1365,7 +1365,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // </summary>
         // <param name="keyVars"> list of key vars </param>
         // <returns> A new DistinctOp </returns>
-        internal virtual DistinctOp CreateDistinctOp(VarVec keyVars)
+        internal DistinctOp CreateDistinctOp(VarVec keyVars)
         {
             return new DistinctOp(keyVars);
         }
@@ -1373,7 +1373,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <summary>
         // An overload of the above - where the distinct has exactly one key
         // </summary>
-        internal virtual DistinctOp CreateDistinctOp(Var keyVar)
+        internal DistinctOp CreateDistinctOp(Var keyVar)
         {
             return new DistinctOp(CreateVarVec(keyVar));
         }
@@ -1384,7 +1384,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <param name="leftMap"> Mappings from the Output Vars to the Vars produced by the left argument </param>
         // <param name="rightMap"> Mappings from the Output Vars to the Vars produced by the right argument </param>
         // <returns> A UnionAllOp that references the specified left and right Vars </returns>
-        internal virtual UnionAllOp CreateUnionAllOp(VarMap leftMap, VarMap rightMap)
+        internal UnionAllOp CreateUnionAllOp(VarMap leftMap, VarMap rightMap)
         {
             return CreateUnionAllOp(leftMap, rightMap, null);
         }
@@ -1396,7 +1396,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <param name="rightMap"> Mappings from the Output Vars to the Vars produced by the right argument </param>
         // <param name="branchDiscriminator"> Var that contains the branch discrimination value (may be null until key pullup occurs) </param>
         // <returns> A UnionAllOp that references the specified left and right Vars </returns>
-        internal virtual UnionAllOp CreateUnionAllOp(VarMap leftMap, VarMap rightMap, Var branchDiscriminator)
+        internal UnionAllOp CreateUnionAllOp(VarMap leftMap, VarMap rightMap, Var branchDiscriminator)
         {
             Debug.Assert(leftMap.Count == rightMap.Count, "VarMap count mismatch");
             var vec = CreateVarVec();
@@ -1413,7 +1413,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <param name="leftMap"> Mappings from the Output Vars to the Vars produced by the left argument </param>
         // <param name="rightMap"> Mappings from the Output Vars to the Vars produced by the right argument </param>
         // <returns> An IntersectOp that references the specified left and right Vars </returns>
-        internal virtual IntersectOp CreateIntersectOp(VarMap leftMap, VarMap rightMap)
+        internal IntersectOp CreateIntersectOp(VarMap leftMap, VarMap rightMap)
         {
             Debug.Assert(leftMap.Count == rightMap.Count, "VarMap count mismatch");
             var vec = CreateVarVec();
@@ -1430,7 +1430,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <param name="leftMap"> Mappings from the Output Vars to the Vars produced by the left argument </param>
         // <param name="rightMap"> Mappings from the Output Vars to the Vars produced by the right argument </param>
         // <returns> An ExceptOp that references the specified left and right Vars </returns>
-        internal virtual ExceptOp CreateExceptOp(VarMap leftMap, VarMap rightMap)
+        internal ExceptOp CreateExceptOp(VarMap leftMap, VarMap rightMap)
         {
             Debug.Assert(leftMap.Count == rightMap.Count, "VarMap count mismatch");
             var vec = CreateVarVec();
@@ -1444,7 +1444,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <summary>
         // Create a single-row-op (the relop analog of Element)
         // </summary>
-        internal virtual SingleRowOp CreateSingleRowOp()
+        internal SingleRowOp CreateSingleRowOp()
         {
             return SingleRowOp.Instance;
         }
@@ -1452,7 +1452,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <summary>
         // Create a SingleRowTableOp - a table with exactly one row (and no columns)
         // </summary>
-        internal virtual SingleRowTableOp CreateSingleRowTableOp()
+        internal SingleRowTableOp CreateSingleRowTableOp()
         {
             return SingleRowTableOp.Instance;
         }
@@ -1466,7 +1466,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // </summary>
         // <param name="outputVars"> list of output vars </param>
         // <param name="columnMap"> columnmap describing the output element </param>
-        internal virtual PhysicalProjectOp CreatePhysicalProjectOp(VarList outputVars, SimpleCollectionColumnMap columnMap)
+        internal PhysicalProjectOp CreatePhysicalProjectOp(VarList outputVars, SimpleCollectionColumnMap columnMap)
         {
             return new PhysicalProjectOp(outputVars, columnMap);
         }
@@ -1475,7 +1475,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // Create a physicalProjectOp - with a single column output
         // </summary>
         // <param name="outputVar"> the output element </param>
-        internal virtual PhysicalProjectOp CreatePhysicalProjectOp(Var outputVar)
+        internal PhysicalProjectOp CreatePhysicalProjectOp(Var outputVar)
         {
             var varList = CreateVarList();
             varList.Add(outputVar);
@@ -1517,7 +1517,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <param name="outputVars"> List of outputVars </param>
         // <param name="collectionInfoList"> CollectionInfo for each collection </param>
         // <param name="discriminatorVar"> Var describing the discriminator </param>
-        internal virtual SingleStreamNestOp CreateSingleStreamNestOp(
+        internal SingleStreamNestOp CreateSingleStreamNestOp(
             VarVec keys,
             List<SortKey> prefixSortKeys, List<SortKey> postfixSortKeys,
             VarVec outputVars,
@@ -1532,7 +1532,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <param name="prefixSortKeys"> list of prefix sort keys </param>
         // <param name="outputVars"> List of outputVars </param>
         // <param name="collectionInfoList"> CollectionInfo for each collection element </param>
-        internal virtual MultiStreamNestOp CreateMultiStreamNestOp(
+        internal MultiStreamNestOp CreateMultiStreamNestOp(
             List<SortKey> prefixSortKeys, VarVec outputVars,
             List<CollectionInfo> collectionInfoList)
         {
@@ -1548,7 +1548,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // </summary>
         // <param name="n"> the node </param>
         // <returns> node info for this node </returns>
-        internal virtual NodeInfo GetNodeInfo(Node n)
+        internal NodeInfo GetNodeInfo(Node n)
         {
             return n.GetNodeInfo(this);
         }
@@ -1558,7 +1558,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // </summary>
         // <param name="n"> the node </param>
         // <returns> extended node info for this node </returns>
-        internal virtual ExtendedNodeInfo GetExtendedNodeInfo(Node n)
+        internal ExtendedNodeInfo GetExtendedNodeInfo(Node n)
         {
             return n.GetExtendedNodeInfo(this);
         }
@@ -1567,7 +1567,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // Recompute the nodeinfo for a node, but only if has already been computed
         // </summary>
         // <param name="n"> Node in question </param>
-        internal virtual void RecomputeNodeInfo(Node n)
+        internal void RecomputeNodeInfo(Node n)
         {
             m_nodeInfoVisitor.RecomputeNodeInfo(n);
         }
@@ -1581,7 +1581,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // </summary>
         // <param name="n"> node </param>
         // <returns> key information </returns>
-        internal virtual KeyVec PullupKeys(Node n)
+        internal KeyVec PullupKeys(Node n)
         {
             return m_keyPullupVisitor.GetKeys(n);
         }
@@ -1634,7 +1634,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <param name="inputVars"> list of input vars - N for each branch </param>
         // <param name="resultNode"> the resulting union-all subtree </param>
         // <param name="resultVars"> the output vars from the union-all subtree </param>
-        internal virtual void BuildUnionAllLadder(
+        internal void BuildUnionAllLadder(
             IList<Node> inputNodes, IList<Var> inputVars,
             out Node resultNode, out IList<Var> resultVars)
         {
@@ -1689,7 +1689,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <summary>
         // A simplified version of the method above - each branch can produce only one var
         // </summary>
-        internal virtual void BuildUnionAllLadder(
+        internal void BuildUnionAllLadder(
             IList<Node> inputNodes, IList<Var> inputVars,
             out Node resultNode, out Var resultVar)
         {
@@ -1716,7 +1716,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <param name="inputNode"> the input relop to the project </param>
         // <param name="inputVars"> List of vars from the input that need to be projected </param>
         // <param name="computedExpressions"> list (possibly empty) of any computed expressions </param>
-        internal virtual Node BuildProject(
+        internal Node BuildProject(
             Node inputNode, IEnumerable<Var> inputVars,
             IEnumerable<Node> computedExpressions)
         {
@@ -1749,7 +1749,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <param name="computedExpression"> the computed expression </param>
         // <param name="projectVar"> (output) the computed var corresponding to the computed expression </param>
         // <returns> the new project subtree node </returns>
-        internal virtual Node BuildProject(Node input, Node computedExpression, out Var projectVar)
+        internal Node BuildProject(Node input, Node computedExpression, out Var projectVar)
         {
             var projectNode = BuildProject(input, new Var[] { }, new[] { computedExpression });
             projectVar = ((ProjectOp)projectNode.Op).Outputs.First;
@@ -1771,7 +1771,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <param name="includeSubtypes"> do we include subtypes of the desired element type </param>
         // <param name="resultNode"> the result subtree </param>
         // <param name="resultVar"> the single Var produced by the result subtree </param>
-        internal virtual void BuildOfTypeTree(
+        internal void BuildOfTypeTree(
             Node inputNode, Var inputVar, TypeUsage desiredType, bool includeSubtypes,
             out Node resultNode, out Var resultVar)
         {
@@ -1791,7 +1791,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <param name="desiredType"> the desired element type </param>
         // <param name="resultVar"> the single Var produced by the result subtree </param>
         // <returns> the result subtree </returns>
-        internal virtual Node BuildFakeTreatProject(Node inputNode, Var inputVar, TypeUsage desiredType, out Var resultVar)
+        internal Node BuildFakeTreatProject(Node inputNode, Var inputVar, TypeUsage desiredType, out Var resultVar)
         {
             var treatNode = CreateNode(
                 CreateFakeTreatOp(desiredType),
@@ -1834,7 +1834,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // </summary>
         // <param name="relOpNode"> the relop tree </param>
         // <param name="relOpVar"> the single output var from the relop tree </param>
-        internal virtual Node BuildCollect(Node relOpNode, Var relOpVar)
+        internal Node BuildCollect(Node relOpNode, Var relOpVar)
         {
             var physicalProjectNode = CreateNode(CreatePhysicalProjectOp(relOpVar), relOpNode);
             var collectOpType = TypeHelpers.CreateCollectionTypeUsage(relOpVar.Type);
@@ -1864,7 +1864,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <summary>
         // The set of referenced rel properties in the current query
         // </summary>
-        internal virtual HashSet<RelProperty> ReferencedRelProperties
+        internal HashSet<RelProperty> ReferencedRelProperties
         {
             get { return m_referencedRelProperties; }
         }
@@ -1874,7 +1874,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // </summary>
         // <param name="relProperty"> the rel-property </param>
         // <returns> true, if the rel property was referenced in the query </returns>
-        internal virtual bool IsRelPropertyReferenced(RelProperty relProperty)
+        internal bool IsRelPropertyReferenced(RelProperty relProperty)
         {
             var ret = m_referencedRelProperties.Contains(relProperty);
             return ret;

@@ -10,7 +10,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
     // A Node describes a node in a query tree. Each node has an operator, and
     // a list of zero or more children of that operator.
     // </summary>
-    internal class Node
+    internal sealed class Node
     {
         #region private state
 

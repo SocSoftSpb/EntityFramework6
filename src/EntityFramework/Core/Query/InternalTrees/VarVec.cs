@@ -1,10 +1,13 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
+// ReSharper disable RedundantUsingDirective
+// ReSharper disable InconsistentNaming
 namespace System.Data.Entity.Core.Query.InternalTrees
 {
     using System.Collections;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Globalization;
     using System.Text;
 
@@ -23,7 +26,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // <summary>
         // A VarVec enumerator is a specialized enumerator for a VarVec.
         // </summary>
-        internal class VarVecEnumerator : IEnumerator<Var>, IDisposable
+        internal class VarVecEnumerator : IEnumerator<Var>
         {
             #region private state
 
@@ -150,7 +153,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
                 // have a finalizer, but it does no harm, protects against the case where a finalizer is added
                 // in the future, and prevents an FxCop warning.
                 GC.SuppressFinalize(this);
-                m_bitArray = null;
+                // m_bitArray = null;
                 m_command.ReleaseVarVecEnumerator(this);
             }
 
@@ -169,13 +172,13 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         internal void And(VarVec other)
         {
             Align(other);
-            m_bitVector.And(other.m_bitVector);
+            m_bitVector.And(ref other.m_bitVector);
         }
 
         internal void Or(VarVec other)
         {
             Align(other);
-            m_bitVector.Or(other.m_bitVector);
+            m_bitVector.Or(ref other.m_bitVector);
         }
 
         // <summary>
@@ -241,7 +244,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         {
             Clear();
             m_bitVector.Length = other.m_bitVector.Length;
-            m_bitVector.Or(other.m_bitVector);
+            m_bitVector.Or(ref other.m_bitVector);
         }
 
         internal void InitFrom(IEnumerable<Var> other)
@@ -413,7 +416,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
 
         #region private state
 
-        private readonly BitVec m_bitVector;
+        private BitVec m_bitVector;
         private readonly Command m_command;
 
         #endregion
@@ -433,11 +436,13 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         #endregion
     }
 
-    internal class BitVec
+    internal struct BitVec
     {
+        /*
         private BitVec()
         {
         }
+        */
 
         /*=========================================================================
         ** Allocates space to hold length bit values. All of the values in the bit
@@ -584,12 +589,12 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         **
         ** Exceptions: ArgumentException if bits == null.
         =========================================================================*/
-        public BitVec(BitVec bits)
+        public BitVec(ref BitVec bits)
         {
+            /*
             if (bits == null)
-            {
                 throw new ArgumentNullException("bits");
-            }
+            */
 
             int arrayLength = GetArrayLength(bits.m_length, BitsPerInt32);
             m_array = ArrayPool.Instance.GetArray(arrayLength);
@@ -674,10 +679,12 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         ** Exceptions: ArgumentException if value == null or
         **             value.Length != this.Length.
         =========================================================================*/
-        public BitVec And(BitVec value)
+        public void And(ref BitVec value)
         {
+            /*
             if (value == null)
                 throw new ArgumentNullException("value");
+            */
             if (Length != value.Length)
                 throw new ArgumentException("Arg_ArrayLengthsDiffer");
 
@@ -688,7 +695,6 @@ namespace System.Data.Entity.Core.Query.InternalTrees
             }
 
             _version++;
-            return this;
         }
 
         /*=========================================================================
@@ -697,10 +703,12 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         ** Exceptions: ArgumentException if value == null or
         **             value.Length != this.Length.
         =========================================================================*/
-        public BitVec Or(BitVec value)
+        public void Or(ref BitVec value)
         {
+            /*
             if (value == null)
                 throw new ArgumentNullException("value");
+            */
             if (Length != value.Length)
                 throw new ArgumentException("Arg_ArrayLengthsDiffer");
 
@@ -711,7 +719,6 @@ namespace System.Data.Entity.Core.Query.InternalTrees
             }
 
             _version++;
-            return this;
         }
 
         /*=========================================================================
@@ -720,10 +727,12 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         ** Exceptions: ArgumentException if value == null or
         **             value.Length != this.Length.
         =========================================================================*/
-        public BitVec Xor(BitVec value)
+        public void Xor(ref BitVec value)
         {
+            /*
             if (value == null)
                 throw new ArgumentNullException("value");
+            */
             if (Length != value.Length)
                 throw new ArgumentException("Arg_ArrayLengthsDiffer");
 
@@ -734,7 +743,6 @@ namespace System.Data.Entity.Core.Query.InternalTrees
             }
 
             _version++;
-            return this;
         }
 
         /*=========================================================================
@@ -742,7 +750,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         ** off/false. Off/false bit values are turned on/true. The current instance
         ** is updated and returned.
         =========================================================================*/
-        public BitVec Not()
+        public void Not()
         {
             int ints = GetArrayLength(m_length, BitsPerInt32);
             for (int i = 0; i < ints; i++)
@@ -751,7 +759,6 @@ namespace System.Data.Entity.Core.Query.InternalTrees
             }
 
             _version++;
-            return this;
         }
 
         public int Length
@@ -841,13 +848,21 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         private int _version;
         private const int _ShrinkThreshold = 1024; //256;
 
-        private class ArrayPool
+        private sealed class ArrayPool
         {
+#if NET5_0_OR_GREATER
+            private readonly System.Buffers.ArrayPool<int> _arrayPool;
+#else
             private ConcurrentDictionary<int, ConcurrentBag<int[]>> dictionary;
+#endif
 
             private ArrayPool()
             {
+#if NET5_0_OR_GREATER
+                _arrayPool = System.Buffers.ArrayPool<int>.Shared;
+#else
                 dictionary = new ConcurrentDictionary<int, ConcurrentBag<int[]>>();
+#endif
             }
 
             private static readonly ArrayPool instance = new ArrayPool();
@@ -862,24 +877,40 @@ namespace System.Data.Entity.Core.Query.InternalTrees
 
             public int[] GetArray(int length)
             {
+#if NET5_0_OR_GREATER
+                var arr = _arrayPool.Rent(length);
+#if NET5_0
+                Array.Clear(arr, 0, arr.Length);
+#else
+                Array.Clear(arr);
+#endif
+                return arr;
+#else
                 ConcurrentBag<int[]> arrays = GetBag(length);
-
+                
                 int[] arr;
                 if (arrays.TryTake(out arr)) return arr;
 
                 return new int[length];
+#endif
             }
 
+#if !NET5_0_OR_GREATER
             private ConcurrentBag<int[]> GetBag(int length)
             {
-				return dictionary.GetOrAdd(length, l => new ConcurrentBag<int[]>());
+                return dictionary.GetOrAdd(length, l => new ConcurrentBag<int[]>());
             }
+#endif
 
             public void PutArray(int[] arr)
             {
+#if NET5_0_OR_GREATER
+                _arrayPool.Return(arr, clearArray: true);
+#else
                 ConcurrentBag<int[]> arrays = GetBag(arr.Length);
                 Array.Clear(arr, 0, arr.Length);
                 arrays.Add(arr);
+#endif
             }
         }
     }

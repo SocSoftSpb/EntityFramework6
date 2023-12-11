@@ -521,7 +521,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             var varName = inputInfo.PublisherName;
 
             // Generate the GroupVarName, and rebind the Input Vars under that name
-            var groupVarName = string.Format(CultureInfo.InvariantCulture, "{0}Group", varName);
+            var groupVarName = string.Concat(varName, "Group"); 
 
             var newBinding = inputInfo.CreateBinding().Expression.GroupBindAs(varName, groupVarName);
             var newScope = new GroupByScope(newBinding, inputInfo.PublishedVars);
@@ -686,11 +686,12 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
                 }
             }
 
-            PlanCompiler.Assert(
-                retExpr != null,
-                string.Format(
-                    CultureInfo.InvariantCulture, "Unresolvable Var used in Command: VarType={0}, Id={1}",
-                    Enum.GetName(typeof(VarType), referencedVar.VarType), referencedVar.Id));
+            if (retExpr == null)
+                PlanCompiler.Assert(
+                    retExpr != null,
+                    string.Format(
+                        CultureInfo.InvariantCulture, "Unresolvable Var used in Command: VarType={0}, Id={1}",
+                        Enum.GetName(typeof(VarType), referencedVar.VarType), referencedVar.Id));
             return retExpr;
         }
 
@@ -706,8 +707,9 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             MessageId = "System.Data.Entity.Core.Query.PlanCompiler.PlanCompiler.Assert(System.Boolean,System.String)")]
         private static void AssertBinary(Node n)
         {
-            PlanCompiler.Assert(
-                2 == n.Children.Count, string.Format(CultureInfo.InvariantCulture, "Non-Binary {0} encountered", n.Op.GetType().Name));
+            if (2 != n.Children.Count)
+                PlanCompiler.Assert(
+                    2 == n.Children.Count, string.Format(CultureInfo.InvariantCulture, "Non-Binary {0} encountered", n.Op.GetType().Name));
         }
 
         [SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "VisitChild")]
@@ -888,10 +890,11 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             }
 
             // The result DbExpression will only be null if a new OpType is added and this code is not updated
-            PlanCompiler.Assert(
-                resultExpr != null,
-                string.Format(
-                    CultureInfo.InvariantCulture, "ArithmeticOp OpType not recognized: {0}", Enum.GetName(typeof(OpType), op.OpType)));
+            if (resultExpr == null)
+                PlanCompiler.Assert(
+                    resultExpr != null,
+                    string.Format(
+                        CultureInfo.InvariantCulture, "ArithmeticOp OpType not recognized: {0}", Enum.GetName(typeof(OpType), op.OpType)));
             return resultExpr;
         }
 
@@ -1006,10 +1009,11 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             }
 
             // The result DbExpression will only be null if a new OpType is added and this code is not updated
-            PlanCompiler.Assert(
-                compExpr != null,
-                string.Format(
-                    CultureInfo.InvariantCulture, "ComparisonOp OpType not recognized: {0}", Enum.GetName(typeof(OpType), op.OpType)));
+            if (compExpr == null)
+                PlanCompiler.Assert(
+                    compExpr != null,
+                    string.Format(
+                        CultureInfo.InvariantCulture, "ComparisonOp OpType not recognized: {0}", Enum.GetName(typeof(OpType), op.OpType)));
             return compExpr;
         }
 
@@ -1085,10 +1089,11 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             }
 
             // The result DbExpression will only be null if a new OpType is added and this code is not updated
-            PlanCompiler.Assert(
-                condExpr != null,
-                string.Format(
-                    CultureInfo.InvariantCulture, "ConditionalOp OpType not recognized: {0}", Enum.GetName(typeof(OpType), op.OpType)));
+            if (condExpr == null)
+                PlanCompiler.Assert(
+                    condExpr != null,
+                    string.Format(
+                        CultureInfo.InvariantCulture, "ConditionalOp OpType not recognized: {0}", Enum.GetName(typeof(OpType), op.OpType)));
             return condExpr;
         }
 
@@ -1353,8 +1358,8 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             var projectedInfo = new VarInfoList();
             var projectedCols = new List<KeyValuePair<string, DbExpression>>();
             var colGen = new AliasGenerator("C");
-            var aliasMap = new Dictionary<string, AliasGenerator>(StringComparer.InvariantCultureIgnoreCase);
-            var alreadyUsedAliases = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
+            var aliasMap = new Dictionary<string, AliasGenerator>(StringComparer.OrdinalIgnoreCase);
+            var alreadyUsedAliases = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             foreach (var projectedVar in outputVars)
             {
                 var columnName = GenerateNameForVar(projectedVar, aliasMap, colGen, alreadyUsedAliases);

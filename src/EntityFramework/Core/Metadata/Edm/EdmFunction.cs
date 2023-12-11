@@ -438,7 +438,11 @@ namespace System.Data.Entity.Core.Metadata.Edm
         // <summary>
         // Builds function identity string in the form of "functionName (param1, param2, ... paramN)".
         // </summary>
+#if NET5_0_OR_GREATER
+        internal override void BuildIdentity(ref ValueStringBuilder builder)
+#else
         internal override void BuildIdentity(StringBuilder builder)
+#endif
         {
             // If we've already cached the identity, simply append it
             if (null != CacheIdentity)
@@ -448,7 +452,11 @@ namespace System.Data.Entity.Core.Metadata.Edm
             }
 
             BuildIdentity(
+#if NET5_0_OR_GREATER
+                ref builder,
+#else
                 builder,
+#endif
                 FullName,
                 Parameters,
                 param => param.TypeUsage,
@@ -464,7 +472,27 @@ namespace System.Data.Entity.Core.Metadata.Edm
         // </summary>
         internal static string BuildIdentity(string functionName, IEnumerable<TypeUsage> functionParameters)
         {
-            var identity = new StringBuilder();
+#if NET5_0_OR_GREATER
+            Span<char> buffer = stackalloc char[512];
+            var identity = new ValueStringBuilder(buffer);
+
+            try
+            {
+                BuildIdentity(
+                    ref identity,
+                    functionName,
+                    functionParameters,
+                    param => param,
+                    param => ParameterMode.In);
+
+                return identity.ToString();
+            }
+            finally
+            {
+                identity.Dispose();
+            }
+#else
+            var identity = new StringBuilder(512);
 
             BuildIdentity(
                 identity,
@@ -474,6 +502,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
                 param => ParameterMode.In);
 
             return identity.ToString();
+#endif
         }
 
         // <summary>
@@ -481,7 +510,11 @@ namespace System.Data.Entity.Core.Metadata.Edm
         // Returns string in the form of "functionName (param1, param2, ... paramN)".
         // </summary>
         internal static void BuildIdentity<TParameterMetadata>(
+#if NET5_0_OR_GREATER
+            ref ValueStringBuilder builder,
+#else
             StringBuilder builder,
+#endif
             string functionName,
             IEnumerable<TParameterMetadata> functionParameters,
             Func<TParameterMetadata, TypeUsage> getParameterTypeUsage,
@@ -509,7 +542,11 @@ namespace System.Data.Entity.Core.Metadata.Edm
                 }
                 builder.Append(Helper.ToString(getParameterMode(parameter)));
                 builder.Append(' ');
+#if NET5_0_OR_GREATER
+                getParameterTypeUsage(parameter).BuildIdentity(ref builder);
+#else
                 getParameterTypeUsage(parameter).BuildIdentity(builder);
+#endif
             }
             builder.Append(')');
         }

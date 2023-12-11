@@ -209,7 +209,13 @@ namespace System.Linq.Expressions
             return m;
         }
 
-        internal virtual ReadOnlyCollection<Expression> VisitExpressionList(ReadOnlyCollection<Expression> original)
+        internal virtual
+#if NET40
+            ReadOnlyCollection<Expression> 
+#else
+            IReadOnlyCollection<Expression> 
+#endif
+            VisitExpressionList(ReadOnlyCollection<Expression> original)
         {
             List<Expression> list = null;
             for (int i = 0, n = original.Count; i < n; i++)
@@ -231,7 +237,11 @@ namespace System.Linq.Expressions
             }
             if (list != null)
             {
+#if NET40
                 return list.ToReadOnlyCollection();
+#else
+                return list;
+#endif
             }
             return original;
         }

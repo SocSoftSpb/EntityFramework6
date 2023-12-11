@@ -69,7 +69,7 @@ namespace System.Data.Entity.Core.Common.Utils
                     //     c) If previous dictionary changed references, repeat from (a)
                     //     d) We now know the individual cache
                     var capacity = 1 + ((null != prefixCounter) ? prefixCounter.Count : 0);
-                    updatedCache = new Dictionary<string, string[]>(capacity, StringComparer.InvariantCultureIgnoreCase);
+                    updatedCache = new Dictionary<string, string[]>(capacity, StringComparer.OrdinalIgnoreCase);
                     if ((null != prefixCounter)
                         && (capacity < MaxPrefixCount))
                     {

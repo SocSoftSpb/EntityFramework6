@@ -2,7 +2,7 @@
 
 namespace System.Data.Entity.Core.Common.QueryCache
 {
-    using System.Collections.Generic;
+    using System.Collections.Concurrent;
     using System.Data.Entity.Internal;
     using System.Data.Entity.Utilities;
     using System.Diagnostics;
@@ -21,19 +21,11 @@ namespace System.Data.Entity.Core.Common.QueryCache
         #region Fields
 
         // <summary>
-        // cache lock object
-        // </summary>
-        private readonly object _cacheDataLock = new object();
-
-        // <summary>
         // cache data
         // </summary>
-        private readonly Dictionary<QueryCacheKey, QueryCacheEntry> _cacheData = new Dictionary<QueryCacheKey, QueryCacheEntry>(32);
+        private readonly ConcurrentDictionary<QueryCacheKey, QueryCacheEntry> _cacheData = new ConcurrentDictionary<QueryCacheKey, QueryCacheEntry>();
 
-        // <summary>
-        // soft maximum number of entries in the cache
-        // </summary>
-        private readonly int _maxNumberOfEntries;
+        private int _cacheDataCount;
 
         // <summary>
         // high mark of the number of entries to trigger the sweeping process
@@ -83,12 +75,11 @@ namespace System.Data.Entity.Core.Common.QueryCache
             //
             // Load hardcoded defaults
             //
-            _maxNumberOfEntries = maximumSize;
 
             //
             // set sweeping high mark trigger value
             //
-            _sweepingTriggerHighMark = (int)(_maxNumberOfEntries * loadFactor);
+            _sweepingTriggerHighMark = (int)(maximumSize * loadFactor);
 
             //
             // Initialize Recycler
@@ -111,8 +102,9 @@ namespace System.Data.Entity.Core.Common.QueryCache
         {
             DebugCheck.NotNull(inQueryCacheEntry);
 
-            outQueryCacheEntry = null;
 
+#if false
+            outQueryCacheEntry = null;
             lock (_cacheDataLock)
             {
                 if (!_cacheData.TryGetValue(inQueryCacheEntry.QueryCacheKey, out outQueryCacheEntry))
@@ -120,7 +112,8 @@ namespace System.Data.Entity.Core.Common.QueryCache
                     //
                     // add entry to cache data
                     //
-                    _cacheData.Add(inQueryCacheEntry.QueryCacheKey, inQueryCacheEntry);
+                    if (_cacheData.TryAdd(inQueryCacheEntry.QueryCacheKey, inQueryCacheEntry));
+                    
                     if (_cacheData.Count > _sweepingTriggerHighMark)
                     {
                         _evictionTimer.Start();
@@ -134,6 +127,21 @@ namespace System.Data.Entity.Core.Common.QueryCache
 
                     return true;
                 }
+            }
+#endif
+
+            outQueryCacheEntry = _cacheData.GetOrAdd(inQueryCacheEntry.QueryCacheKey, inQueryCacheEntry);
+            if (ReferenceEquals(outQueryCacheEntry, inQueryCacheEntry))
+            {
+                outQueryCacheEntry = null;
+                if (Interlocked.Increment(ref _cacheDataCount) > _sweepingTriggerHighMark)
+                    _evictionTimer.Start();
+                return false;
+            }
+            else
+            {
+                outQueryCacheEntry.QueryCacheKey.UpdateHit();
+                return true;
             }
         }
 
@@ -150,8 +158,7 @@ namespace System.Data.Entity.Core.Common.QueryCache
             //
             // invoke internal lookup
             //
-            QueryCacheEntry qEntry = null;
-            var bHit = TryInternalCacheLookup(key, out qEntry);
+            var bHit = TryInternalCacheLookup(key, out var qEntry);
 
             //
             // if it is a hit, 'extract' the entry strong type cache value
@@ -169,7 +176,7 @@ namespace System.Data.Entity.Core.Common.QueryCache
         // </summary>
         internal void Clear()
         {
-            lock (_cacheDataLock)
+            //lock (_cacheDataLock)
             {
                 _cacheData.Clear();
             }
@@ -189,12 +196,12 @@ namespace System.Data.Entity.Core.Common.QueryCache
 
             queryCacheEntry = null;
 
-            var bHit = false;
+            bool bHit;
 
             //
             // lock the cache for the minimal possible period
             //
-            lock (_cacheDataLock)
+            // lock (_cacheDataLock)
             {
                 bHit = _cacheData.TryGetValue(queryCacheKey, out queryCacheEntry);
             }
@@ -244,41 +251,39 @@ namespace System.Data.Entity.Core.Common.QueryCache
             }
 
             var disabledEviction = false;
-            lock (_cacheDataLock)
+            // lock (_cacheDataLock)
             {
                 //
                 // recycle only if entries exceeds the high mark factor
                 //
-                if (_cacheData.Count > _sweepingTriggerHighMark)
+                if (_cacheDataCount > _sweepingTriggerHighMark)
                 {
                     //
                     // sweep the cache
                     //
-                    uint evictedEntriesCount = 0;
-                    var cacheKeys = new List<QueryCacheKey>(_cacheData.Count);
-                    cacheKeys.AddRange(_cacheData.Keys);
-                    for (var i = 0; i < cacheKeys.Count; i++)
+                    var cacheKeys = _cacheData.Keys; 
+                    foreach (var cacheKey in cacheKeys)
                     {
                         //
                         // if entry was not used in the last time window, then evict the entry
                         //
-                        if (0 == cacheKeys[i].HitCount)
+                        if (0 == cacheKey.HitCount)
                         {
-                            _cacheData.Remove(cacheKeys[i]);
-                            evictedEntriesCount++;
+                            if (_cacheData.TryRemove(cacheKey, out _))
+                                Interlocked.Decrement(ref _cacheDataCount);
                         }
                         //
                         // otherwise, age the entry in a progressive scheme
                         //
                         else
                         {
-                            var agingIndex = unchecked(cacheKeys[i].AgingIndex + 1);
+                            var agingIndex = unchecked(cacheKey.AgingIndex + 1);
                             if (agingIndex > _agingMaxIndex)
                             {
                                 agingIndex = _agingMaxIndex;
                             }
-                            cacheKeys[i].AgingIndex = agingIndex;
-                            cacheKeys[i].HitCount = cacheKeys[i].HitCount >> _agingFactor[agingIndex];
+                            cacheKey.AgingIndex = agingIndex;
+                            cacheKey.HitCount = cacheKey.HitCount >> _agingFactor[agingIndex];
                         }
                     }
                 }

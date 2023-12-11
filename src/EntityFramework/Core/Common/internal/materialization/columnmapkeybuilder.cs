@@ -8,7 +8,6 @@ namespace System.Data.Entity.Core.Common.Internal.Materialization
     using System.Data.Entity.Core.Objects.Internal;
     using System.Data.Entity.Core.Query.InternalTrees;
     using System.Diagnostics;
-    using System.Globalization;
     using System.Text;
 
     // <summary>
@@ -25,7 +24,7 @@ namespace System.Data.Entity.Core.Common.Internal.Materialization
     {
         #region private state
 
-        private readonly StringBuilder _builder = new StringBuilder();
+        private readonly StringBuilder _builder = new StringBuilder(1024);
         private readonly SpanIndex _spanIndex;
         private bool _ignoreCaching;
 
@@ -53,6 +52,24 @@ namespace System.Data.Entity.Core.Common.Internal.Materialization
         }
 
         internal void Append(string value)
+        {
+            _builder.Append(value);
+        }
+
+        private void Append(Guid value)
+        {
+#if NET5_0_OR_GREATER
+            Span<char> buffer = stackalloc char[64];
+            if (value.TryFormat(buffer, out var written))
+                _builder.Append(buffer.Slice(0, written));
+            else
+                _builder.Append(value);
+#else
+            _builder.Append(value);
+#endif
+        }
+
+        private void Append(int value)
         {
             _builder.Append(value);
         }
@@ -185,9 +202,34 @@ namespace System.Data.Entity.Core.Common.Internal.Materialization
             }
         }
 
+#if NET5_0_OR_GREATER
+        private void AppendValue(string prefix, int value)
+        {
+            Append(prefix);
+            Append("'");
+            _builder.Append(value);
+            Append("'");
+        }
+#endif
+        
         private void AppendValue(string prefix, object value)
         {
-            Append(prefix, String.Format(CultureInfo.InvariantCulture, "{0}", value));
+            Append(prefix);
+            Append("'");
+#if NET6_0_OR_GREATER
+            if (value is ISpanFormattable sf)
+            {
+                Span<char> buffer = stackalloc char[64];
+                if (sf.TryFormat(buffer, out var l, default, null))
+                {
+                    _builder.Append(buffer.Slice(0, l));
+                    Append("'");
+                    return;
+                }
+            }
+#endif
+            _builder.Append(value);
+            Append("'");
         }
 
         #endregion
@@ -254,10 +296,13 @@ namespace System.Data.Entity.Core.Common.Internal.Materialization
 
         internal override void Visit(ScalarColumnMap columnMap, int dummy)
         {
-            var description = String.Format(
-                CultureInfo.InvariantCulture,
-                "S({0}-{1}:{2})", columnMap.CommandId, columnMap.ColumnPos, columnMap.Type.Identity);
-            Append(description);
+            Append("S(");
+            Append(columnMap.CommandId);
+            Append("-");
+            Append(columnMap.ColumnPos);
+            Append(":");
+            Append(columnMap.Type.Identity);
+            Append(")");
         }
 
         internal override void Visit(SimpleCollectionColumnMap columnMap, int dummy)
@@ -277,7 +322,8 @@ namespace System.Data.Entity.Core.Common.Internal.Materialization
             // MultipleDiscriminator maps contain an opaque discriminator delegate, so recompilation
             // is always required. Generate a unique key for the discriminator.
             // FUTURE: consider using either a separate cache for MultipleDiscriminator OR make the delegate transparent
-            Append(String.Format(CultureInfo.InvariantCulture, "MD-{0}", Guid.NewGuid()));
+            Append("MD-");
+            Append(Guid.NewGuid());
         }
 
         #endregion

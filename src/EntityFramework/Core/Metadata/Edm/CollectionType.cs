@@ -83,11 +83,27 @@ namespace System.Data.Entity.Core.Metadata.Edm
         // <returns> The identity of the resulting collection type </returns>
         private static string GetIdentity(TypeUsage typeUsage)
         {
+#if NET5_0_OR_GREATER
+            Span<char> buffer = stackalloc char[128];
+            var builder = new ValueStringBuilder(buffer);
+            try
+            {
+                builder.Append("collection[");
+                typeUsage.BuildIdentity(ref builder);
+                builder.Append("]");
+                return builder.ToString();
+            }
+            finally
+            {
+                builder.Dispose();
+            }
+#else
             var builder = new StringBuilder(50);
             builder.Append("collection[");
             typeUsage.BuildIdentity(builder);
             builder.Append("]");
             return builder.ToString();
+#endif
         }
 
         // <summary>

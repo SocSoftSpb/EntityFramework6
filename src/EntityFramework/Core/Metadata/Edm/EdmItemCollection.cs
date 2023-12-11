@@ -293,44 +293,71 @@ namespace System.Data.Entity.Core.Metadata.Edm
             var tempCTypeFunctionIdentity = new List<string>();
 
             // No errors, so go ahead and add the types and make them readonly
-            foreach (var globalItem in newGlobalItems)
+#if NET5_0_OR_GREATER
+            Span<char> buffer = stackalloc char[512];
+            var sb = new ValueStringBuilder(buffer);
+            try
+#else
+            StringBuilder sb = null;
+#endif
             {
-                // If multiple function parameter and return types expressed in SSpace map to the same
-                // CSpace type (e.g., SqlServer.decimal and SqlServer.numeric both map to Edm.Decimal),
-                // we need to guard against attempts to insert duplicate functions into the collection.
-                //
-                if (globalItem.BuiltInTypeKind == BuiltInTypeKind.EdmFunction
-                    && globalItem.DataSpace == DataSpace.SSpace)
+                foreach (var globalItem in newGlobalItems)
                 {
-                    var function = (EdmFunction)globalItem;
-
-                    var sb = new StringBuilder();
-                    EdmFunction.BuildIdentity(
-                        sb,
-                        function.FullName,
-                        function.Parameters,
-                        // convert function parameters to C-side types
-                        (param) => MetadataHelper.ConvertStoreTypeUsageToEdmTypeUsage(param.TypeUsage),
-                        (param) => param.Mode);
-                    var cTypeFunctionIdentity = sb.ToString();
-
-                    // Validate identity
-                    if (tempCTypeFunctionIdentity.Contains(cTypeFunctionIdentity))
+                    // If multiple function parameter and return types expressed in SSpace map to the same
+                    // CSpace type (e.g., SqlServer.decimal and SqlServer.numeric both map to Edm.Decimal),
+                    // we need to guard against attempts to insert duplicate functions into the collection.
+                    //
+                    if (globalItem.BuiltInTypeKind == BuiltInTypeKind.EdmFunction
+                        && globalItem.DataSpace == DataSpace.SSpace)
                     {
-                        errors.Add(
-                            new EdmSchemaError(
-                                Strings.DuplicatedFunctionoverloads(
-                                    function.FullName, cTypeFunctionIdentity.Substring(function.FullName.Length)).Trim() /*parameters*/,
-                                (int)ErrorCode.DuplicatedFunctionoverloads,
-                                EdmSchemaErrorSeverity.Error));
-                        continue;
+                        var function = (EdmFunction)globalItem;
+
+#if NET5_0_OR_GREATER
+                        sb.Clear();
+#else
+                        if (sb == null)
+                            sb = new StringBuilder(512);
+                        else
+                            sb.Clear();
+#endif
+
+                        EdmFunction.BuildIdentity(
+#if NET5_0_OR_GREATER
+                            ref
+#endif
+                            sb,
+                            function.FullName,
+                            function.Parameters,
+                            // convert function parameters to C-side types
+                            (param) => MetadataHelper.ConvertStoreTypeUsageToEdmTypeUsage(param.TypeUsage),
+                            (param) => param.Mode);
+                        var cTypeFunctionIdentity = sb.ToString();
+
+                        // Validate identity
+                        if (tempCTypeFunctionIdentity.Contains(cTypeFunctionIdentity))
+                        {
+                            errors.Add(
+                                new EdmSchemaError(
+                                    Strings.DuplicatedFunctionoverloads(
+                                        function.FullName, cTypeFunctionIdentity.Substring(function.FullName.Length)).Trim() /*parameters*/,
+                                    (int)ErrorCode.DuplicatedFunctionoverloads,
+                                    EdmSchemaErrorSeverity.Error));
+                            continue;
+                        }
+
+                        tempCTypeFunctionIdentity.Add(cTypeFunctionIdentity);
                     }
 
-                    tempCTypeFunctionIdentity.Add(cTypeFunctionIdentity);
+                    globalItem.SetReadOnly();
+                    itemCollection.AddInternal(globalItem);
                 }
-                globalItem.SetReadOnly();
-                itemCollection.AddInternal(globalItem);
             }
+#if NET5_0_OR_GREATER
+            finally
+            {
+                sb.Dispose();
+            }
+#endif
             return errors;
         }
 
