@@ -416,9 +416,10 @@ namespace System.Data.Entity.Core.Objects.ELinq
 
             internal override Expression Visit(Expression exp)
             {
+                var expInStack = exp;
                 if (exp != null)
                 {
-                    if (!_funcletizer._linqExpressionStack.Add(exp))
+                    if (!_funcletizer._linqExpressionStack.Add(expInStack))
                     {
                         // This expression is already in the stack.
                         throw new InvalidOperationException(Strings.ELinq_CycleDetected);
@@ -457,7 +458,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
                     }
                     finally
                     {
-                        _funcletizer._linqExpressionStack.Remove(exp);
+                        _funcletizer._linqExpressionStack.Remove(expInStack);
                     }
                 }
                 return base.Visit(exp);
