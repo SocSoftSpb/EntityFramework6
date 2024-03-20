@@ -1092,6 +1092,8 @@ namespace System.Data.Entity.Core.Query.InternalTrees
                         return "Deref";
                     case OpType.Distinct:
                         return "Distinct";
+                    case OpType.AsSubQuery:
+                        return "AsSubQuery";
                     case OpType.Divide:
                         return "Divide";
                     case OpType.Element:

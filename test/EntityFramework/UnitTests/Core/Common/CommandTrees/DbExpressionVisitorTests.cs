@@ -39,6 +39,7 @@ namespace System.Data.Entity.Core.Common.CommandTrees
             public override void Visit(DbCrossJoinExpression expression) { }
             public override void Visit(DbDerefExpression expression) { }
             public override void Visit(DbDistinctExpression expression) { }
+            public override void Visit(DbAsSubQueryExpression expression) { }
             public override void Visit(DbElementExpression expression) { }
             public override void Visit(DbExceptExpression expression) { }
             public override void Visit(DbFilterExpression expression) { }
@@ -85,6 +86,7 @@ namespace System.Data.Entity.Core.Common.CommandTrees
             public override T Visit(DbCrossJoinExpression expression) { return default(T); }
             public override T Visit(DbDerefExpression expression) { return default(T); }
             public override T Visit(DbDistinctExpression expression) { return default(T); }
+            public override T Visit(DbAsSubQueryExpression expression) { return default(T); }
             public override T Visit(DbElementExpression expression) { return default(T); }
             public override T Visit(DbExceptExpression expression) { return default(T); }
             public override T Visit(DbFilterExpression expression) { return default(T); }

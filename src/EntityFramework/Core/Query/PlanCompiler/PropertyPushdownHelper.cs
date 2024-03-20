@@ -547,6 +547,15 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         }
 
         // <summary>
+        // AsSubQueryOp handling
+        // Require all properties out of all structured vars
+        // </summary>
+        public override void Visit(AsSubQueryOp op, Node n)
+        {
+            VisitChildren(n);
+        }
+
+        // <summary>
         // FilterOp handling
         // Process the predicate child, and then the input child - since the
         // predicate child will probably have references to the input.

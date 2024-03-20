@@ -61,6 +61,8 @@ namespace System.Data.Entity.SqlServerCompact.SqlGen
         // </summary>
         internal bool IsDistinct { get; set; }
 
+        internal bool IsSubQuery { get; set; }
+
         internal List<Symbol> AllJoinExtents { get; // We have a setter as well, even though this is a list,
             // since we use this field only in special cases.
             set; }

@@ -538,6 +538,13 @@ namespace System.Data.Entity.Core.Common.CommandTrees.Internal
             VisitUnary(e);
         }
 
+        public override void Visit(DbAsSubQueryExpression e)
+        {
+            Check.NotNull(e, "e");
+            
+            VisitUnary(e);
+        }
+
         public override void Visit(DbElementExpression e)
         {
             Check.NotNull(e, "e");

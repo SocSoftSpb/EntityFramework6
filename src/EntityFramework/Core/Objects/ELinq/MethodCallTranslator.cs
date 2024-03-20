@@ -309,6 +309,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
                 yield return new BatchUpdateDynamicTranslator();
                 yield return new BatchInsertTranslator();
                 yield return new BatchInsertDynamicTranslator();
+                yield return new AsSubqueryTranslator();
             }
 
             private static IEnumerable<ObjectQueryCallTranslator> GetObjectQueryCallTranslators()
@@ -2663,6 +2664,21 @@ namespace System.Data.Entity.Core.Objects.ELinq
                     MethodCallExpression call)
                 {
                     return parent.Distinct(operand);
+                }
+            }
+
+            private sealed class AsSubqueryTranslator : UnarySequenceMethodTranslator
+            {
+                internal AsSubqueryTranslator()
+                    : base(SequenceMethod.AsSubQuery)
+                {
+                }
+
+                protected override CqtExpression TranslateUnary(
+                    ExpressionConverter parent, CqtExpression operand,
+                    MethodCallExpression call)
+                {
+                    return parent.AsSubQuery(operand);
                 }
             }
 

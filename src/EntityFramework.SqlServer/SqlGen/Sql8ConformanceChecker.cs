@@ -322,6 +322,17 @@ namespace System.Data.Entity.SqlServer.SqlGen
         // <summary>
         // <see cref="VisitUnaryExpression" />
         // </summary>
+        // <param name="expression"> The DbAsSubQueryExpression that is being visited. </param>
+        public override bool Visit(DbAsSubQueryExpression expression)
+        {
+            Check.NotNull(expression, "expression");
+
+            return VisitUnaryExpression(expression);
+        }
+
+        // <summary>
+        // <see cref="VisitUnaryExpression" />
+        // </summary>
         // <param name="expression"> The DbElementExpression that is being visited. </param>
         public override bool Visit(DbElementExpression expression)
         {

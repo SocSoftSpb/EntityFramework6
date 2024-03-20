@@ -981,6 +981,21 @@ namespace System.Data.Entity.SqlServerCompact.SqlGen
         }
 
         // <summary>
+        // SUBQUERY
+        // </summary>
+        public override ISqlFragment Visit(DbAsSubQueryExpression e)
+        {
+            Check.NotNull(e, "e");
+
+            Check.NotNull(e, "e");
+
+            var result = VisitExpressionEnsureSqlStatement(e.Argument, false);
+
+            result.IsSubQuery = true;
+            return result;
+        }
+
+        // <summary>
         // An element expression returns a scalar - so it is translated to
         // ( Select ... )
         // </summary>
@@ -4177,26 +4192,31 @@ namespace System.Data.Entity.SqlServerCompact.SqlGen
                         // #494803: The projection after distinct may not project all 
                         // columns used in the Order By
                         // Improvement: Consider getting rid of the Order By instead
-                           && result.OrderBy.IsEmpty;
+                           && result.OrderBy.IsEmpty
+                           && !result.IsSubQuery;
 
                 case DbExpressionKind.Filter:
                     return result.Select.IsEmpty
                            && result.Where.IsEmpty
                            && result.GroupBy.IsEmpty
                            && result.Top == null
-                           && result.Skip == null;
+                           && result.Skip == null
+                           && !result.IsSubQuery;
 
                 case DbExpressionKind.GroupBy:
                     return result.Select.IsEmpty
                            && result.GroupBy.IsEmpty
                            && result.OrderBy.IsEmpty
                            && result.Top == null
-                           && result.Skip == null;
+                           && result.Skip == null
+                           && !result.IsSubQuery;
 
                 case DbExpressionKind.Limit:
                 case DbExpressionKind.Element:
                     return result.Top == null
-                           && result.Skip == null;
+                           && result.Skip == null
+                           && !result.IsSubQuery;
+
 
                 case DbExpressionKind.Project:
                     // SQLBUDT #427998: Allow a Project to be compatible with an OrderBy
@@ -4206,13 +4226,15 @@ namespace System.Data.Entity.SqlServerCompact.SqlGen
                            && result.GroupBy.IsEmpty
                         // SQLBUDT #513640 - If distinct is specified, the projection may affect
                         // the cardinality of the results, thus a new statement must be started.
-                           && !result.IsDistinct;
+                           && !result.IsDistinct
+                           && !result.IsSubQuery;
 
                 case DbExpressionKind.Skip:
                     return result.Select.IsEmpty
                            && result.GroupBy.IsEmpty
                            && result.OrderBy.IsEmpty
-                           && !result.IsDistinct;
+                           && !result.IsDistinct
+                           && !result.IsSubQuery;
 
                 case DbExpressionKind.Sort:
                     return result.Select.IsEmpty
@@ -4222,7 +4244,8 @@ namespace System.Data.Entity.SqlServerCompact.SqlGen
                         // to be in the same statement as the Sort (see comment above for the Project case).
                         // A Distinct in the same statement would prevent that, and therefore if Distinct is present,
                         // we need to start a new statement. 
-                           && !result.IsDistinct;
+                           && !result.IsDistinct
+                           && !result.IsSubQuery;
 
                 default:
                     Debug.Assert(false);

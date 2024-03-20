@@ -315,6 +315,11 @@ namespace System.Data.Entity.Core.Common.CommandTrees
         /// Window function.
         /// </summary>
         WindowFunction = 59,
+        
+        /// <summary>
+        /// SubQuery wrapper.
+        /// </summary>
+        AsSubQuery = 60,
     }
 
     internal static class DbExpressionKindHelper
@@ -322,6 +327,6 @@ namespace System.Data.Entity.Core.Common.CommandTrees
         // <summary>
         // The last value in the DbExpressionKind enumeration.
         // </summary>
-        public static readonly DbExpressionKind Last = DbExpressionKind.WindowFunction;
+        public static readonly DbExpressionKind Last = DbExpressionKind.AsSubQuery;
     }
 }

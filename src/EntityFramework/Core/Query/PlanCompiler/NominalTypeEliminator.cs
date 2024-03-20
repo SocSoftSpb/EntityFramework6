@@ -1058,6 +1058,20 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         }
 
         // <summary>
+        // Simply flatten out every var in the keys, and return a new AsSubQueryOp
+        // </summary>
+        // <param name="op"> AsSubQueryOp </param>
+        // <param name="n"> Current subtree </param>
+        public override Node Visit(AsSubQueryOp op, Node n)
+        {
+            VisitChildren(n);
+
+            // Simply flatten out all the Vars
+            n.Op = m_command.CreateAsSubQueryOp();
+            return n;
+        }
+
+        // <summary>
         // GroupBy
         // Again, VisitChildren - for the Keys and Properties VarDefList nodes - does
         // the real work.
@@ -1202,6 +1216,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
                 case OpType.SingleRow:
                 case OpType.Sort:
                 case OpType.ConstrainedSort:
+                case OpType.AsSubQuery:
                     return GetSingletonVar(n.Child0);
 
                 case OpType.UnionAll:

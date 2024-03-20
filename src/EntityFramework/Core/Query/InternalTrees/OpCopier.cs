@@ -1059,6 +1059,11 @@ namespace System.Data.Entity.Core.Query.InternalTrees
             return m_destCmd.CreateNode(newDistinctOp, children);
         }
 
+        public override Node Visit(AsSubQueryOp op, Node n)
+        {
+            return CopyDefault(m_destCmd.CreateAsSubQueryOp(), n);
+        }
+
         public override Node Visit(SingleRowOp op, Node n)
         {
             return CopyDefault(m_destCmd.CreateSingleRowOp(), n);

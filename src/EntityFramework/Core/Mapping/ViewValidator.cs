@@ -486,6 +486,13 @@ namespace System.Data.Entity.Core.Mapping
                 return null;
             }
 
+            public override DbExpressionEntitySetInfo Visit(DbAsSubQueryExpression expression)
+            {
+                Check.NotNull(expression, "expression");
+
+                return null;
+            }
+
             public override DbExpressionEntitySetInfo Visit(DbOrExpression expression)
             {
                 Check.NotNull(expression, "expression");

@@ -309,6 +309,14 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         }
 
         // <summary>
+        // AsSubQuery
+        // </summary>
+        public virtual TResultType Visit(AsSubQueryOp op, Node n)
+        {
+            return VisitRelOpDefault(op, n);
+        }
+
+        // <summary>
         // FilterOp
         // </summary>
         public virtual TResultType Visit(FilterOp op, Node n)

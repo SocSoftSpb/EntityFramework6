@@ -751,6 +751,13 @@ namespace System.Data.Entity.Core.Common.CommandTrees.Internal
                 return VisitUnary(e);
             }
 
+            public override TreeNode Visit(DbAsSubQueryExpression e)
+            {
+                Check.NotNull(e, "e");
+
+                return VisitUnary(e);
+            }
+
             public override TreeNode Visit(DbElementExpression e)
             {
                 Check.NotNull(e, "e");

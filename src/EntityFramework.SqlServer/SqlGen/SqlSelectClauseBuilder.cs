@@ -65,6 +65,8 @@ namespace System.Data.Entity.SqlServer.SqlGen
         // Do we need to add a DISTINCT at the beginning of the SELECT
         // </summary>
         internal bool IsDistinct { get; set; }
+        
+        internal bool IsSubQuery { get; set; }
 
         // <summary>
         // Whether any columns have been specified.

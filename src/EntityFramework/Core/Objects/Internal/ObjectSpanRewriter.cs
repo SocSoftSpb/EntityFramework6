@@ -824,6 +824,7 @@ namespace System.Data.Entity.Core.Objects.Internal
                     case DbExpressionKind.Project:
                     case DbExpressionKind.Sort:
                     case DbExpressionKind.Skip:
+                    case DbExpressionKind.AsSubQuery:
                         return base.VisitExpression(expression);
 
                     default:

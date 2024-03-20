@@ -61,6 +61,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             AddAllEntry(validOpTypes, OpType.CrossJoin);
             AddEntry(validOpTypes, OpType.Deref, PlanCompilerPhase.PreProcessor);
             AddAllEntry(validOpTypes, OpType.Distinct);
+            AddAllEntry(validOpTypes, OpType.AsSubQuery);
             AddAllEntry(validOpTypes, OpType.Divide);
             AddEntry(
                 validOpTypes, OpType.Element,

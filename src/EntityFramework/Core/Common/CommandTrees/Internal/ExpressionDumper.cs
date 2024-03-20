@@ -608,6 +608,14 @@ namespace System.Data.Entity.Core.Common.CommandTrees.Internal
             End(e);
         }
 
+        public override void Visit(DbAsSubQueryExpression e)
+        {
+            Check.NotNull(e, "e");
+
+            BeginUnary(e);
+            End(e);
+        }
+
         public override void Visit(DbElementExpression e)
         {
             Check.NotNull(e, "e");

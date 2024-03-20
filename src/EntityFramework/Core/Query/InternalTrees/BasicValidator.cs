@@ -501,6 +501,12 @@ namespace System.Data.Entity.Core.Query.InternalTrees
             AssertRelOp(n.Child0.Op);
         }
 
+        public override void Visit(AsSubQueryOp op, Node n)
+        {
+            VisitRelOpDefault(op, n);
+            AssertRelOp(n.Child0.Op);
+        }
+
         public override void Visit(SingleRowTableOp op, Node n)
         {
             VisitRelOpDefault(op, n);

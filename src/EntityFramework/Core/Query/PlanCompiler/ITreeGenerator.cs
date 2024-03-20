@@ -1723,6 +1723,18 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             return distinctNode;
         }
 
+        public override Node Visit(DbAsSubQueryExpression e)
+        {
+            Check.NotNull(e, "e");
+
+            var inputNode = EnsureRelOp(VisitExpr(e.Argument));
+            var inputVar = _varMap[inputNode];
+            Op asSubqueryOp = _iqtCommand.CreateAsSubQueryOp();
+            var asSubqueryNode = _iqtCommand.CreateNode(asSubqueryOp, inputNode);
+            _varMap[asSubqueryNode] = inputVar;
+            return asSubqueryNode;
+        }
+
         public override Node Visit(DbElementExpression e)
         {
             Check.NotNull(e, "e");
@@ -2115,6 +2127,12 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
                 case DbExpressionKind.Distinct:
                     {
                         result = ApplyIsOfFilter(((DbDistinctExpression)current).Argument, typeFilter).Distinct();
+                    }
+                    break;
+
+                case DbExpressionKind.AsSubQuery:
+                    {
+                        result = ApplyIsOfFilter(((DbAsSubQueryExpression)current).Argument, typeFilter).AsSubQuery();
                     }
                     break;
 

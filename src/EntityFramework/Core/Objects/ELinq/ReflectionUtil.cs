@@ -473,6 +473,9 @@ namespace System.Data.Entity.Core.Objects.ELinq
             map.Add(@"TakeWithTies(IQueryable`1<T0>, Int32)->IQueryable`1<T0>", SequenceMethod.TakeWithTies);
             map.Add(@"TakeWithTies(IEnumerable`1<T0>, Int32)->IEnumerable`1<T0>", SequenceMethod.TakeWithTies);
             
+            map.Add(@"AsSubQuery(IQueryable`1<T0>)->IQueryable`1<T0>", SequenceMethod.AsSubQuery);
+            map.Add(@"AsSubQuery(IEnumerable`1<T0>)->IEnumerable`1<T0>", SequenceMethod.AsSubQuery);
+            
             map.Add(@"BatchDelete(IQueryable`1<T0>, Boolean, Int32)->IQueryable`1<Int32>", SequenceMethod.BatchDelete);
             map.Add(@"BatchDeleteJoin(IQueryable`1<T0>, Boolean, Int32)->IQueryable`1<Int32>", SequenceMethod.BatchDelete);
             map.Add(@"BatchUpdate(IQueryable`1<T0>, Expression`1<Func`2<T0, T0>>, Boolean, Int32)->IQueryable`1<Int32>", SequenceMethod.BatchUpdate);

@@ -1378,6 +1378,11 @@ namespace System.Data.Entity.Core.Query.InternalTrees
             return new DistinctOp(CreateVarVec(keyVar));
         }
 
+        internal AsSubQueryOp CreateAsSubQueryOp()
+        {
+            return new AsSubQueryOp();
+        }
+
         // <summary>
         // Creates a new UnionAllOp
         // </summary>

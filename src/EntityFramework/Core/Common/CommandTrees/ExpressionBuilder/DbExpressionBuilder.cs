@@ -1835,6 +1835,22 @@ namespace System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder
         }
 
         /// <summary>
+        /// Creates a new <see cref="T:System.Data.Entity.Core.Common.CommandTrees.DbAsSubQueryExpression" /> that wraps the given set argument to a subquery.
+        /// </summary>
+        /// <returns>A new DbAsSubQueryExpression that wraps the given set argument to a subquery.</returns>
+        /// <param name="argument">An expression that defines the set over which to perform the subquery.</param>
+        /// <exception cref="T:System.ArgumentNullException">argument is null.</exception>
+        /// <exception cref="T:System.ArgumentException">argument does not have a collection result type.</exception>
+        public static DbAsSubQueryExpression AsSubQuery(this DbExpression argument)
+        {
+            Check.NotNull(argument, "argument");
+
+            ArgumentValidation.RequireCollectionArgument<DbAsSubQueryExpression>(argument);
+
+            return new DbAsSubQueryExpression(argument.ResultType, argument);
+        }
+
+        /// <summary>
         /// Creates a new <see cref="T:System.Data.Entity.Core.Common.CommandTrees.DbElementExpression" /> that converts a set into a singleton.
         /// </summary>
         /// <returns>A DbElementExpression that represents the conversion of the set argument to a singleton.</returns>

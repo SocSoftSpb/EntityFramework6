@@ -491,6 +491,21 @@ namespace System.Data.Entity.Core.Common.CommandTrees
         }
 
         /// <summary>
+        /// Visitor pattern method for <see cref="DbAsSubQueryExpression" />.
+        /// </summary>
+        /// <param name="expression"> The DbAsSubQueryExpression that is being visited. </param>
+        /// <exception cref="ArgumentNullException">
+        /// <paramref name="expression" />
+        /// is null
+        /// </exception>
+        public override void Visit(DbAsSubQueryExpression expression)
+        {
+            Check.NotNull(expression, "expression");
+
+            VisitUnaryExpression(expression);
+        }
+
+        /// <summary>
         /// Visitor pattern method for <see cref="DbElementExpression" />.
         /// </summary>
         /// <param name="expression"> The DbElementExpression that is being visited. </param>

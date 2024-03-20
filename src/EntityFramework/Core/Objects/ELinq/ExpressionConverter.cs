@@ -531,6 +531,13 @@ namespace System.Data.Entity.Core.Objects.ELinq
             return retExpr;
         }
 
+        private DbAsSubQueryExpression AsSubQuery(DbExpression argument)
+        {
+            var retExpr = argument.AsSubQuery();
+            ApplySpanMapping(argument, retExpr);
+            return retExpr;
+        }
+
         private DbExceptExpression Except(DbExpression left, DbExpression right)
         {
             var retExpr = left.Except(right);

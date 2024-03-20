@@ -381,6 +381,17 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         }
 
         // <summary>
+        // AsSubQueryOp
+        // </summary>
+        // <param name="op"> the AsSubQueryOp </param>
+        // <param name="n"> Current subtree </param>
+        public override Node Visit(AsSubQueryOp op, Node n)
+        {
+            VisitChildren(n); // visit the children
+            return n;
+        }
+
+        // <summary>
         // ElementOp
         // An ElementOp that is still present when Projection Pruning is invoked can only get introduced
         // in the TransformationRules phase by transforming an apply operation into a scalar subquery.

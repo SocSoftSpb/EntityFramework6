@@ -898,6 +898,44 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         }
 
         // <summary>
+        // Computes a NodeInfo for AsSubQuery.
+        // Definitions = OutputVars that are not external references
+        // LocalDefinitions = None
+        // Keys = Output Vars
+        // External References = any external references from the inputs
+        // RowCount = Input's RowCount
+        // NonNullabeDefinitions : NonNullabeDefinitions of the input RelOp that are outputs
+        // NonNullableInputDefinitions : default(empty) because cannot be used
+        // </summary>
+        // <param name="op"> The AsSubQueryOp </param>
+        // <param name="n"> corresponding Node </param>
+        public override NodeInfo Visit(AsSubQueryOp op, Node n)
+        {
+            var nodeInfo = InitExtendedNodeInfo(n);
+            var relOpChildNodeInfo = GetExtendedNodeInfo(n.Child0);
+
+            // definitions are my child's definitions
+            nodeInfo.Definitions.Or(relOpChildNodeInfo.Definitions);
+
+            // My references are my child's external references + those made
+            // by my sort keys
+            nodeInfo.ExternalReferences.Or(relOpChildNodeInfo.ExternalReferences);
+            nodeInfo.ExternalReferences.Minus(relOpChildNodeInfo.Definitions);
+
+            // my keys are my child's keys
+            nodeInfo.Keys.InitFrom(relOpChildNodeInfo.Keys);
+
+            //Non-nullable definitions are same as the input
+            nodeInfo.NonNullableDefinitions.InitFrom(relOpChildNodeInfo.NonNullableDefinitions);
+            nodeInfo.NonNullableVisibleDefinitions.InitFrom(relOpChildNodeInfo.NonNullableDefinitions);
+
+            //Row counts are same as the input
+            nodeInfo.InitRowCountFrom(relOpChildNodeInfo);
+            
+            return nodeInfo;
+        }
+        
+        // <summary>
         // Compute NodeInfo for a SingleRowOp.
         // Definitions = child's definitions
         // Keys = child's keys

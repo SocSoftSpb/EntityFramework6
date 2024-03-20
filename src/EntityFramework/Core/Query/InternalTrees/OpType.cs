@@ -348,6 +348,11 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // A table with exactly one row
         // </summary>
         SingleRowTable,
+        
+        // <summary>
+        // Wrap argument to a sub-query
+        // </summary>
+        AsSubQuery,
 
         #endregion
 

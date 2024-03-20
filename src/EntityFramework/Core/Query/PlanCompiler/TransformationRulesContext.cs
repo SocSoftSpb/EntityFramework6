@@ -221,7 +221,8 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             return optype == OpType.Distinct ||
                    optype == OpType.GroupBy ||
                    optype == OpType.Intersect ||
-                   optype == OpType.Except;
+                   optype == OpType.Except ||
+                   optype == OpType.AsSubQuery;
         }
 
         // <summary>

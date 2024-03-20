@@ -349,6 +349,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         private readonly AliasGenerator _singleRowTableAliases = new AliasGenerator("SingleRowTable");
         private readonly AliasGenerator _limitAliases = new AliasGenerator("Limit");
         private readonly AliasGenerator _skipAliases = new AliasGenerator("Skip");
+        private readonly AliasGenerator _subQueryAliases = new AliasGenerator("SubQuery");
 
         #endregion
 
@@ -2442,6 +2443,30 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             return distinctExpr;
         }
 
+        public override DbExpression Visit(AsSubQueryOp op, Node n)
+        {
+            //
+            // Visit the input Node and retrieve its RelOpInfo
+            //
+            var inputExpr = VisitNode(n.Child0);
+            var inputInfo = ConsumeRelOp(inputExpr);
+
+            //
+            // Create the DbAsSubQueryExpression
+            // together with the input DbExpression created above.
+            //
+            var retExpr = inputExpr.AsSubQuery();
+            var alias = _subQueryAliases.Next();
+
+            //
+            // Update the tracked RelOpInfo for the new expression. This consists of:
+            // PublisherName: The next Subquery alias
+            // PublishedVars: The PublishedVars of the Subquery are the same as its Input.
+            //
+            PublishRelOp(alias, retExpr, inputInfo.PublishedVars);
+            return retExpr;
+        }
+        
         // <summary>
         // Convert SRO(e) => NewMultiset(Element(e'))
         // where e' is the CTree version of e

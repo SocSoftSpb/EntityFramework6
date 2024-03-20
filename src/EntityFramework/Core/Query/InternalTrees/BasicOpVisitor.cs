@@ -672,7 +672,17 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         {
             VisitRelOpDefault(op, n);
         }
-
+        
+        // <summary>
+        // Visitor pattern method for AsSubQueryOp
+        // </summary>
+        // <param name="op"> The AsSubQueryOp being visited </param>
+        // <param name="n"> The Node that references the Op </param>
+        public virtual void Visit(AsSubQueryOp op, Node n)
+        {
+            VisitRelOpDefault(op, n);
+        }
+        
         // <summary>
         // Visitor pattern method for SingleRowOp
         // </summary>

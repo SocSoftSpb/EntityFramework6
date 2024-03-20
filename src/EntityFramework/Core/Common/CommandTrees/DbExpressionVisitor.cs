@@ -35,6 +35,15 @@ namespace System.Data.Entity.Core.Common.CommandTrees
 
         /// <summary>
         /// When overridden in a derived class, implements the visitor pattern for
+        /// <see cref="T:System.Data.Entity.Core.Common.CommandTrees.DbAsSubqueryExpression" />.
+        /// </summary>
+        /// <param name="expression">
+        /// The <see cref="T:System.Data.Entity.Core.Common.CommandTrees.DbAsSubqueryExpression" /> that is visited.
+        /// </param>
+        public abstract void Visit(DbAsSubQueryExpression expression);
+
+        /// <summary>
+        /// When overridden in a derived class, implements the visitor pattern for
         /// <see
         ///     cref="T:System.Data.Entity.Core.Common.CommandTrees.DbArithmeticExpression" />
         /// .

@@ -789,6 +789,16 @@ namespace System.Data.Entity.Core.Common.CommandTrees
             return VisitUnary(expression, CqtBuilder.Distinct);
         }
 
+        /// <summary>Implements the visitor pattern for the removed duplicate elements from the specified set argument.</summary>
+        /// <returns>The implemented visitor.</returns>
+        /// <param name="expression">The distinct expression.</param>
+        public override DbExpression Visit(DbAsSubQueryExpression expression)
+        {
+            Check.NotNull(expression, "expression");
+
+            return VisitUnary(expression, CqtBuilder.AsSubQuery);
+        }
+
         /// <summary>Implements the visitor pattern for the conversion of the specified set argument to a singleton the conversion of the specified set argument to a singleton.</summary>
         /// <returns>The implemented visitor.</returns>
         /// <param name="expression">The element expression.</param>

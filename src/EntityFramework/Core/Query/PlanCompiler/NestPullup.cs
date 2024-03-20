@@ -587,6 +587,17 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         }
 
         // <summary>
+        // AsSubQueryOp
+        // </summary>
+        // <remarks>
+        // The input to a AsSubQueryOp cannot be a NestOp
+        // </remarks>
+        public override Node Visit(AsSubQueryOp op, Node n)
+        {
+            return NestingNotSupported(op, n);
+        }
+
+        // <summary>
         // FilterOp
         // </summary>
         // <remarks>

@@ -38,6 +38,18 @@ namespace System.Data.Entity.Core.Common.CommandTrees
         /// The <see cref="T:System.Data.Entity.Core.Common.CommandTrees.DbApplyExpression" /> that is being visited.
         /// </param>
         public abstract TResultType Visit(DbApplyExpression expression);
+        
+        /// <summary>
+        /// When overridden in a derived class, implements the visitor pattern for
+        /// <see
+        ///     cref="T:System.Data.Entity.Core.Common.CommandTrees.DbAsSubqueryExpression" />
+        /// .
+        /// </summary>
+        /// <returns>A result value of a specific type.</returns>
+        /// <param name="expression">
+        /// The <see cref="T:System.Data.Entity.Core.Common.CommandTrees.DbAsSubqueryExpression" /> that is being visited.
+        /// </param>
+        public abstract TResultType Visit(DbAsSubQueryExpression expression);
 
         /// <summary>
         /// When overridden in a derived class, implements the visitor pattern for
