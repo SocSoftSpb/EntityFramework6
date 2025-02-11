@@ -122,10 +122,6 @@ namespace System.Data.Entity.ModelConfiguration.Mappers
             if (vectorParameterType == null)
             {
                 vectorParameterType = _mappingContext.Model.AddVectorParameterType(primitiveType, _mappingContext.ModelConfiguration.ModelNamespace);
-
-                var annotations = vectorParameterType.GetMetadataProperties();
-                annotations.SetClrType(typeof(VectorParameter<>).MakeGenericType(type));
-                new AttributeMapper(_mappingContext.AttributeProvider).Map(type, annotations);
             }
 
             return vectorParameterType;

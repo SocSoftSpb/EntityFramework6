@@ -47,7 +47,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
             ElementTypeUsage = TypeUsage.Create(elementType);
         }
         
-        internal VectorParameterType(Type clrType)
+        protected VectorParameterType(Type clrType)
             :
             base(BuildClrName(clrType, out var nspName), nspName, DataSpace.OSpace)
         {

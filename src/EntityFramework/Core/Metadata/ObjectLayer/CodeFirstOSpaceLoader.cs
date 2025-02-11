@@ -2,10 +2,10 @@
 
 namespace System.Data.Entity.Core.Metadata.Edm
 {
-    using System.Data.Entity.ModelConfiguration.Edm;
+	using System.Data.Entity.Core.Objects;
+	using System.Data.Entity.ModelConfiguration.Edm;
     using System.Data.Entity.Utilities;
     using System.Diagnostics;
-    using System.Linq;
 
     internal class CodeFirstOSpaceLoader
     {
@@ -21,26 +21,41 @@ namespace System.Data.Entity.Core.Metadata.Edm
             DebugCheck.NotNull(edmItemCollection);
             DebugCheck.NotNull(objectItemCollection);
 
-            foreach (var cSpaceType in edmItemCollection.OfType<EdmType>().Where(
-                t => t.BuiltInTypeKind == BuiltInTypeKind.EntityType
-                     || t.BuiltInTypeKind == BuiltInTypeKind.EnumType
-                     || t.BuiltInTypeKind == BuiltInTypeKind.ComplexType
-                     || t.BuiltInTypeKind == BuiltInTypeKind.VectorParameterType))
+            foreach (GlobalItem item in edmItemCollection)
             {
-                var clrType = cSpaceType.GetClrType();
-                if (clrType != null)
-                {
-                    var oSpaceType = _typeFactory.TryCreateType(clrType, cSpaceType);
-                    if (oSpaceType != null)
-                    {
-                        Debug.Assert(!_typeFactory.CspaceToOspace.ContainsKey(cSpaceType));
-                        _typeFactory.CspaceToOspace.Add(cSpaceType, oSpaceType);
-                    }
-                }
-                else
-                {
-                    Debug.Assert(!(cSpaceType is EntityType || cSpaceType is ComplexType || cSpaceType is EnumType));
-                }
+	            EdmType cSpaceType = item as EdmType;
+	            if (cSpaceType == null)
+		            continue;
+	            Type clrType;
+	            if (cSpaceType.BuiltInTypeKind == BuiltInTypeKind.EntityType
+	                || cSpaceType.BuiltInTypeKind == BuiltInTypeKind.EnumType
+	                || cSpaceType.BuiltInTypeKind == BuiltInTypeKind.ComplexType)
+	            {
+		            clrType = cSpaceType.GetClrType();
+	            }
+	            else if (cSpaceType.BuiltInTypeKind == BuiltInTypeKind.VectorParameterType)
+	            {
+		            var vpt = (VectorParameterType)cSpaceType;
+		            clrType = typeof(VectorParameter<>).MakeGenericType(vpt.ElementType.ClrEquivalentType);
+	            }
+	            else
+	            {
+		            continue;
+	            }
+
+	            if (clrType != null)
+	            {
+		            var oSpaceType = _typeFactory.TryCreateType(clrType, cSpaceType);
+		            if (oSpaceType != null)
+		            {
+			            Debug.Assert(!_typeFactory.CspaceToOspace.ContainsKey(cSpaceType));
+			            _typeFactory.CspaceToOspace.Add(cSpaceType, oSpaceType);
+		            }
+	            }
+	            else
+	            {
+		            Debug.Assert(!(cSpaceType is EntityType || cSpaceType is ComplexType || cSpaceType is EnumType));
+	            }
             }
 
             _typeFactory.CreateRelationships(edmItemCollection);

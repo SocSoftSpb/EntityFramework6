@@ -3,16 +3,22 @@
 namespace System.Data.Entity.Query.LinqToEntities
 {
     using System.Collections.Generic;
-    using System.Data.Common;
+	using System.Data.Common;
     using System.Data.Entity.Core.EntityClient;
     using System.Data.Entity.Core.Objects;
     using System.Data.Entity.Infrastructure;
+    using System.Data.Entity.ModelConfiguration.Conventions;
     using System.Data.SqlClient;
     using System.Linq;
+    using System.Xml;
+    using System.Xml.Linq;
     using Xunit;
 
     public class VectorParameterTest : FunctionalTestBase
     {
+	    private const string ProviderName          = "System.Data.SqlClient";
+	    private const string ProviderManifestToken = "2008";
+
         public class Book
         {
             public int Id { get; set; }
@@ -38,24 +44,28 @@ namespace System.Data.Entity.Query.LinqToEntities
 
         public class MyContext : DbContext
         {
-            public MyContext() : base(CreateConnection(), true)
+	        private const string ConnectionString = "Data Source=pk8local;Initial Catalog=PK8_DATA_DEV;User ID=pk8_appserver;Password=pk8_app_pk8;Pooling=True;Min Pool Size=4;Max Pool Size=200;MultipleActiveResultSets=True;Connect Timeout=60;Application Name=Entity Framework tests";
+
+	        public MyContext() : base(CreateConnection(), true)
             {
                 Database.SetInitializer<MyContext>(null);
             }
 
-            private static DbConnection CreateConnection()
+            public static DbConnection CreateConnection()
             {
-                return new SqlConnection("Data Source=pk8dev;Initial Catalog=PK8_DATA;User ID=pk8_appserver;Password=pk8_app_pk8;Pooling=True;Min Pool Size=4;Max Pool Size=200;MultipleActiveResultSets=True;Connect Timeout=60;Application Name=Entity Framework tests");
+	            return new SqlConnection(ConnectionString);
             }
 
-            protected override void OnModelCreating(DbModelBuilder b)
+            protected override void OnModelCreating(DbModelBuilder b) => PrepareMappings(b);
+
+            public static void PrepareMappings(DbModelBuilder b)
             {
-                b.Entity<Book>().HasRequired(e => e.Author).WithMany().HasForeignKey(e => e.AuthorId);
+	            b.Entity<Book>().HasRequired(e => e.Author).WithMany().HasForeignKey(e => e.AuthorId);
                 
-                b.VectorParameter<int>()
-                    .HasStoreType("Objects", "IntParam");
-                b.VectorParameter<string>()
-                    .HasStoreType("Objects", "StringParam");
+	            b.VectorParameter<int>()
+		            .HasStoreType("Objects", "IntParam");
+	            b.VectorParameter<string>()
+		            .HasStoreType("Objects", "StringParam");
             }
         }
         
@@ -66,6 +76,11 @@ namespace System.Data.Entity.Query.LinqToEntities
                 
             }
 
+            public MyObjectContext(EntityConnection connection)
+	            : base(connection)
+            {
+            }
+
             private static EntityConnection CreateConnection()
             {
                 using (var context = new MyContext())
@@ -74,11 +89,8 @@ namespace System.Data.Entity.Query.LinqToEntities
                     return new EntityConnection(objectContext.MetadataWorkspace, CreateStoreConnection(), true);
                 }
             }
-            
-            private static DbConnection CreateStoreConnection()
-            {
-                return new SqlConnection("Data Source=pk8dev;Initial Catalog=PK8_DATA;User ID=pk8_appserver;Password=pk8_app_pk8;Pooling=True;Min Pool Size=4;Max Pool Size=200;MultipleActiveResultSets=True;Connect Timeout=60;Application Name=Entity Framework tests");
-            }
+
+            private static DbConnection CreateStoreConnection() => MyContext.CreateConnection();
 
             public ObjectSet<Book> Books => CreateObjectSet<Book>();
         }
@@ -100,6 +112,45 @@ namespace System.Data.Entity.Query.LinqToEntities
                 var lst = queryable.ToList();
                 // var lst = books.Where(e => e.Id == iid).ToList();
             }
+        }
+
+        [Fact]
+        public void CanWriteEdmx()
+        {
+
+	        var builder = new DbModelBuilder(DbModelBuilderVersion.Latest);
+            ConfigureConventions(builder);
+            MyContext.PrepareMappings(builder);
+            var model = builder.Build(new DbProviderInfo(ProviderName, ProviderManifestToken));
+
+            var doc = new XDocument();
+            using (var writer = doc.CreateWriter())
+            {
+	            EdmxWriter.WriteEdmx(model, writer);
+            }
+
+            doc.Save(@"C:\Temp\test.edmx");
+        }
+
+        [Fact]
+        public void CanLoadEdmx()
+        {
+	        using (var xmlReader = XmlReader.Create(@"C:\Temp\test.edmx"))
+	        {
+		        var compiledModel = EdmxReader.Read(xmlReader, "xxx");
+		        using (var con = MyContext.CreateConnection())
+		        {
+			        var ctx = compiledModel.CreateObjectContext<MyObjectContext>(con);
+		        }
+	        }
+        }
+
+        private void ConfigureConventions(DbModelBuilder modelBuilder)
+        {
+	        modelBuilder.Conventions.Remove<KeyAttributeConvention>();
+	        modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
+	        modelBuilder.Conventions.Remove<PluralizingEntitySetNameConvention>();
+	        modelBuilder.Conventions.Remove<ForeignKeyIndexConvention>();
         }
         
         [Fact]
