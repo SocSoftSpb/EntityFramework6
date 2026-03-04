@@ -82,9 +82,9 @@ namespace System.Data.Entity.Core.Objects
     /// </code>
     /// </p>
     /// </remarks>
-    public class VectorParameter<T> : VectorParameter, ICollection<T>
+    public class VectorParameter<T> : VectorParameter, IList<T>
     {
-        private readonly ICollection<T> _col;
+        private readonly IList<T> _col;
 
         /// <summary>
         /// Create immutable (Read-Only) VectorParameter from <paramref name="collection"/>
@@ -128,13 +128,27 @@ namespace System.Data.Entity.Core.Objects
         /// <inheritdoc/>
         public bool Remove(T item) => _col.Remove(item);
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Count of items in this VectorParameter
+        /// </summary>
         public override int Count => _col.Count;
         
         /// <summary>
-        /// True if created from existing collection (<see cref="VectorParameter{T}(IEnumerable{T})"/>), False if created from parameterless constructor (<see cref="VectorParameter{T}()"/>)
+        /// 
         /// </summary>
         public bool IsReadOnly => _col.IsReadOnly;
+
+        public int IndexOf(T item) => _col.IndexOf(item);
+
+        public void Insert(int index, T item) => _col.Insert(index, item);
+
+        public void RemoveAt(int index) => _col.RemoveAt(index);
+
+        public T this[int index]
+        {
+            get => _col[index];
+            set => _col[index] = value;
+        }
     }
     
 }
