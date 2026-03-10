@@ -200,8 +200,6 @@ namespace System.Data.Entity.Core.Common.Internal.Materialization
             return readSucceeded;
         }
 
-#if !NET40
-
         private async Task<bool> StoreReadAsync(CancellationToken cancellationToken)
         {
             bool readSucceeded;
@@ -217,8 +215,6 @@ namespace System.Data.Entity.Core.Common.Internal.Materialization
             }
             return readSucceeded;
         }
-
-#endif
 
         private void HandleReaderException(Exception e)
         {
@@ -285,14 +281,10 @@ namespace System.Data.Entity.Core.Common.Internal.Materialization
                 get { return _shaper.RootCoordinator.Current; }
             }
 
-#if !NET40
-
             object IDbAsyncEnumerator.Current
             {
                 get { return _shaper.RootCoordinator.Current; }
             }
-
-#endif
 
             public void Dispose()
             {
@@ -329,8 +321,6 @@ namespace System.Data.Entity.Core.Common.Internal.Materialization
                 return false;
             }
 
-#if !NET40
-
             public async Task<bool> MoveNextAsync(CancellationToken cancellationToken)
             {
                 if (!_shaper._isActive)
@@ -356,8 +346,6 @@ namespace System.Data.Entity.Core.Common.Internal.Materialization
                 Dispose();
                 return false;
             }
-
-#endif
 
             public void Reset()
             {
@@ -396,14 +384,10 @@ namespace System.Data.Entity.Core.Common.Internal.Materialization
                 get { return _current; }
             }
 
-#if !NET40
-
             object IDbAsyncEnumerator.Current
             {
                 get { return _current; }
             }
-
-#endif
 
             public void Dispose()
             {
@@ -437,8 +421,6 @@ namespace System.Data.Entity.Core.Common.Internal.Materialization
                 return true;
             }
 
-#if !NET40
-
             public async Task<bool> MoveNextAsync(CancellationToken cancellationToken)
             {
                 try
@@ -461,8 +443,6 @@ namespace System.Data.Entity.Core.Common.Internal.Materialization
 
                 return true;
             }
-
-#endif
 
             private void MaterializeRow()
             {
@@ -557,14 +537,10 @@ namespace System.Data.Entity.Core.Common.Internal.Materialization
                 get { return Current; }
             }
 
-#if !NET40
-
             object IDbAsyncEnumerator.Current
             {
                 get { return Current; }
             }
-
-#endif
 
             public void Dispose()
             {
@@ -616,8 +592,6 @@ namespace System.Data.Entity.Core.Common.Internal.Materialization
                 return result;
             }
 
-#if !NET40
-
             public async Task<bool> MoveNextAsync(CancellationToken cancellationToken)
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -661,8 +635,6 @@ namespace System.Data.Entity.Core.Common.Internal.Materialization
                 return result;
             }
 
-#endif
-
             // <summary>
             // Requires: the row is currently positioned at the start of an element.
             // Reads all rows in the element and sets up state for the next element (if any).
@@ -687,8 +659,6 @@ namespace System.Data.Entity.Core.Common.Internal.Materialization
                 }
             }
 
-#if !NET40
-
             private async Task ReadElementAsync(CancellationToken cancellationToken)
             {
                 // remember the element we're currently reading
@@ -709,8 +679,6 @@ namespace System.Data.Entity.Core.Common.Internal.Materialization
                 }
             }
 
-#endif
-
             // <summary>
             // Reads rows until the start of a new element is found. If no element
             // is found before all rows are consumed, returns false.
@@ -728,8 +696,6 @@ namespace System.Data.Entity.Core.Common.Internal.Materialization
                 return false;
             }
 
-#if !NET40
-
             private async Task<bool> TryReadToNextElementAsync(CancellationToken cancellationToken)
             {
                 while (await _rowEnumerator.MoveNextAsync(cancellationToken).WithCurrentCulture())
@@ -742,8 +708,6 @@ namespace System.Data.Entity.Core.Common.Internal.Materialization
                 }
                 return false;
             }
-
-#endif
 
             public void Reset()
             {
@@ -818,14 +782,10 @@ namespace System.Data.Entity.Core.Common.Internal.Materialization
                 get { return _current; }
             }
 
-#if !NET40
-
             object IDbAsyncEnumerator.Current
             {
                 get { return _current; }
             }
-
-#endif
 
             public void Dispose()
             {
@@ -874,8 +834,6 @@ namespace System.Data.Entity.Core.Common.Internal.Materialization
                 return !_readerConsumed;
             }
 
-#if !NET40
-
             public async Task<bool> MoveNextAsync(CancellationToken cancellationToken)
             {
                 if (!_readerConsumed)
@@ -915,8 +873,6 @@ namespace System.Data.Entity.Core.Common.Internal.Materialization
 
                 return !_readerConsumed;
             }
-
-#endif
 
             public void Reset()
             {

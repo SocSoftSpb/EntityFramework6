@@ -17649,11 +17649,7 @@ namespace System.Data.Entity.Resources
         {
             resources = new ResourceManager(
                 "System.Data.Entity.Properties.Resources",
-#if NET40
-                typeof(System.Data.Entity.DbContext).Assembly);
-#else
                 typeof(System.Data.Entity.DbContext).GetTypeInfo().Assembly);
-#endif
         }
 
         private static EntityRes GetLoader()

@@ -10,10 +10,8 @@ namespace System.Data.Entity.Core.Objects.Internal
     using System.Data.Entity.Utilities;
     using System.Diagnostics;
     using System.Diagnostics.CodeAnalysis;
-#if !NET40
     using System.Threading;
     using System.Threading.Tasks;
-#endif
 
     // <summary>
     // A wrapper over a <see cref="DbDataReader" /> that will consume and close the supplied reader
@@ -171,8 +169,6 @@ namespace System.Data.Entity.Core.Objects.Internal
             }
         }
 
-#if !NET40
-
         [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "nullableColumns")]
         [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "columnTypes")]
         internal async Task InitializeAsync(
@@ -220,8 +216,6 @@ namespace System.Data.Entity.Core.Objects.Internal
                 reader.Dispose();
             }
         }
-
-#endif
 
         public override void Close()
         {
@@ -331,25 +325,17 @@ namespace System.Data.Entity.Core.Objects.Internal
             return _currentResultSet.GetString(ordinal);
         }
 
-#if NET40
-        public T GetFieldValue<T>(int ordinal)
-#else
         public override T GetFieldValue<T>(int ordinal)
-#endif
         {
             AssertFieldIsReady(ordinal);
             return _currentResultSet.GetFieldValue<T>(ordinal);
         }
-
-#if !NET40
 
         public override Task<T> GetFieldValueAsync<T>(int ordinal, CancellationToken cancellationToken)
         {
             AssertFieldIsReady(ordinal);
             return _currentResultSet.GetFieldValueAsync<T>(ordinal, cancellationToken);
         }
-
-#endif
 
         public override object GetValue(int ordinal)
         {
@@ -395,15 +381,11 @@ namespace System.Data.Entity.Core.Objects.Internal
             return _currentResultSet.IsDBNull(ordinal);
         }
 
-#if !NET40
-
         public override Task<bool> IsDBNullAsync(int ordinal, CancellationToken cancellationToken)
         {
             AssertFieldIsReady(ordinal);
             return _currentResultSet.IsDBNullAsync(ordinal, cancellationToken);
         }
-
-#endif
 
         public override IEnumerator GetEnumerator()
         {
@@ -430,8 +412,6 @@ namespace System.Data.Entity.Core.Objects.Internal
             }
         }
 
-#if !NET40
-
         public override Task<bool> NextResultAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -439,15 +419,11 @@ namespace System.Data.Entity.Core.Objects.Internal
             return Task.FromResult(NextResult());
         }
 
-#endif
-
         public override bool Read()
         {
             AssertReaderIsOpen();
             return _currentResultSet.Read();
         }
-
-#if !NET40
 
         public override Task<bool> ReadAsync(CancellationToken cancellationToken)
         {
@@ -456,7 +432,5 @@ namespace System.Data.Entity.Core.Objects.Internal
             AssertReaderIsOpen();
             return _currentResultSet.ReadAsync(cancellationToken);
         }
-
-#endif
     }
 }

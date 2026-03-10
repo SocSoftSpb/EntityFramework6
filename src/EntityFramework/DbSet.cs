@@ -62,8 +62,6 @@ namespace System.Data.Entity
             throw new NotImplementedException(Strings.TestDoubleNotImplemented("Find", GetType().Name, typeof(DbSet).Name));
         }
 
-#if !NET40
-
         /// <summary>
         /// Asynchronously finds an entity with the given primary key values.
         /// If an entity with the given primary key values exists in the context, then it is
@@ -116,8 +114,6 @@ namespace System.Data.Entity
         {
             throw new NotImplementedException(Strings.TestDoubleNotImplemented("FindAsync", GetType().Name, typeof(DbSet).Name));
         }
-
-#endif
 
         #endregion
 

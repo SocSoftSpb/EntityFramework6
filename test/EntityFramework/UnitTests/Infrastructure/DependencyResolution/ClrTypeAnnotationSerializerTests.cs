@@ -9,8 +9,9 @@ namespace System.Data.Entity.Infrastructure.DependencyResolution
         [Fact]
         public void SerializeValue_returns_the_assembly_qualified_name()
         {
+            var typeName = typeof(Random).AssemblyQualifiedName;
             Assert.Equal(
-                "System.Random, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089",
+                typeName,
                 new ClrTypeAnnotationSerializer().Serialize("Foo", typeof(Random)));
         }
 

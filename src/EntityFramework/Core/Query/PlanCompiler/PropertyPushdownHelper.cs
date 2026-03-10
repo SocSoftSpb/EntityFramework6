@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
-using md = System.Data.Entity.Core.Metadata.Edm;
+using Md = System.Data.Entity.Core.Metadata.Edm;
 
 namespace System.Data.Entity.Core.Query.PlanCompiler
 {
@@ -149,7 +149,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         // Gets the list of "identity" properties for an entity. Gets the
         // "entitysetid" property in addition to the "key" properties
         // </summary>
-        private static PropertyRefList GetIdentityProperties(md.EntityType type)
+        private static PropertyRefList GetIdentityProperties(Md.EntityType type)
         {
             var desiredProperties = GetKeyProperties(type);
             desiredProperties.Add(EntitySetIdPropertyRef.Instance);
@@ -163,12 +163,12 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         [SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "non-EdmProperty")]
         [SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters",
             MessageId = "System.Data.Entity.Core.Query.PlanCompiler.PlanCompiler.Assert(System.Boolean,System.String)")]
-        private static PropertyRefList GetKeyProperties(md.EntityType entityType)
+        private static PropertyRefList GetKeyProperties(Md.EntityType entityType)
         {
             var desiredProperties = new PropertyRefList();
             foreach (var p in entityType.KeyMembers)
             {
-                var edmP = p as md.EdmProperty;
+                var edmP = p as Md.EdmProperty;
                 PlanCompiler.Assert(edmP != null, "EntityType had non-EdmProperty key member?");
                 var pRef = new SimplePropertyRef(edmP);
                 desiredProperties.Add(pRef);
@@ -235,16 +235,16 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         {
             PropertyRefList childProps = null;
 
-            if (md.TypeSemantics.IsReferenceType(op.Type))
+            if (Md.TypeSemantics.IsReferenceType(op.Type))
             {
                 childProps = PropertyRefList.All;
             }
-            else if (md.TypeSemantics.IsNominalType(op.Type))
+            else if (Md.TypeSemantics.IsNominalType(op.Type))
             {
                 var myProps = m_nodePropertyRefMap[n];
                 childProps = myProps.Clone();
             }
-            else if (md.TypeSemantics.IsRowType(op.Type))
+            else if (Md.TypeSemantics.IsRowType(op.Type))
             {
                 // 
                 // Note: We should do a better job here (by translating  
@@ -309,15 +309,15 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             {
                 VisitChildren(n);
             }
-            else if (md.TypeSemantics.IsRowType(childOpType)
-                     || md.TypeSemantics.IsReferenceType(childOpType))
+            else if (Md.TypeSemantics.IsRowType(childOpType)
+                     || Md.TypeSemantics.IsReferenceType(childOpType))
             {
                 VisitDefault(n);
             }
             else
             {
-                PlanCompiler.Assert(md.TypeSemantics.IsEntityType(childOpType), "unexpected childOpType?");
-                var desiredProperties = GetIdentityProperties(TypeHelpers.GetEdmType<md.EntityType>(childOpType));
+                PlanCompiler.Assert(Md.TypeSemantics.IsEntityType(childOpType), "unexpected childOpType?");
+                var desiredProperties = GetIdentityProperties(TypeHelpers.GetEdmType<Md.EntityType>(childOpType));
 
                 // Now push these set of properties to each child
                 foreach (var chi in n.Children)
@@ -354,7 +354,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             PlanCompiler.Assert(childOp != null, "input to GetEntityRefOp is not a ScalarOp?");
 
             // bug 428542 - the child is of the entity type; not this op
-            var entityType = TypeHelpers.GetEdmType<md.EntityType>(childOp.Type);
+            var entityType = TypeHelpers.GetEdmType<Md.EntityType>(childOp.Type);
 
             var desiredProperties = GetIdentityProperties(entityType);
             AddPropertyRefs(n.Child0, desiredProperties);

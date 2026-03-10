@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
+#if false
 namespace System.Data.Entity.Core.Metadata.Edm
 {
     using System.Reflection;
@@ -66,3 +67,5 @@ namespace System.Data.Entity.Core.Metadata.Edm
         }
     }
 }
+
+#endif

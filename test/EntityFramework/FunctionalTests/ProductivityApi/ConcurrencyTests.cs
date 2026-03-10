@@ -705,6 +705,7 @@ namespace ProductivityApiTests
 
         #region Serialization of exceptions
 
+#if !NET10_0_OR_GREATER
         [Fact]
         [UseDefaultExecutionStrategy]
         public void DbUpdateException_can_be_serialized_but_does_not_serialize_entries()
@@ -775,6 +776,7 @@ namespace ProductivityApiTests
                 },
                 null);
         }
+#endif
 
         #endregion
 

@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
+﻿#if false
+// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
 namespace System.Data.Entity.SqlServerCompact.SqlGen
 {
@@ -53,9 +54,9 @@ namespace System.Data.Entity.SqlServerCompact.SqlGen
 
             var mockTransalator = new Mock<DmlSqlGenerator.ExpressionTranslator>();
             var members = new Dictionary<EdmMember, DbParameter>
-                              {
-                                  { mockMember.Object, mockParameter.Object }
-                              };
+            {
+                { mockMember.Object, mockParameter.Object }
+            };
 
             mockTransalator.Setup(m => m.MemberValues).Returns(members);
 
@@ -112,3 +113,5 @@ namespace System.Data.Entity.SqlServerCompact.SqlGen
         }
     }
 }
+
+#endif

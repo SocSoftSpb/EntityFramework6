@@ -187,8 +187,6 @@ namespace System.Data.Entity.Internal
             return dataRecord == null ? null : new ClonedPropertyValues(OriginalValues, dataRecord);
         }
 
-#if !NET40
-
         // <summary>
         // An asynchronous version of GetDatabaseValues, which
         // queries the database for copies of the values of the tracked entity as they currently exist in the database.
@@ -205,8 +203,6 @@ namespace System.Data.Entity.Internal
 
             return dataRecord == null ? null : new ClonedPropertyValues(OriginalValues, dataRecord);
         }
-
-#endif
 
         private ObjectQuery<DbDataRecord> GetDatabaseValuesQuery()
         {
@@ -336,8 +332,6 @@ namespace System.Data.Entity.Internal
             _internalContext.ObjectContext.Refresh(RefreshMode.StoreWins, Entity);
         }
 
-#if !NET40
-
         // <summary>
         // An asynchronous version of Reload, which
         // calls Refresh with StoreWins on the underlying state entry.
@@ -348,8 +342,6 @@ namespace System.Data.Entity.Internal
 
             return _internalContext.ObjectContext.RefreshAsync(RefreshMode.StoreWins, Entity, cancellationToken);
         }
-
-#endif
 
         #endregion
 

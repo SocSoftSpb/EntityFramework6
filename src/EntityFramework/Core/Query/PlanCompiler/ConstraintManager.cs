@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
-using md = System.Data.Entity.Core.Metadata.Edm;
+using Md = System.Data.Entity.Core.Metadata.Edm;
 
 //using System.Diagnostics; // Please use PlanCompiler.Assert instead of Debug.Assert in this class...
 
@@ -42,7 +42,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         // <param name="constraints"> list of constraints ? </param>
         // <returns> true if there is at least one constraint </returns>
         internal bool IsParentChildRelationship(
-            md.EntitySetBase table1, md.EntitySetBase table2,
+            Md.EntitySetBase table1, Md.EntitySetBase table2,
             out List<ForeignKeyConstraint> constraints)
         {
             LoadRelationships(table1.EntityContainer);
@@ -55,7 +55,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         // <summary>
         // Load all relationships in this entity container
         // </summary>
-        internal void LoadRelationships(md.EntityContainer entityContainer)
+        internal void LoadRelationships(Md.EntityContainer entityContainer)
         {
             // Check to see if I've already loaded information for this entity container
             if (m_entityContainerMap.ContainsKey(entityContainer))
@@ -66,7 +66,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             // Load all relationships from this entitycontainer
             foreach (var e in entityContainer.BaseEntitySets)
             {
-                var relationshipSet = e as md.RelationshipSet;
+                var relationshipSet = e as Md.RelationshipSet;
                 if (relationshipSet == null)
                 {
                     continue;
@@ -74,7 +74,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
 
                 // Relationship sets can only contain relationships
                 var relationshipType = relationshipSet.ElementType;
-                var assocType = relationshipType as md.AssociationType;
+                var assocType = relationshipType as Md.AssociationType;
 
                 //
                 // Handle only binary Association relationships for now
@@ -112,7 +112,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
 
         internal ConstraintManager()
         {
-            m_entityContainerMap = new Dictionary<md.EntityContainer, md.EntityContainer>();
+            m_entityContainerMap = new Dictionary<Md.EntityContainer, Md.EntityContainer>();
             m_parentChildRelationships = new Dictionary<ExtentPair, List<ForeignKeyConstraint>>();
         }
 
@@ -120,7 +120,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
 
         #region private state
 
-        private readonly Dictionary<md.EntityContainer, md.EntityContainer> m_entityContainerMap;
+        private readonly Dictionary<Md.EntityContainer, Md.EntityContainer> m_entityContainerMap;
         private readonly Dictionary<ExtentPair, List<ForeignKeyConstraint>> m_parentChildRelationships;
 
         #endregion
@@ -132,12 +132,12 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         // This should ideally be a method supported by RelationType itself
         // </summary>
         // <returns> true, if this is a binary relationship </returns>
-        private static bool IsBinary(md.RelationshipType relationshipType)
+        private static bool IsBinary(Md.RelationshipType relationshipType)
         {
             var endCount = 0;
             foreach (var member in relationshipType.Members)
             {
-                if (member is md.RelationshipEndMember)
+                if (member is Md.RelationshipEndMember)
                 {
                     endCount++;
                     if (endCount > 2)

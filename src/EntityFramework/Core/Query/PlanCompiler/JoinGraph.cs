@@ -31,7 +31,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
     using System.Data.Entity.Core.Query.InternalTrees;
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
-    using md = System.Data.Entity.Core.Metadata.Edm;
+    using Md = System.Data.Entity.Core.Metadata.Edm;
 
     // <summary>
     // Represents a join graph. The uber-class for join elimination
@@ -1387,7 +1387,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         {
             // First build up a number of equivalence classes. Each equivalence class
             // contains instances of the same table
-            var groupedEdges = new Dictionary<md.EntitySetBase, List<JoinEdge>>();
+            var groupedEdges = new Dictionary<Md.EntitySetBase, List<JoinEdge>>();
             foreach (var joinEdge in tableNode.JoinEdges)
             {
                 // Ignore useless edges
@@ -1656,7 +1656,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             // Consider join elimination for left-outer-joins only if we have a 1 - 1 or 1 - 0..1 relationship
             //
             if (joinEdge.JoinKind == JoinKind.LeftOuter
-                && fkConstraint.ChildMultiplicity == md.RelationshipMultiplicity.Many)
+                && fkConstraint.ChildMultiplicity == Md.RelationshipMultiplicity.Many)
             {
                 return false;
             }
@@ -1696,7 +1696,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
                 // referenced outside the join condition, thus passing true for allowRefsForJoinedOnFkOnly only
                 // if the multiplicity is 1 - 1
                 return TryEliminateRightTable(
-                    joinEdge, fkConstraint.ChildKeys.Count, fkConstraint.ChildMultiplicity == md.RelationshipMultiplicity.One);
+                    joinEdge, fkConstraint.ChildKeys.Count, fkConstraint.ChildMultiplicity == Md.RelationshipMultiplicity.One);
             }
         }
 

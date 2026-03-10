@@ -28,7 +28,6 @@ namespace ProductivityApiUnitTests
     using System.Data.Entity.Resources;
     using System.Data.Entity.TestHelpers;
     using System.Data.SqlClient;
-    using System.Data.SqlServerCe;
     using System.Linq;
     using Moq;
     using Moq.Protected;
@@ -238,7 +237,7 @@ namespace ProductivityApiUnitTests
         public void Dispose_can_be_overridden_in_a_derived_DbContext()
         {
             var mockContext = new Mock<DbContext>();
-            mockContext.Protected().Setup("Dispose", true).Verifiable();
+            mockContext.Protected().Setup("Dispose", true, true).Verifiable();
 
             mockContext.Object.Dispose();
 
@@ -733,6 +732,7 @@ END");
             }
         }
 
+#if false
         [Fact]
         public void Can_replace_connection_with_different_provider()
         {
@@ -742,11 +742,11 @@ END");
             using (var context = new ReplaceConnectionContext())
             {
                 using (var newConnection =
-                    new LazyInternalConnection(
-                        context,
-                        new DbConnectionInfo(
-                            "Data Source=NewReplaceConnectionContextDatabase.sdf",
-                            "System.Data.SqlServerCe.4.0")))
+                       new LazyInternalConnection(
+                           context,
+                           new DbConnectionInfo(
+                               "Data Source=NewReplaceConnectionContextDatabase.sdf",
+                               "System.Data.SqlServerCe.4.0")))
                 {
                     context.InternalContext.OverrideConnection(newConnection);
 
@@ -762,6 +762,7 @@ END");
                 }
             }
         }
+#endif
 
         [Fact]
         public void Exception_replacing_DbConnection_with_EntityConnection()

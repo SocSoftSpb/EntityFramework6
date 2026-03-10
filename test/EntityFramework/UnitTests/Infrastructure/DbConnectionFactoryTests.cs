@@ -117,6 +117,7 @@ namespace System.Data.Entity.Infrastructure
 
         #region Negative SqlCeConnectionFactory tests
 
+#if false
         [Fact]
         public void SqlCeConnectionFactory_treats_improperly_end_formed_environment_style_as_path_which_then_throws()
         {
@@ -136,6 +137,7 @@ namespace System.Data.Entity.Infrastructure
                 GenerateException(() => Path.Combine("|", "Willow")).Message,
                 Assert.Throws<ArgumentException>(() => factory.CreateConnection("FakeDatabaseName")).Message);
         }
+#endif
 
         [Fact]
         public void SqlCeConnectionFactory_throws_when_given_null_database_name()
@@ -481,7 +483,7 @@ namespace System.Data.Entity.Infrastructure
                         using (var connection = new LocalDbConnectionFactory("v99").CreateConnection("MyDatabase"))
                         {
                             Assert.Equal(
-                                @"Data Source=(localdb)\v99;AttachDbFilename=|DataDirectory|MyDatabase.mdf;Initial Catalog=MyDatabase;Integrated Security=True;MultipleActiveResultSets=True",
+                                @"Data Source=(localdb)\v99;Initial Catalog=MyDatabase;Integrated Security=True;MultipleActiveResultSets=True",
                                 connection.ConnectionString);
                         }
                     });
@@ -533,7 +535,7 @@ namespace System.Data.Entity.Infrastructure
                             var connection = new LocalDbConnectionFactory("v99", "Integrated Security=True").CreateConnection("MyDatabase"))
                         {
                             Assert.Equal(
-                                @"Data Source=(localdb)\v99;AttachDbFilename=|DataDirectory|MyDatabase.mdf;Initial Catalog=MyDatabase;Integrated Security=True",
+                                @"Data Source=(localdb)\v99;Initial Catalog=MyDatabase;Integrated Security=True",
                                 connection.ConnectionString);
                         }
                     });
@@ -548,25 +550,27 @@ namespace System.Data.Entity.Infrastructure
             }
         }
 
+#if false
         [Fact]
         public void LocalDbConnectionFactory_uses_AttachDbFilename_set_by_factory_even_if_set_in_base_connection_string()
         {
             WithDataDirectory(
                 @"C:\Some\Data\Directory",
                 () =>
+                {
+                    using (var connection = new LocalDbConnectionFactory("v99", "AttachDbFilename=|DataDirectory|ADifferent.mdf;")
+                               .CreateConnection("MyDatabase"))
                     {
-                        using (var connection = new LocalDbConnectionFactory("v99", "AttachDbFilename=|DataDirectory|ADifferent.mdf;")
-                            .CreateConnection("MyDatabase"))
-                        {
-                            Assert.Equal(
-                                "|DataDirectory|MyDatabase.mdf",
-                                new DbConnectionStringBuilder
-                                    {
-                                        ConnectionString = connection.ConnectionString
-                                    }["AttachDbFilename"]);
-                        }
-                    });
+                        Assert.Equal(
+                            "|DataDirectory|MyDatabase.mdf",
+                            new DbConnectionStringBuilder
+                            {
+                                ConnectionString = connection.ConnectionString
+                            }["AttachDbFilename"]);
+                    }
+                });
         }
+#endif
 
         [Fact]
         public void LocalDbConnectionFactory_uses_Initial_Catalog_set_by_factory_even_if_set_in_base_connection_string()

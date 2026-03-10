@@ -3,48 +3,44 @@
   <PropertyGroup>
     <RootNamespace>System.Data.Entity</RootNamespace>
     <AssemblyName>EntityFramework.FunctionalTests</AssemblyName>
-    <TargetFrameworks>net472;$(DefaultNetCoreTargetFramework)</TargetFrameworks>
+    <TargetFrameworks>net6.0;net10.0</TargetFrameworks>
     <DefineConstants>$(DefineConstants);EF_FUNCTIONALS</DefineConstants>
     <NoWarn>$(NoWarn);CS0169</NoWarn>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.ComponentModel.DataAnnotations" />
-    <Reference Include="System.Configuration" />
-    <Reference Include="System.Transactions" />
-    <Reference Include="WindowsBase" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
-    <ProjectReference Include="..\..\..\src\EntityFramework.SqlServerCompact\EntityFramework.SqlServerCompact.InternalsVisibleTo.csproj" />
-  </ItemGroup>
+  <!-- <ItemGroup Condition="'$(TargetFramework)' == 'net472'"> -->
+  <!--   <Reference Include="Microsoft.CSharp" /> -->
+  <!--   <Reference Include="System.ComponentModel.DataAnnotations" /> -->
+  <!--   <Reference Include="System.Configuration" /> -->
+  <!--   <Reference Include="System.Transactions" /> -->
+  <!--   <Reference Include="WindowsBase" /> -->
+  <!-- </ItemGroup> -->
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\EntityFramework.SqlServer\EntityFramework.SqlServer.InternalsVisibleTo.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
-    <Content Include="$(NuGetPackageRoot)microsoft.sqlserver.types\$(MicrosoftSqlServerTypesVersion)\content\readme.htm">
-      <Link>SqlServerTypes\readme.htm</Link>
-    </Content>
-    <Content Include="$(NuGetPackageRoot)microsoft.sqlserver.types\$(MicrosoftSqlServerTypesVersion)\nativeBinaries\x64\msvcr120.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Link>SqlServerTypes\x64\msvcr120.dll</Link>
-    </Content>
-    <Content Include="$(NuGetPackageRoot)microsoft.sqlserver.types\$(MicrosoftSqlServerTypesVersion)\nativeBinaries\x64\SqlServerSpatial140.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Link>SqlServerTypes\x64\SqlServerSpatial140.dll</Link>
-    </Content>
-    <Content Include="$(NuGetPackageRoot)microsoft.sqlserver.types\$(MicrosoftSqlServerTypesVersion)\nativeBinaries\x86\msvcr120.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Link>SqlServerTypes\x86\msvcr120.dll</Link>
-    </Content>
-    <Content Include="$(NuGetPackageRoot)microsoft.sqlserver.types\$(MicrosoftSqlServerTypesVersion)\nativeBinaries\x86\SqlServerSpatial140.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Link>SqlServerTypes\x86\SqlServerSpatial140.dll</Link>
-    </Content>
-  </ItemGroup>
+  <!-- <ItemGroup Condition="'$(TargetFramework)' == 'net472'"> -->
+  <!--   <Content Include="$(NuGetPackageRoot)microsoft.sqlserver.types\$(MicrosoftSqlServerTypesVersion)\content\readme.htm"> -->
+  <!--     <Link>SqlServerTypes\readme.htm</Link> -->
+  <!--   </Content> -->
+  <!--   <Content Include="$(NuGetPackageRoot)microsoft.sqlserver.types\$(MicrosoftSqlServerTypesVersion)\nativeBinaries\x64\msvcr120.dll"> -->
+  <!--     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory> -->
+  <!--     <Link>SqlServerTypes\x64\msvcr120.dll</Link> -->
+  <!--   </Content> -->
+  <!--   <Content Include="$(NuGetPackageRoot)microsoft.sqlserver.types\$(MicrosoftSqlServerTypesVersion)\nativeBinaries\x64\SqlServerSpatial140.dll"> -->
+  <!--     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory> -->
+  <!--     <Link>SqlServerTypes\x64\SqlServerSpatial140.dll</Link> -->
+  <!--   </Content> -->
+  <!--   <Content Include="$(NuGetPackageRoot)microsoft.sqlserver.types\$(MicrosoftSqlServerTypesVersion)\nativeBinaries\x86\msvcr120.dll"> -->
+  <!--     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory> -->
+  <!--     <Link>SqlServerTypes\x86\msvcr120.dll</Link> -->
+  <!--   </Content> -->
+  <!--   <Content Include="$(NuGetPackageRoot)microsoft.sqlserver.types\$(MicrosoftSqlServerTypesVersion)\nativeBinaries\x86\SqlServerSpatial140.dll"> -->
+  <!--     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory> -->
+  <!--     <Link>SqlServerTypes\x86\SqlServerSpatial140.dll</Link> -->
+  <!--   </Content> -->
+  <!-- </ItemGroup> -->
 
   <ItemGroup>
     <None Remove="Objects\TransactionsModel.csdl" />
@@ -332,9 +328,10 @@
     </Compile>
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'">
+  <ItemGroup>
     <None Update="xunit.console.dll.config">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>ReSharperTestRunner.dll.config</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 
@@ -342,14 +339,5 @@
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
-
-  <PropertyGroup>
-    <PostBuildEvent Condition="'$(OS)' == 'Windows_NT' And '$(TargetFramework)' == 'net472'">
-      if not exist "$(TargetDir)x86" md "$(TargetDir)x86"
-      xcopy /s /y "$(NuGetPackageRoot)Microsoft.SqlServer.Compact\$(MicrosoftSqlServerCompactVersion)\NativeBinaries\x86\*.*" "$(TargetDir)x86"
-      if not exist "$(TargetDir)amd64" md "$(TargetDir)amd64"
-      xcopy /s /y "$(NuGetPackageRoot)Microsoft.SqlServer.Compact\$(MicrosoftSqlServerCompactVersion)\NativeBinaries\amd64\*.*" "$(TargetDir)amd64"
-    </PostBuildEvent>
-  </PropertyGroup>
 
 </Project>

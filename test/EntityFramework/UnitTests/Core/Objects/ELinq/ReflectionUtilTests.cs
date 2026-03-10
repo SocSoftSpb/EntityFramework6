@@ -68,7 +68,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
                 Enum.GetValues(typeof(SequenceMethod)).OfType<SequenceMethod>().OrderBy(e => e),
                 ReflectionUtil.MethodMap.Values.Distinct().OrderBy(e => e));
 
-            Assert.Equal(298, ReflectionUtil.MethodMap.Count);
+            Assert.Equal(312, ReflectionUtil.MethodMap.Count);
         }
 
         [Fact]
@@ -76,7 +76,12 @@ namespace System.Data.Entity.Core.Objects.ELinq
         {
             foreach (var sequenceMethod in Enum.GetValues(typeof(SequenceMethod))
                 .OfType<SequenceMethod>()
-                .Where(e => e != SequenceMethod.NotSupported))
+                .Where(e => e != SequenceMethod.NotSupported 
+                            && e != SequenceMethod.BatchDelete
+                            && e != SequenceMethod.BatchUpdate
+                            && e != SequenceMethod.BatchDeleteDynamic
+                            && e != SequenceMethod.BatchUpdateDynamic
+                            ))
             {
                 Assert.True(sequenceMethod.ToString().StartsWith(ReflectionUtil.InverseMap[sequenceMethod].Name));
             }
@@ -85,7 +90,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
                 Enum.GetValues(typeof(SequenceMethod)).OfType<SequenceMethod>().OrderBy(e => e),
                 ReflectionUtil.InverseMap.Keys.Distinct().OrderBy(e => e));
 
-            Assert.Equal(167, ReflectionUtil.InverseMap.Count);
+            Assert.Equal(175, ReflectionUtil.InverseMap.Count);
         }
     }
 }

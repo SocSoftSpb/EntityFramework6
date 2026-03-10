@@ -12,10 +12,7 @@ namespace System.Data.Entity.Internal
     // Represents a raw SQL query against the context that may be for entities in an entity set
     // or for some other non-entity element type.
     // </summary>
-    internal abstract class InternalSqlQuery : IEnumerable
-#if !NET40
-                                               , IDbAsyncEnumerable
-#endif
+    internal abstract class InternalSqlQuery : IEnumerable, IDbAsyncEnumerable
     {
         #region Constructors and fields
 
@@ -109,14 +106,11 @@ namespace System.Data.Entity.Internal
 
         #region IDbAsyncEnumerable implementation
 
-#if !NET40
         // <summary>
         // Returns an <see cref="IDbAsyncEnumerator" /> which when enumerated will execute the given SQL query against the database.
         // </summary>
         // <returns> The query results. </returns>
         public abstract IDbAsyncEnumerator GetAsyncEnumerator();
-
-#endif
 
         #endregion
 

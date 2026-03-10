@@ -2,7 +2,7 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <TargetFrameworks>net472;net40;net5.0;$(DefaultNetCoreTargetFramework)</TargetFrameworks>
+    <TargetFrameworks>net6.0;net10.0</TargetFrameworks>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <IncludeSource>false</IncludeSource>
     <IsPackable>True</IsPackable>
@@ -16,19 +16,36 @@
     <GeneratedContent Include="*.in" />
   </ItemGroup>
 
+  <PropertyGroup>
+
+  </PropertyGroup>
+
+  <Target Name="ResolvePackageVersions" BeforeTargets="Build">
+    <PropertyGroup>
+      <SystemCodeDomVersion>@(PackageVersion->WithMetadataValue('Identity','System.CodeDom')->'%(Version)')</SystemCodeDomVersion>
+      <SystemConfigurationConfigurationManagerVersion>@(PackageVersion->WithMetadataValue('Identity','System.Configuration.ConfigurationManager')->'%(Version)')</SystemConfigurationConfigurationManagerVersion>
+      <SystemDataSqlClientVersion>@(PackageVersion->WithMetadataValue('Identity','System.Data.SqlClient')->'%(Version)')</SystemDataSqlClientVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <NuspecProperty Include="SystemCodeDomVersion=$(SystemCodeDomVersion)" />
+      <NuspecProperty Include="SystemConfigurationConfigurationManagerVersion=$(SystemConfigurationConfigurationManagerVersion)" />
+      <NuspecProperty Include="SystemDataSqlClientVersion=$(SystemDataSqlClientVersion)" />
+    </ItemGroup>
+
+  </Target>
+
+  <!-- <Target Name="DebugItems" AfterTargets="Build"> -->
+  <!--   <Message Text="Filtered: $(SystemCodeDomVersion)" Importance="High" /> -->
+  <!-- </Target> -->
+
   <ItemGroup>
     <NuspecProperty Include="Configuration=$(Configuration)" />
-    <NuspecProperty Include="DefaultNetCoreTargetFramework=$(DefaultNetCoreTargetFramework)" />
     <NuspecProperty Include="NeutralLanguage=$(NeutralLanguage)" />
-    <NuspecProperty Include="MicrosoftCSharpVersion=$(MicrosoftCSharpVersion)" />
-    <NuspecProperty Include="SystemCodeDomVersion=$(SystemCodeDomVersion)" />
-    <NuspecProperty Include="SystemComponentModelAnnotationsVersion=$(SystemComponentModelAnnotationsVersion)" />
-    <NuspecProperty Include="SystemConfigurationConfigurationManagerVersion=$(SystemConfigurationConfigurationManagerVersion)" />
-    <NuspecProperty Include="SystemDataSqlClientVersion=$(SystemDataSqlClientVersion)" />
     <NuspecProperty Include="IntermediateOutputPath=$(IntermediateOutputPath)" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net5.0'">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net10.0' ">
     <ProjectReference Include="..\..\Microsoft.Data.Entity.Build.Tasks\Microsoft.Data.Entity.Build.Tasks.csproj" />
   </ItemGroup>
 

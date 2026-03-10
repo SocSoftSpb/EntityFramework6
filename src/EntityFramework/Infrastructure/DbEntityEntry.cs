@@ -96,8 +96,6 @@ namespace System.Data.Entity.Infrastructure
             return storeValues == null ? null : new DbPropertyValues(storeValues);
         }
 
-#if !NET40
-
         /// <summary>
         /// Asynchronously queries the database for copies of the values of the tracked entity as they currently exist in the database.
         /// Note that changing the values in the returned dictionary will not update the values in the database.
@@ -139,8 +137,6 @@ namespace System.Data.Entity.Infrastructure
             return storeValues == null ? null : new DbPropertyValues(storeValues);
         }
 
-#endif
-
         /// <summary>
         /// Reloads the entity from the database overwriting any property values with values from the database.
         /// The entity will be in the Unchanged state after calling this method.
@@ -149,8 +145,6 @@ namespace System.Data.Entity.Infrastructure
         {
             _internalEntityEntry.Reload();
         }
-
-#if !NET40
 
         /// <summary>
         /// Asynchronously reloads the entity from the database overwriting any property values with values from the database.
@@ -186,8 +180,6 @@ namespace System.Data.Entity.Infrastructure
         {
             return _internalEntityEntry.ReloadAsync(cancellationToken);
         }
-
-#endif
 
         #endregion
 

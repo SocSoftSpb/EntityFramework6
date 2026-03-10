@@ -84,8 +84,6 @@ namespace System.Data.Entity.Infrastructure
             _internalCollectionEntry.Load();
         }
 
-#if !NET40
-
         /// <summary>
         /// Asynchronously loads the collection of entities from the database.
         /// Note that entities that already exist in the context are not overwritten with values from the database.
@@ -120,8 +118,6 @@ namespace System.Data.Entity.Infrastructure
         {
             return _internalCollectionEntry.LoadAsync(cancellationToken);
         }
-
-#endif
 
         /// <summary>
         /// Gets or sets a value indicating whether all entities of this collection have been loaded from the database.

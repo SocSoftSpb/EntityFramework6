@@ -32,10 +32,7 @@ namespace System.Data.Entity.Core.Objects
     /// </summary>
     /// <typeparam name="T"> The result type of this ObjectQuery </typeparam>
     [SuppressMessage("Microsoft.Naming", "CA1710:IdentifiersShouldHaveCorrectSuffix")]
-    public class ObjectQuery<T> : ObjectQuery, IOrderedQueryable<T>, IEnumerable<T>
-#if !NET40
-                                  , IDbAsyncEnumerable<T>
-#endif
+    public class ObjectQuery<T> : ObjectQuery, IOrderedQueryable<T>, IEnumerable<T>, IDbAsyncEnumerable<T>
     {
         #region Private Static Members
 
@@ -223,8 +220,6 @@ namespace System.Data.Entity.Core.Objects
             return GetResults(mergeOption);
         }
 
-#if !NET40
-
         /// <summary>
         /// Asynchronously executes the object query with the specified merge option.
         /// </summary>
@@ -279,8 +274,6 @@ namespace System.Data.Entity.Core.Objects
         {
             WrapCommandAndExecuteNonQueryImpl(sqlTextBefore, sqlTextAfter);
         }
-
-#endif
 
         /// <summary>Specifies the related objects to include in the query results.</summary>
         /// <returns>
@@ -583,8 +576,6 @@ namespace System.Data.Entity.Core.Objects
 
         #region IDbAsyncEnumerable<T> implementation
 
-#if !NET40
-
         /// <summary>
         /// Returns an <see cref="IDbAsyncEnumerator{T}" /> which when enumerated will execute the given SQL query against the database.
         /// </summary>
@@ -597,8 +588,6 @@ namespace System.Data.Entity.Core.Objects
             return new LazyAsyncEnumerator<T>(cancellationToken => GetResultsAsync(null, cancellationToken));
         }
 
-#endif
-
         #endregion
 
         #region ObjectQuery Overrides
@@ -609,15 +598,11 @@ namespace System.Data.Entity.Core.Objects
             return ((IEnumerable<T>)this).GetEnumerator();
         }
 
-#if !NET40
-
         // <inheritdoc />
         internal override IDbAsyncEnumerator GetAsyncEnumeratorInternal()
         {
             return ((IDbAsyncEnumerable<T>)this).GetAsyncEnumerator();
         }
-
-#endif
 
         // <inheritdoc />
         internal override IList GetIListSourceListInternal()
@@ -631,15 +616,11 @@ namespace System.Data.Entity.Core.Objects
             return GetResults(mergeOption);
         }
 
-#if !NET40
-
         // <inheritdoc />
         internal override async Task<ObjectResult> ExecuteInternalAsync(MergeOption mergeOption, CancellationToken cancellationToken)
         {
             return await GetResultsAsync(mergeOption, cancellationToken).WithCurrentCulture();
         }
-
-#endif
 
         // <summary>
         // Retrieves the LINQ expression that backs this ObjectQuery for external consumption.
@@ -731,8 +712,6 @@ namespace System.Data.Entity.Core.Objects
                     releaseConnectionOnSuccess: !QueryState.EffectiveStreamingBehavior));
         }
 
-#if !NET40
-
         private Task<ObjectResult<T>> GetResultsAsync(MergeOption? forMergeOption, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -782,8 +761,6 @@ namespace System.Data.Entity.Core.Objects
                 }
             }
         }
-
-#endif
 
         #endregion
     }

@@ -15,11 +15,7 @@ namespace System.Data.Entity.Internal.Linq
         IInternalQuery<TElement> AsNoTracking();
         IInternalQuery<TElement> AsStreaming();
         IInternalQuery<TElement> WithExecutionStrategy(IDbExecutionStrategy executionStrategy);
-
-#if !NET40
         new IDbAsyncEnumerator<TElement> GetAsyncEnumerator();
-#endif
-
         new IEnumerator<TElement> GetEnumerator();
     }
 }

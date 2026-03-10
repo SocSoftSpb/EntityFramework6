@@ -62,11 +62,13 @@ namespace System.Data.Entity.Internal
                 CreateDatabase_uses_Migrations_when_provider_is_known("System.Data.SqlClient");
             }
 
+#if false
             [Fact]
             public void CreateDatabase_uses_Migrations_when_provider_is_SQL_CE()
             {
                 CreateDatabase_uses_Migrations_when_provider_is_known("System.Data.SqlServerCe.4.0");
             }
+#endif
 
             [Fact]
             public void CreateDatabase_uses_Migrations_when_provider_when_SQL_generator_has_been_registered()

@@ -271,7 +271,7 @@ namespace System.Data.Entity.Migrations.Model
             var booleanColumnModel = new ColumnModel(PrimitiveTypeKind.Boolean);
             foreach (var typeKind in Enum.GetValues(typeof(PrimitiveTypeKind))
                                          .OfType<PrimitiveTypeKind>()
-                                         .Where(t => t != PrimitiveTypeKind.SByte))
+                                         .Where(t => t != PrimitiveTypeKind.SByte && t != PrimitiveTypeKind.DbLikePattern))
             {
                 booleanColumnModel.IsNarrowerThan(new ColumnModel(typeKind), _providerManifest);
             }

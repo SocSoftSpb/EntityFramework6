@@ -10,15 +10,20 @@ namespace System.Data.Entity.Infrastructure
         [Fact]
         public void Constructors_can_be_passed_null_or_empty_message_without_throwing()
         {
+#if NET10_0_OR_GREATER
+            const string message = "Data Exception.";
+#else
+            const string message = "System.Data.Entity.Infrastructure.CommitFailedException";
+#endif
             Assert.Contains(
-                "System.Data.Entity.Infrastructure.CommitFailedException",
+                message,
                 new CommitFailedException(null).Message);
 
             Assert.Equal("", new CommitFailedException("").Message);
             Assert.Equal(" ", new CommitFailedException(" ").Message);
 
             Assert.Contains(
-                "System.Data.Entity.Infrastructure.CommitFailedException",
+                message,
                 new CommitFailedException(null, new Exception()).Message);
 
             Assert.Equal("", new CommitFailedException("", new Exception()).Message);

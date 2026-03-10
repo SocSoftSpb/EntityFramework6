@@ -93,8 +93,6 @@ namespace System.Data.Entity.Infrastructure
             _internalReferenceEntry.Load();
         }
 
-#if !NET40
-
         /// <summary>
         /// Asynchronously loads the entity from the database.
         /// Note that if the entity already exists in the context, then it will not overwritten with values from the database.
@@ -129,8 +127,6 @@ namespace System.Data.Entity.Infrastructure
         {
             return _internalReferenceEntry.LoadAsync(cancellationToken);
         }
-
-#endif
 
         /// <summary>
         /// Gets or sets a value indicating whether the entity has been loaded from the database.

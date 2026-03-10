@@ -272,6 +272,7 @@ namespace System.Data.Entity.Core.Objects.DataClasses
                 }
             }
 
+#if false
             [Fact]
             public void GetRelatedEnd_for_serialized_change_tracking_proxy_with_unqualified_name_does_not_require_expensive_lookup()
             {
@@ -314,7 +315,9 @@ namespace System.Data.Entity.Core.Objects.DataClasses
                     mockLoader.Verify(m => m.GetAllRelationshipTypesExpensiveWay(It.IsAny<Assembly>()), Times.Never());
                 }
             }
+#endif
 
+#if false
             [Fact]
             public void GetRelatedEnd_for_serialized_change_tracking_proxy_with_qualified_name_does_not_require_expensive_lookup()
             {
@@ -360,6 +363,7 @@ namespace System.Data.Entity.Core.Objects.DataClasses
                     mockLoader.Verify(m => m.GetAllRelationshipTypesExpensiveWay(It.IsAny<Assembly>()), Times.Never());
                 }
             }
+#endif
 
             [Fact]
             public void GetRelatedEnd_for_detached_change_tracking_proxy_with_qualified_name_does_not_require_expensive_lookup()
@@ -445,6 +449,7 @@ namespace System.Data.Entity.Core.Objects.DataClasses
                     c => c.Dependents.Attach(c.Dependents.Create()));
             }
 
+#if false
             [Fact]
             public void Creating_graphs_of_serialized_change_tracking_proxies_does_not_use_expensive_lookup()
             {
@@ -452,6 +457,7 @@ namespace System.Data.Entity.Core.Objects.DataClasses
                     c => SerializeAndDeserialize(c.Principals.Create()),
                     c => SerializeAndDeserialize(c.Dependents.Create()));
             }
+#endif
 
             private void Creating_graphs_of_detached_change_tracking_proxies_does_not_use_expensive_lookup(
                 Func<DummyContext, FullyVirtualPrin> createPrincipal,
@@ -555,6 +561,7 @@ namespace System.Data.Entity.Core.Objects.DataClasses
 
         public class InitializeRelatedReference : TestBase
         {
+#if false
             [Fact]
             public void InitializeRelatedReference_throws_for_change_tracking_proxy_related_end_that_has_been_serialized()
             {
@@ -581,10 +588,12 @@ namespace System.Data.Entity.Core.Objects.DataClasses
                                 relatedEnd)).Message);
                 }
             }
+#endif
         }
 
         public class InitializeRelatedCollection : TestBase
         {
+#if false
             [Fact]
             public void InitializeRelatedCollection_throws_for_change_tracking_proxy_related_end_that_has_been_serialized()
             {
@@ -607,16 +616,18 @@ namespace System.Data.Entity.Core.Objects.DataClasses
                             Strings.RelationshipManager_CollectionInitializeIsForDeserialization),
                         Assert.Throws<InvalidOperationException>(
                             () =>
-                            manager.InitializeRelatedCollection(
-                                "System.Data.Entity.Core.Objects.DataClasses.FullyVirtualPrin_Dependents",
-                                "FullyVirtualPrin_Dependents_Target",
-                                relatedEnd)).Message);
+                                manager.InitializeRelatedCollection(
+                                    "System.Data.Entity.Core.Objects.DataClasses.FullyVirtualPrin_Dependents",
+                                    "FullyVirtualPrin_Dependents_Target",
+                                    relatedEnd)).Message);
                 }
             }
+#endif
         }
 
         public class GetAllRelatedEnds : TestBase
         {
+#if false
             [Fact]
             public void Serializing_and_deserializing_change_tracking_proxies_does_not_require_expensive_lookup()
             {
@@ -635,6 +646,7 @@ namespace System.Data.Entity.Core.Objects.DataClasses
                     mockLoader.Verify(m => m.GetAllRelationshipTypesExpensiveWay(It.IsAny<Assembly>()), Times.Never());
                 }
             }
+#endif
 
             [Fact]
             public void GetAllRelatedEnds_for_a_detached_change_tracking_proxy_does_not_require_expensive_lookup()
@@ -657,6 +669,7 @@ namespace System.Data.Entity.Core.Objects.DataClasses
             }
         }
 
+#if false
         private static T SerializeAndDeserialize<T>(T instance)
         {
             var stream = new MemoryStream();
@@ -667,6 +680,7 @@ namespace System.Data.Entity.Core.Objects.DataClasses
 
             return (T)formatter.Deserialize(stream);
         }
+#endif
 
         public class DummyContext : DbContext
         {

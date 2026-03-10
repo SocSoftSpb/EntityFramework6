@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
-using md = System.Data.Entity.Core.Metadata.Edm;
+using Md = System.Data.Entity.Core.Metadata.Edm;
 
 namespace System.Data.Entity.Core.Query.PlanCompiler
 {
@@ -19,7 +19,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
     {
         #region private state
 
-        private readonly md.TypeUsage m_type; // the type
+        private readonly Md.TypeUsage m_type; // the type
         private readonly List<TypeInfo> m_immediateSubTypes; // the list of children below this type in it's type hierarchy.
         private readonly TypeInfo m_superType; // the type one level up in this types type hierarchy -- the base type.
         private readonly RootTypeInfo m_rootType; // the top-most type in this types type hierarchy
@@ -31,7 +31,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         // <summary>
         // Creates type information for a type
         // </summary>
-        internal static TypeInfo Create(md.TypeUsage type, TypeInfo superTypeInfo, ExplicitDiscriminatorMap discriminatorMap)
+        internal static TypeInfo Create(Md.TypeUsage type, TypeInfo superTypeInfo, ExplicitDiscriminatorMap discriminatorMap)
         {
             TypeInfo result;
             if (superTypeInfo == null)
@@ -45,7 +45,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             return result;
         }
 
-        protected TypeInfo(md.TypeUsage type, TypeInfo superType)
+        protected TypeInfo(Md.TypeUsage type, TypeInfo superType)
         {
             m_type = type;
             m_immediateSubTypes = new List<TypeInfo>();
@@ -101,7 +101,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         // <summary>
         // The metadata type
         // </summary>
-        internal md.TypeUsage Type
+        internal Md.TypeUsage Type
         {
             get { return m_type; }
         }
@@ -133,7 +133,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         // <summary>
         // Flattened record version of the type
         // </summary>
-        internal virtual md.RowType FlattenedType
+        internal virtual Md.RowType FlattenedType
         {
             get { return RootType.FlattenedType; }
         }
@@ -141,7 +141,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         // <summary>
         // TypeUsage that encloses the Flattened record version of the type
         // </summary>
-        internal virtual md.TypeUsage FlattenedTypeUsage
+        internal virtual Md.TypeUsage FlattenedTypeUsage
         {
             get { return RootType.FlattenedTypeUsage; }
         }
@@ -149,7 +149,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         // <summary>
         // Get the property describing the entityset (if any)
         // </summary>
-        internal virtual md.EdmProperty EntitySetIdProperty
+        internal virtual Md.EdmProperty EntitySetIdProperty
         {
             get { return RootType.EntitySetIdProperty; }
         }
@@ -165,7 +165,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         // <summary>
         // Get the nullSentinel property (if any)
         // </summary>
-        internal virtual md.EdmProperty NullSentinelProperty
+        internal virtual Md.EdmProperty NullSentinelProperty
         {
             get { return RootType.NullSentinelProperty; }
         }
@@ -182,7 +182,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         // The typeid property in the flattened type - applies only to nominal types
         // this will be used as the type discriminator column.
         // </summary>
-        internal virtual md.EdmProperty TypeIdProperty
+        internal virtual Md.EdmProperty TypeIdProperty
         {
             get { return RootType.TypeIdProperty; }
         }
@@ -207,9 +207,9 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         // Get the new property for the supplied propertyRef
         // </summary>
         // <param name="propertyRef"> property reference (on the old type) </param>
-        internal md.EdmProperty GetNewProperty(PropertyRef propertyRef)
+        internal Md.EdmProperty GetNewProperty(PropertyRef propertyRef)
         {
-            md.EdmProperty property;
+            Md.EdmProperty property;
             var result = TryGetNewProperty(propertyRef, true, out property);
             Debug.Assert(result, "Should have thrown if the property was not found");
             return property;
@@ -221,7 +221,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         // <param name="propertyRef"> property reference (on the old type) </param>
         // <param name="throwIfMissing"> throw if the property is not found </param>
         // <param name="newProperty"> the corresponding property on the new type </param>
-        internal bool TryGetNewProperty(PropertyRef propertyRef, bool throwIfMissing, out md.EdmProperty newProperty)
+        internal bool TryGetNewProperty(PropertyRef propertyRef, bool throwIfMissing, out Md.EdmProperty newProperty)
         {
             return RootType.TryGetNewProperty(propertyRef, throwIfMissing, out newProperty);
         }
@@ -235,15 +235,15 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             MessageId = "System.Data.Entity.Core.Query.PlanCompiler.PlanCompiler.Assert(System.Boolean,System.String)")]
         internal IEnumerable<PropertyRef> GetKeyPropertyRefs()
         {
-            md.EntityTypeBase entityType = null;
-            md.RefType refType = null;
+            Md.EntityTypeBase entityType = null;
+            Md.RefType refType = null;
             if (TypeHelpers.TryGetEdmType(m_type, out refType))
             {
                 entityType = refType.ElementType;
             }
             else
             {
-                entityType = TypeHelpers.GetEdmType<md.EntityTypeBase>(m_type);
+                entityType = TypeHelpers.GetEdmType<Md.EntityTypeBase>(m_type);
             }
 
             // Walk through the list of keys of the entity type, and find their analogs in the
@@ -251,7 +251,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             foreach (var p in entityType.KeyMembers)
             {
                 // Eventually this could be RelationshipEndMember, but currently only properties are suppported as key members
-                PlanCompiler.Assert(p is md.EdmProperty, "Non-EdmProperty key members are not supported");
+                PlanCompiler.Assert(p is Md.EdmProperty, "Non-EdmProperty key members are not supported");
                 var spr = new SimplePropertyRef(p);
                 yield return spr;
             }
@@ -289,7 +289,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         // <summary>
         // Get the list of all properties in the flattened type
         // </summary>
-        internal IEnumerable<md.EdmProperty> GetAllProperties()
+        internal IEnumerable<Md.EdmProperty> GetAllProperties()
         {
             foreach (var m in FlattenedType.Properties)
             {

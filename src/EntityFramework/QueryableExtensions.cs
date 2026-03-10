@@ -25,8 +25,6 @@ namespace System.Data.Entity
     {
         #region Private static fields
 
-#if !NET40
-
         private static readonly MethodInfo _first = GetMethod(
             "First", (T) => new[]
                 {
@@ -418,8 +416,6 @@ namespace System.Data.Entity
                     typeof(Expression<>).MakeGenericType(typeof(Func<,>).MakeGenericType(T, typeof(decimal?)))
                 });
 
-#endif
-
         #endregion
 
         #region Include
@@ -798,8 +794,6 @@ namespace System.Data.Entity
             }
         }
 
-#if !NET40
-
         /// <summary>
         /// Asynchronously enumerates the query such that for server queries such as those of <see cref="DbSet{T}" />,
         /// <see
@@ -849,13 +843,9 @@ namespace System.Data.Entity
             return source.ForEachAsync(e => { }, cancellationToken);
         }
 
-#endif
-
         #endregion
 
         #region ForEachAsync
-
-#if !NET40
 
         /// <summary>
         /// Asynchronously enumerates the query results and performs the specified action on each element.
@@ -949,13 +939,9 @@ namespace System.Data.Entity
             return source.AsDbAsyncEnumerable().ForEachAsync(action, cancellationToken);
         }
 
-#endif
-
         #endregion
 
         #region Async equivalents of IEnumerable extension methods
-
-#if !NET40
 
         /// <summary>
         /// Creates a <see cref="List{Object}" /> from an <see cref="IQueryable" /> by enumerating it asynchronously.
@@ -1418,13 +1404,9 @@ namespace System.Data.Entity
             return source.AsDbAsyncEnumerable().ToDictionaryAsync(keySelector, elementSelector, comparer, cancellationToken);
         }
 
-#endif
-
         #endregion
 
         #region Async equivalents of IQueryable extension methods
-
-#if !NET40
 
         /// <summary>
         /// Asynchronously returns the first element of a sequence.
@@ -7549,8 +7531,6 @@ namespace System.Data.Entity
             }
         }
 
-#endif
-
         #endregion
 
         #region Paging
@@ -7638,8 +7618,6 @@ namespace System.Data.Entity
             return null;
         }
 
-#if !NET40
-
         private static IDbAsyncEnumerable AsDbAsyncEnumerable(this IQueryable source)
         {
             DebugCheck.NotNull(source);
@@ -7679,8 +7657,6 @@ namespace System.Data.Entity
         {
             return GetMethod(methodName, getParameterTypes, 2);
         }
-
-#endif
 
         private static MethodInfo GetMethod(string methodName, Func<Type, Type[]> getParameterTypes)
         {

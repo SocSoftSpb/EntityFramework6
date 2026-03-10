@@ -17,10 +17,7 @@ namespace System.Data.Entity.Infrastructure
     [SuppressMessage("Microsoft.Naming", "CA1710:IdentifiersShouldHaveCorrectSuffix")]
     [SuppressMessage("Microsoft.Design", "CA1010:CollectionsShouldImplementGenericInterface")]
     [DebuggerDisplay(@"{DebuggerDisplay()}")]
-    public abstract class DbQuery : IOrderedQueryable, IListSource, IInternalQueryAdapter
-#if !NET40
-, IDbAsyncEnumerable
-#endif
+    public abstract class DbQuery : IOrderedQueryable, IListSource, IInternalQueryAdapter, IDbAsyncEnumerable
     {
         #region Fields and constructors
 
@@ -80,8 +77,6 @@ namespace System.Data.Entity.Infrastructure
 
         #region IDbAsyncEnumerable
 
-#if !NET40
-
         /// <summary>
         /// Returns an <see cref="IDbAsyncEnumerator" /> which when enumerated will execute the query against the database.
         /// </summary>
@@ -91,8 +86,6 @@ namespace System.Data.Entity.Infrastructure
         {
             return GetInternalQueryWithCheck("IDbAsyncEnumerable.GetAsyncEnumerator").GetAsyncEnumerator();
         }
-
-#endif
 
         #endregion
 

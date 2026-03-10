@@ -74,14 +74,10 @@ namespace System.Data.Entity.Core.EntityClient.Internal
             return Update(0, ut => ut.Update());
         }
 
-#if !NET40
-
         public Task<int> UpdateAsync(CancellationToken cancellationToken)
         {
             return Update(Task.FromResult(0), ut => ut.UpdateAsync(cancellationToken));
         }
-
-#endif
 
         private T Update<T>(
             T noChangesResult,

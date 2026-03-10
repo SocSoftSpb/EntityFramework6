@@ -27,8 +27,6 @@ namespace System.Data.Entity.Spatial
             }
         }
 
-#if !NET40
-
         internal static async Task<object> GetSpatialValueAsync(
             MetadataWorkspace workspace, DbDataReader reader,
             TypeUsage columnType, int columnOrdinal, CancellationToken cancellationToken)
@@ -49,8 +47,6 @@ namespace System.Data.Entity.Spatial
                     await spatialReader.GetGeometryAsync(columnOrdinal, cancellationToken).WithCurrentCulture();
             }
         }
-
-#endif
 
         internal static DbSpatialDataReader CreateSpatialDataReader(MetadataWorkspace workspace, DbDataReader reader)
         {

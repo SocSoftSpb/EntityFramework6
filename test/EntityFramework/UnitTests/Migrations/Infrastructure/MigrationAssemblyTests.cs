@@ -12,7 +12,7 @@ namespace System.Data.Entity.Migrations.Infrastructure
 
     public class MigrationAssemblyTests
     {
-        [Fact]
+        [Fact(Skip = "CSharpCodeGenerator.FromFileBatch is not supported in .NET Core")]
         public void GetMigration_should_perform_pr()
         {
             var codeGenerator = new CSharpMigrationCodeGenerator();
@@ -43,7 +43,7 @@ namespace System.Data.Entity.Migrations.Infrastructure
             Assert.Equal("Foo", migrationAssembly.UniquifyName("Foo"));
         }
 
-        [Fact]
+        [Fact(Skip = "CSharpCodeGenerator.FromFileBatch is not supported in .NET Core")]
         public void UniquifyName_should_return_unique_name_when_conflict()
         {
             var codeGenerator = new CSharpMigrationCodeGenerator();
@@ -96,7 +96,7 @@ namespace System.Data.Entity.Migrations.Infrastructure
             Assert.True(new Regex(@"^\d{15}_[\w ]+$").IsMatch(migrationId));
         }
 
-        [Fact]
+        [Fact(Skip = "CSharpCodeGenerator.FromFileBatch is not supported in .NET Core")]
         public void MigrationIds_should_return_id_when_migration_is_valid()
         {
             var codeGenerator = new CSharpMigrationCodeGenerator();
@@ -119,7 +119,7 @@ namespace System.Data.Entity.Migrations.Infrastructure
             Assert.Equal(1, migrationAssembly.MigrationIds.Count());
         }
 
-        [Fact]
+        [Fact(Skip = "CSharpCodeGenerator.FromFileBatch is not supported in .NET Core")]
         public void MigrationIds_should_order_migrations()
         {
             var codeGenerator = new CSharpMigrationCodeGenerator();
@@ -168,7 +168,7 @@ namespace System.Data.Entity.Migrations.Infrastructure
             Assert.Equal("201108162311111_Migration3", migrationAssembly.MigrationIds.Last());
         }
 
-        [Fact]
+        [Fact(Skip = "CSharpCodeGenerator.FromFileBatch is not supported in .NET Core")]
         public void MigrationIds_should_not_return_migration_in_wrong_namespace()
         {
             var codeGenerator = new CSharpMigrationCodeGenerator();

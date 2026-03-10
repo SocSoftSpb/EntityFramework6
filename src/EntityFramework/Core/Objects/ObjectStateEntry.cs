@@ -98,7 +98,7 @@ namespace System.Data.Entity.Core.Objects
             {
                 if (_state != value)
                 {
-                    if (_cache != null && Entity != null)
+                    if (_cache != null && HasEntity)
                     {
                         var oldState = _state;
                         _state = value;
@@ -115,6 +115,9 @@ namespace System.Data.Entity.Core.Objects
         /// <summary>Gets the entity object.</summary>
         /// <returns>The entity object.</returns>
         public abstract object Entity { get; }
+
+        /// <summary>Verify that <see cref="Entity"/> is not <c>null</c></summary>
+        public abstract bool HasEntity { get; }
 
         /// <summary>Gets the entity key.</summary>
         /// <returns>The entity key.</returns>

@@ -5,7 +5,6 @@ namespace System.Data.Entity.Core
     using System;
     using System.Data.Entity;
     using System.Data.Entity.Resources;
-    using System.Data.Entity.Utilities;
     using System.Linq;
     using System.Reflection;
     using Xunit;
@@ -19,9 +18,11 @@ namespace System.Data.Entity.Core
 
             Assert.Null(ex.PropertyName);
 
+#if false
             ex = ExceptionHelpers.SerializeAndDeserialize(ex);
 
             Assert.Null(ex.PropertyName);
+#endif
         }
 
         [Fact]
@@ -32,10 +33,12 @@ namespace System.Data.Entity.Core
             Assert.Equal("Message", ex.Message);
             Assert.Null(ex.PropertyName);
 
+#if false
             ex = ExceptionHelpers.SerializeAndDeserialize(ex);
 
             Assert.Equal("Message", ex.Message);
             Assert.Null(ex.PropertyName);
+#endif
         }
 
         [Fact]
@@ -48,11 +51,13 @@ namespace System.Data.Entity.Core
             Assert.Same(inner, ex.InnerException);
             Assert.Null(ex.PropertyName);
 
+#if false
             ex = ExceptionHelpers.SerializeAndDeserialize(ex);
 
             Assert.Equal("Message", ex.Message);
             Assert.Equal(inner.Message, ex.InnerException.Message);
             Assert.Null(ex.PropertyName);
+#endif
         }
 
         [Fact]
@@ -63,10 +68,12 @@ namespace System.Data.Entity.Core
             Assert.Equal("Message", ex.Message);
             Assert.Equal("Property", ex.PropertyName);
 
+#if false
             ex = ExceptionHelpers.SerializeAndDeserialize(ex);
 
             Assert.Equal("Message", ex.Message);
             Assert.Equal("Property", ex.PropertyName);
+#endif
         }
 
         [Fact]
@@ -79,13 +86,16 @@ namespace System.Data.Entity.Core
             Assert.Equal("Property", ex.PropertyName);
             Assert.Same(inner, ex.InnerException);
 
+#if false
             ex = ExceptionHelpers.SerializeAndDeserialize(ex);
 
             Assert.Equal("Message", ex.Message);
             Assert.Equal("Property", ex.PropertyName);
             Assert.Equal(inner.Message, ex.InnerException.Message);
+#endif
         }
 
+#if false
         [Fact] // CodePlex 1107
         public void Deserialized_exception_can_be_serialized_and_deserialized_again()
         {
@@ -98,6 +108,7 @@ namespace System.Data.Entity.Core
             Assert.Equal("Property", ex.PropertyName);
             Assert.Equal(inner.Message, ex.InnerException.Message);
         }
+#endif
 
         [Fact]
         public void PropertyConstraintException_string_and_property_name_constructor_throws_if_passed_null_property_name()

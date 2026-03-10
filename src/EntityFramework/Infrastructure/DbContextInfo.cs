@@ -13,9 +13,7 @@ namespace System.Data.Entity.Infrastructure
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Reflection;
-#if !NET40
     using System.Runtime.ExceptionServices;
-#endif
 
     /// <summary>
     /// Provides runtime information about a given <see cref="DbContext" /> type.
@@ -309,9 +307,7 @@ namespace System.Data.Entity.Infrastructure
                 catch (TargetInvocationException ex)
                 {
                     Debug.Assert(ex.InnerException != null);
-#if !NET40
                     ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
-#endif
                     throw ex.InnerException;
                 }
 

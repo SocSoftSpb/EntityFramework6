@@ -103,7 +103,7 @@ namespace System.Data.Entity.Migrations
 
             Assert.NotNull(migrationsConfiguration.CodeGenerator);
             Assert.NotNull(migrationsConfiguration.GetSqlGenerator(DbProviders.Sql));
-            Assert.NotNull(migrationsConfiguration.GetSqlGenerator(DbProviders.SqlCe));
+            // Assert.NotNull(migrationsConfiguration.GetSqlGenerator(DbProviders.SqlCe));
         }
 
         [Fact]

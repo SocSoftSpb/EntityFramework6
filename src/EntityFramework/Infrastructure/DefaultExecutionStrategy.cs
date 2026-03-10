@@ -2,11 +2,8 @@
 
 namespace System.Data.Entity.Infrastructure
 {
-#if !NET40
     using System.Threading;
     using System.Threading.Tasks;
-
-#endif
 
     /// <summary>
     /// An <see cref="IDbExecutionStrategy" /> that doesn't retry operations if they fail.
@@ -44,8 +41,6 @@ namespace System.Data.Entity.Infrastructure
         {
             return operation();
         }
-
-#if !NET40
 
         /// <summary>
         /// Executes the specified asynchronous operation once, without retrying on failure.
@@ -85,7 +80,5 @@ namespace System.Data.Entity.Infrastructure
 
             return operation();
         }
-
-#endif
     }
 }

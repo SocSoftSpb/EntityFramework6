@@ -21,7 +21,11 @@ namespace System.Data.Entity.Core.Query.InternalTrees
     // the node factory methods
     // </summary>
     [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
-    internal sealed class Command
+    internal
+#if INTERNALS_INVISIBLE
+    sealed 
+#endif
+    class Command
     {
         #region private state
 
@@ -386,7 +390,11 @@ namespace System.Data.Entity.Core.Query.InternalTrees
         // </summary>
         // <param name="id"> The ID of the variable to retrieve </param>
         // <returns> The variable with the specified ID </returns>
-        internal Var GetVar(int id)
+        internal
+#if !INTERNALS_INVISIBLE
+            virtual 
+#endif
+        Var GetVar(int id)
         {
             Debug.Assert(m_vars[id].VarType != VarType.NotValid, "The var has been replaced by a different var and is no longer valid.");
 

@@ -2,6 +2,7 @@
 
 namespace System.Data.Entity.Core
 {
+    using System.ComponentModel;
     using System.Data.Entity.Resources;
     using System.Runtime.Serialization;
 
@@ -47,6 +48,10 @@ namespace System.Data.Entity.Core
         /// <param name="context">
         /// The <see cref="T:System.Runtime.Serialization.StreamingContext" /> that contains contextual information about the source or destination.
         /// </param>
+#if NET10_0_OR_GREATER
+        [Obsolete("This API supports obsolete formatter-based serialization. It should not be called or extended by application code.", DiagnosticId = "SYSLIB0051", UrlFormat = "https://aka.ms/dotnet-warnings/{0}")]
+#endif
+        [EditorBrowsable(EditorBrowsableState.Never)]
         protected EntityException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {

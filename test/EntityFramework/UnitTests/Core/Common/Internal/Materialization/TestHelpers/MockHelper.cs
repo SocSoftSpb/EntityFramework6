@@ -122,11 +122,11 @@ namespace System.Data.Entity.Core.Common.Internal.Materialization
 
 #if !NET40
 
-            dbDataReaderMock
-                .Setup(m => m.GetFieldValueAsync<object>(It.IsAny<int>(), It.IsAny<CancellationToken>()))
-                .Returns(
-                    (int ordinal, CancellationToken ct) =>
-                    Task.FromResult(underlyingEnumerators[currentResultSet].Current[ordinal]));
+            // dbDataReaderMock
+            //     .Setup(m => m.GetFieldValueAsync<object>(It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            //     .Returns(
+            //         (int ordinal, CancellationToken ct) =>
+            //         Task.FromResult(underlyingEnumerators[currentResultSet].Current[ordinal]));
 
             dbDataReaderMock
                 .Setup(m => m.IsDBNullAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()))

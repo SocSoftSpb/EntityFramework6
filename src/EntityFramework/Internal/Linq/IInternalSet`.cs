@@ -13,13 +13,7 @@ namespace System.Data.Entity.Internal.Linq
         where TEntity : class
     {
         TEntity Find(params object[] keyValues);
-
-#if !NET40
-
         Task<TEntity> FindAsync(CancellationToken cancellationToken, params object[] keyValues);
-
-#endif
-
         TEntity Create();
         TEntity Create(Type derivedEntityType);
         ObservableCollection<TEntity> Local { get; }

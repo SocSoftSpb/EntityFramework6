@@ -3,6 +3,7 @@
 namespace System.Data.Entity.ModelConfiguration
 {
     using System.Collections.Generic;
+    using System.ComponentModel;
     using System.Data.Entity.Core.Metadata.Edm;
     using System.Data.Entity.ModelConfiguration.Edm;
     using System.Data.Entity.Utilities;
@@ -52,6 +53,10 @@ namespace System.Data.Entity.ModelConfiguration
         /// <summary>Initializes a new instance of <see cref="T:System.Data.Entity.ModelConfiguration.ModelValidationException" /> class serialization info and streaming context.</summary>
         /// <param name="info">The serialization info.</param>
         /// <param name="context">The streaming context.</param>
+#if NET10_0_OR_GREATER
+        [Obsolete("This API supports obsolete formatter-based serialization. It should not be called or extended by application code.", DiagnosticId = "SYSLIB0051", UrlFormat = "https://aka.ms/dotnet-warnings/{0}")]
+#endif
+        [EditorBrowsable(EditorBrowsableState.Never)]
         protected ModelValidationException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {

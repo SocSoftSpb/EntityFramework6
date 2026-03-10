@@ -65,8 +65,6 @@ namespace System.Data.Entity.Core.Objects.DataClasses
         /// <summary>Loads the related object or objects into this related end with the default merge option.</summary>
         void Load();
 
-#if !NET40
-
         /// <summary>Asynchronously loads the related object or objects into this related end with the default merge option.</summary>
         /// <remarks>
         /// Multiple active operations on the same context instance are not supported.  Use 'await' to ensure
@@ -80,16 +78,12 @@ namespace System.Data.Entity.Core.Objects.DataClasses
         /// </returns>
         Task LoadAsync(CancellationToken cancellationToken);
 
-#endif
-
         /// <summary>Loads the related object or objects into the related end with the specified merge option.</summary>
         /// <param name="mergeOption">
         /// The <see cref="T:System.Data.Entity.Core.Objects.MergeOption" /> to use when merging objects into an existing
         /// <see cref="T:System.Data.Entity.Core.Objects.DataClasses.EntityCollection`1" />.
         /// </param>
         void Load(MergeOption mergeOption);
-
-#if !NET40
 
         /// <summary>Asynchronously loads the related object or objects into the related end with the specified merge option.</summary>
         /// <remarks>
@@ -107,8 +101,6 @@ namespace System.Data.Entity.Core.Objects.DataClasses
         /// A task that represents the asynchronous operation.
         /// </returns>
         Task LoadAsync(MergeOption mergeOption, CancellationToken cancellationToken);
-
-#endif
 
         /// <summary>Adds an object to the related end.</summary>
         /// <param name="entity">

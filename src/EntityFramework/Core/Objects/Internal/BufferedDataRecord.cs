@@ -5,10 +5,8 @@ namespace System.Data.Entity.Core.Objects.Internal
     using System.Collections.ObjectModel;
     using System.Data.Common;
     using System.Data.Entity.Core.Common;
-#if !NET40
     using System.Threading;
     using System.Threading.Tasks;
-#endif
 
     internal abstract class BufferedDataRecord
     {
@@ -64,17 +62,11 @@ namespace System.Data.Entity.Core.Objects.Internal
         public abstract long GetInt64(int ordinal);
         public abstract string GetString(int ordinal);
         public abstract T GetFieldValue<T>(int ordinal);
-
-#if !NET40
         public abstract Task<T> GetFieldValueAsync<T>(int ordinal, CancellationToken cancellationToken);
-#endif
         public abstract object GetValue(int ordinal);
         public abstract int GetValues(object[] values);
         public abstract bool IsDBNull(int ordinal);
-
-#if !NET40
         public abstract Task<bool> IsDBNullAsync(int ordinal, CancellationToken cancellationToken);
-#endif
 
         public string GetDataTypeName(int ordinal)
         {
@@ -98,8 +90,6 @@ namespace System.Data.Entity.Core.Objects.Internal
 
         public abstract bool Read();
 
-#if !NET40
         public abstract Task<bool> ReadAsync(CancellationToken cancellationToken);
-#endif
     }
 }

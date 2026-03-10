@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.28407.52
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.37012.4 d17.14
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{6A921FFC-887B-4406-A3E6-8E41817020B5}"
 	ProjectSection(SolutionItems) = preProject
@@ -25,8 +25,6 @@ Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "VBTests", "test\EntityFrame
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EntityFramework.SqlServer", "src\EntityFramework.SqlServer\EntityFramework.SqlServer.csproj", "{6F4BB80B-5F74-44D3-A77F-0025DFA48C1A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EntityFramework.SqlServerCompact", "src\EntityFramework.SqlServerCompact\EntityFramework.SqlServerCompact.csproj", "{1EF9C524-7122-4677-B111-DD14BB2A9EA2}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FunctionalTests.Transitional", "test\EntityFramework\FunctionalTests.Transitional\FunctionalTests.Transitional.csproj", "{3D65611F-E8FB-4A33-9196-7836969D6378}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FunctionalTests.ProviderAgnostic", "test\EntityFramework\FunctionalTests.ProviderAgnostic\FunctionalTests.ProviderAgnostic.csproj", "{C0B5124C-0133-4E0B-BF36-A32CE5AD9DAA}"
@@ -40,8 +38,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "InternalsVisibleTo", "InternalsVisibleTo", "{A92C22F0-200B-4C61-8544-0EAE620B8006}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EntityFramework.SqlServer.InternalsVisibleTo", "src\EntityFramework.SqlServer\EntityFramework.SqlServer.InternalsVisibleTo.csproj", "{63368BF7-E04A-4F0E-ACE7-3CC6DE7F3E93}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EntityFramework.SqlServerCompact.InternalsVisibleTo", "src\EntityFramework.SqlServerCompact\EntityFramework.SqlServerCompact.InternalsVisibleTo.csproj", "{0E08516E-89A5-4C72-BBE2-59AFCD4EF55D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -73,10 +69,6 @@ Global
 		{6F4BB80B-5F74-44D3-A77F-0025DFA48C1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6F4BB80B-5F74-44D3-A77F-0025DFA48C1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6F4BB80B-5F74-44D3-A77F-0025DFA48C1A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1EF9C524-7122-4677-B111-DD14BB2A9EA2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1EF9C524-7122-4677-B111-DD14BB2A9EA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1EF9C524-7122-4677-B111-DD14BB2A9EA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1EF9C524-7122-4677-B111-DD14BB2A9EA2}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3D65611F-E8FB-4A33-9196-7836969D6378}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3D65611F-E8FB-4A33-9196-7836969D6378}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3D65611F-E8FB-4A33-9196-7836969D6378}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -101,10 +93,6 @@ Global
 		{63368BF7-E04A-4F0E-ACE7-3CC6DE7F3E93}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{63368BF7-E04A-4F0E-ACE7-3CC6DE7F3E93}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{63368BF7-E04A-4F0E-ACE7-3CC6DE7F3E93}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0E08516E-89A5-4C72-BBE2-59AFCD4EF55D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0E08516E-89A5-4C72-BBE2-59AFCD4EF55D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0E08516E-89A5-4C72-BBE2-59AFCD4EF55D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0E08516E-89A5-4C72-BBE2-59AFCD4EF55D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -119,7 +107,6 @@ Global
 		{A883C5CA-53F5-41FA-9123-728F94CC6599} = {A92C22F0-200B-4C61-8544-0EAE620B8006}
 		{A92C22F0-200B-4C61-8544-0EAE620B8006} = {24A9C4D1-E189-4D3A-A2D7-36D3ED51D277}
 		{63368BF7-E04A-4F0E-ACE7-3CC6DE7F3E93} = {A92C22F0-200B-4C61-8544-0EAE620B8006}
-		{0E08516E-89A5-4C72-BBE2-59AFCD4EF55D} = {A92C22F0-200B-4C61-8544-0EAE620B8006}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D7045317-2675-4853-926A-4D4354176EEE}

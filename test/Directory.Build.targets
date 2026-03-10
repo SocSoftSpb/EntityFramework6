@@ -4,7 +4,7 @@
   <ItemGroup>
     <!-- Remove xunit.analyzers due to noise -->
     <PackageReference Remove="xunit" />
-    <PackageReference Include="xunit.core" Version="$(XUnitVersion)" />
-    <PackageReference Include="xunit.assert" Version="$(XUnitVersion)" />
+    <PackageReference Include="xunit.core" />
+    <PackageReference Include="xunit.assert" />
   </ItemGroup>
 </Project>

@@ -32,10 +32,16 @@ namespace System.Data.Entity
 #endif
 
             DbConfiguration.SetConfiguration(new FunctionalTestsConfiguration());
+            DbProviderFactories.RegisterFactory("System.Data.SqlClient", SqlClientFactory.Instance);
 
             // Uncomment below to log all test generated SQL to the console.
             //DbInterception.Add(new DatabaseLogFormatter(Console.Write));
         }
+
+        protected static void Initialize()
+        {
+        }
+
 
         internal DbDatabaseMapping BuildMapping(DbModelBuilder modelBuilder)
         {

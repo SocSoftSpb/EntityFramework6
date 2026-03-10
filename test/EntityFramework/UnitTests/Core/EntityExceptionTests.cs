@@ -9,15 +9,20 @@ namespace System.Data.Entity.Core
         [Fact]
         public void Constructors_can_be_passed_null_or_empty_message_without_throwing()
         {
+#if NET10_0_OR_GREATER
+            const string message = "Data Exception.";
+#else
+            const string message = "System.Data.Entity.Core.EntityException";
+#endif
             Assert.Contains(
-                "System.Data.Entity.Core.EntityException",
+                message,
                 new EntityException(null).Message);
 
             Assert.Equal("", new EntityException("").Message);
             Assert.Equal(" ", new EntityException(" ").Message);
 
             Assert.Contains(
-                "System.Data.Entity.Core.EntityException",
+                message,
                 new EntityException(null, new Exception()).Message);
 
             Assert.Equal("", new EntityException("", new Exception()).Message);

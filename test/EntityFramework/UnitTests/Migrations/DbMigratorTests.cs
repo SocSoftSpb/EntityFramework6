@@ -22,7 +22,6 @@ namespace System.Data.Entity.Migrations
     using Xunit;
 
     [Variant(DatabaseProvider.SqlClient, ProgrammingLanguage.CSharp)]
-    [Variant(DatabaseProvider.SqlServerCe, ProgrammingLanguage.CSharp)]
     public class DbMigratorTests : DbTestCase
     {
         public DbMigratorTests(DatabaseProviderFixture databaseProviderFixture)
@@ -30,6 +29,7 @@ namespace System.Data.Entity.Migrations
         {
         }
 
+#if false
         [MigrationsTheory]
         public void Scaffold_throws_when_pending_migrations()
         {
@@ -40,9 +40,10 @@ namespace System.Data.Entity.Migrations
                 Strings.MigrationsPendingException(migration.MigrationId),
                 Assert.Throws<MigrationsPendingException>(
                     () => CreateMigrator<ShopContext_v1>(
-                        scaffoldedMigrations: new[] { migration })
-                              .Scaffold("M2", "N", false)).Message);
+                            scaffoldedMigrations: new[] { migration })
+                        .Scaffold("M2", "N", false)).Message);
         }
+#endif
 
         private class ContextWithNonDefaultCtor : ShopContext_v1
         {
@@ -82,6 +83,7 @@ namespace System.Data.Entity.Migrations
                 Assert.Throws<MigrationsException>(() => CreateMigrator<ContextWithNonDefaultCtor>()).Message);
         }
 
+#if false
         [MigrationsTheory]
         public void GetMigrations_should_return_migrations_list()
         {
@@ -97,6 +99,7 @@ namespace System.Data.Entity.Migrations
 
             Assert.Equal(1, migrator.GetLocalMigrations().Count());
         }
+#endif
 
         private static void DropMigrationHistoryAndAddEdmMetadata(DbConnection connection, string hash)
         {

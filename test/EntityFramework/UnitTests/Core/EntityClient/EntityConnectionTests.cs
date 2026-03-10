@@ -869,7 +869,7 @@ namespace System.Data.Entity.Core.EntityClient
             public void EntityConnection_disposes_underlying_StoreConnection_if_entityConnectionShouldDisposeStoreConnection_flag_is_set()
             {
                 var storeConnectionMock = new Mock<DbConnection>();
-                storeConnectionMock.Protected().Setup("Dispose", true).Verifiable();
+                storeConnectionMock.Protected().Setup("Dispose", true, true).Verifiable();
                 storeConnectionMock.SetupGet(m => m.State).Returns(() => ConnectionState.Closed);
                 storeConnectionMock.SetupGet(m => m.DataSource).Returns("fake");
                 storeConnectionMock.Protected()
@@ -879,7 +879,7 @@ namespace System.Data.Entity.Core.EntityClient
                 var entityConnection = new EntityConnection(CreateMetadataWorkspaceMock().Object, storeConnectionMock.Object, true);
                 entityConnection.Dispose();
 
-                storeConnectionMock.Protected().Verify("Dispose", Times.Once(), true);
+                storeConnectionMock.Protected().Verify("Dispose", Times.Once(), true, true);
             }
 
             [Fact]
@@ -888,7 +888,7 @@ namespace System.Data.Entity.Core.EntityClient
                 ()
             {
                 var storeConnectionMock = new Mock<DbConnection>();
-                storeConnectionMock.Protected().Setup("Dispose", true).Verifiable();
+                storeConnectionMock.Protected().Setup("Dispose", true, true).Verifiable();
                 storeConnectionMock.SetupGet(m => m.State).Returns(() => ConnectionState.Closed);
                 storeConnectionMock.SetupGet(m => m.DataSource).Returns("fake");
                 storeConnectionMock.Protected()
@@ -898,7 +898,7 @@ namespace System.Data.Entity.Core.EntityClient
                 var entityConnection = new EntityConnection(CreateMetadataWorkspaceMock().Object, storeConnectionMock.Object, false);
                 entityConnection.Dispose();
 
-                storeConnectionMock.Protected().Verify("Dispose", Times.Never(), true);
+                storeConnectionMock.Protected().Verify("Dispose", Times.Never(), true, true);
             }
 
             [Fact]
@@ -907,7 +907,7 @@ namespace System.Data.Entity.Core.EntityClient
                 ()
             {
                 var storeConnectionMock = new Mock<DbConnection>();
-                storeConnectionMock.Protected().Setup("Dispose", true).Verifiable();
+                storeConnectionMock.Protected().Setup("Dispose", true, true).Verifiable();
                 storeConnectionMock.SetupGet(m => m.State).Returns(() => ConnectionState.Closed);
                 storeConnectionMock.SetupGet(m => m.DataSource).Returns("fake");
                 storeConnectionMock.Protected()
@@ -917,14 +917,14 @@ namespace System.Data.Entity.Core.EntityClient
                 var entityConnection = new EntityConnection(CreateMetadataWorkspaceMock().Object, storeConnectionMock.Object);
                 entityConnection.Dispose();
 
-                storeConnectionMock.Protected().Verify("Dispose", Times.Never(), true);
+                storeConnectionMock.Protected().Verify("Dispose", Times.Never(), true, true);
             }
 
             [Fact]
             public void Should_use_interception()
             {
                 var storeConnectionMock = new Mock<DbConnection>();
-                storeConnectionMock.Protected().Setup("Dispose", true).Verifiable();
+                storeConnectionMock.Protected().Setup("Dispose", true, true).Verifiable();
                 storeConnectionMock.SetupGet(m => m.State).Returns(() => ConnectionState.Closed);
                 storeConnectionMock.SetupGet(m => m.DataSource).Returns("fake");
                 storeConnectionMock.Setup(m => m.ToString()).Returns("Mock Connection");

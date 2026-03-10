@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
-using md = System.Data.Entity.Core.Metadata.Edm;
+using Md = System.Data.Entity.Core.Metadata.Edm;
 
 //
 // This module contains a few utility functions that make it easier to operate
@@ -21,13 +21,13 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         // </summary>
         // <param name="type"> The type to check </param>
         // <returns> true, if the type is a structured type </returns>
-        internal static bool IsStructuredType(md.TypeUsage type)
+        internal static bool IsStructuredType(Md.TypeUsage type)
         {
-            return (md.TypeSemantics.IsReferenceType(type) ||
-                    md.TypeSemantics.IsRowType(type) ||
-                    md.TypeSemantics.IsEntityType(type) ||
-                    md.TypeSemantics.IsRelationshipType(type) ||
-                    (md.TypeSemantics.IsComplexType(type)));
+            return (Md.TypeSemantics.IsReferenceType(type) ||
+                    Md.TypeSemantics.IsRowType(type) ||
+                    Md.TypeSemantics.IsEntityType(type) ||
+                    Md.TypeSemantics.IsRelationshipType(type) ||
+                    (Md.TypeSemantics.IsComplexType(type)));
         }
 
         // <summary>
@@ -35,9 +35,9 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         // </summary>
         // <param name="type"> the current type </param>
         // <returns> true, if this is a collection type </returns>
-        internal static bool IsCollectionType(md.TypeUsage type)
+        internal static bool IsCollectionType(Md.TypeUsage type)
         {
-            return md.TypeSemantics.IsCollectionType(type);
+            return Md.TypeSemantics.IsCollectionType(type);
         }
 
         // <summary>
@@ -45,9 +45,9 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         // </summary>
         // <param name="type"> the current type </param>
         // <returns> true, if this is an enum type </returns>
-        internal static bool IsEnumerationType(md.TypeUsage type)
+        internal static bool IsEnumerationType(Md.TypeUsage type)
         {
-            return md.TypeSemantics.IsEnumerationType(type);
+            return Md.TypeSemantics.IsEnumerationType(type);
         }
 
         // <summary>
@@ -55,7 +55,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         // </summary>
         // <param name="elementType"> element type of the collection </param>
         // <returns> the new collection type </returns>
-        internal static md.TypeUsage CreateCollectionType(md.TypeUsage elementType)
+        internal static Md.TypeUsage CreateCollectionType(Md.TypeUsage elementType)
         {
             return TypeHelpers.CreateCollectionTypeUsage(elementType);
         }

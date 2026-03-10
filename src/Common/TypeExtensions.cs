@@ -9,6 +9,7 @@ namespace System.Data.Entity.Utilities
 #endif
 {
     using System.Collections.Generic;
+    using System.ComponentModel;
     using System.Data.Entity.Core;
     using System.Data.Entity.Core.Metadata.Edm;
     using System.Data.Entity.Core.Objects;
@@ -311,12 +312,8 @@ namespace System.Data.Entity.Utilities
 
         public static bool IsPublic(this Type type)
         {
-#if NET40
-            return type.IsPublic || (type.IsNestedPublic && type.DeclaringType.IsPublic());
-#else
             var typeInfo = type.GetTypeInfo();
             return typeInfo.IsPublic || (typeInfo.IsNestedPublic && type.DeclaringType.IsPublic());
-#endif
         }
 
         public static bool IsNotPublic(this Type type)
@@ -386,65 +383,30 @@ namespace System.Data.Entity.Utilities
                 m => !methods.Any(m2 => m2.DeclaringType.IsSubclassOf(m.DeclaringType)));
         }
 
-#if NET40
-        public static IEnumerable<MethodInfo> GetRuntimeMethods(this Type type)
-        {
-            DebugCheck.NotNull(type);
-
-            const BindingFlags bindingFlags
-                = BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-            return type.GetMethods(bindingFlags);
-        }
-#endif
-
         public static IEnumerable<MethodInfo> GetDeclaredMethods(this Type type)
         {
             DebugCheck.NotNull(type);
-#if NET40
-            const BindingFlags bindingFlags
-                = BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly;
-            return type.GetMethods(bindingFlags);
-#else
             return type.GetTypeInfo().DeclaredMethods;
-#endif
         }
 
         public static IEnumerable<MethodInfo> GetDeclaredMethods(this Type type, string name)
         {
             DebugCheck.NotNull(type);
             DebugCheck.NotEmpty(name);
-#if NET40
-            const BindingFlags bindingFlags
-                = BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly;
-            return type.GetMember(name, MemberTypes.Method, bindingFlags).OfType<MethodInfo>();
-#else
             return type.GetTypeInfo().GetDeclaredMethods(name);
-#endif
         }
 
         public static PropertyInfo GetDeclaredProperty(this Type type, string name)
         {
             DebugCheck.NotNull(type);
             DebugCheck.NotEmpty(name);
-#if NET40
-            const BindingFlags bindingFlags
-                = BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly;
-            return type.GetProperty(name, bindingFlags);
-#else
             return type.GetTypeInfo().GetDeclaredProperty(name);
-#endif
         }
 
         public static IEnumerable<PropertyInfo> GetDeclaredProperties(this Type type)
         {
             DebugCheck.NotNull(type);
-#if NET40
-            const BindingFlags bindingFlags
-                = BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly;
-            return type.GetProperties(bindingFlags);
-#else
             return type.GetTypeInfo().DeclaredProperties;
-#endif
         }
 
         public static IEnumerable<PropertyInfo> GetInstanceProperties(this Type type)
@@ -479,26 +441,6 @@ namespace System.Data.Entity.Utilities
 
             return mostDerivedProperty;
         }
-
-#if NET40
-        public static IEnumerable<PropertyInfo> GetRuntimeProperties(this Type type)
-        {
-            DebugCheck.NotNull(type);
-
-            const BindingFlags bindingFlags = BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-            return type.GetProperties(bindingFlags);
-        }
-#endif
-
-#if NET40
-        public static PropertyInfo GetRuntimeProperty(this Type type, string name)
-        {
-            DebugCheck.NotNull(type);
-            DebugCheck.NotEmpty(name);
-
-            return type.GetProperty(name);
-        }
-#endif
 
         public static PropertyInfo GetAnyProperty(this Type type, string name)
         {
@@ -549,16 +491,6 @@ namespace System.Data.Entity.Utilities
 
             do
             {
-#if NET40
-                const BindingFlags bindingFlags
-                    = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly;
-                var propertyInfo = type.GetProperty(name, bindingFlags);
-                if (propertyInfo != null)
-                {
-                    return propertyInfo;
-                }
-                type = type.BaseType;
-#else
                 var typeInfo = type.GetTypeInfo();
                 var propertyInfo = typeInfo.GetDeclaredProperty(name);
                 if (propertyInfo != null
@@ -567,7 +499,6 @@ namespace System.Data.Entity.Utilities
                     return propertyInfo;
                 }
                 type = typeInfo.BaseType;
-#endif
             }
             while (type != null);
 
@@ -577,122 +508,68 @@ namespace System.Data.Entity.Utilities
         public static Assembly Assembly(this Type type)
         {
             DebugCheck.NotNull(type);
-#if NET40
-            return type.Assembly;
-#else
             return type.GetTypeInfo().Assembly;
-#endif
         }
 
         public static Type BaseType(this Type type)
         {
             DebugCheck.NotNull(type);
-#if NET40
-            return type.BaseType;
-#else
             return type.GetTypeInfo().BaseType;
-#endif
         }
-
-#if NET40
-        public static IEnumerable<FieldInfo> GetRuntimeFields(this Type type)
-        {
-            DebugCheck.NotNull(type);
-
-            const BindingFlags bindingFlags = BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-            return type.GetFields(bindingFlags);
-        }
-#endif
 
         public static bool IsGenericType(this Type type)
         {
             DebugCheck.NotNull(type);
-#if NET40
-            return type.IsGenericType;
-#else
             return type.GetTypeInfo().IsGenericType;
-#endif
         }
 
         public static bool IsGenericTypeDefinition(this Type type)
         {
             DebugCheck.NotNull(type);
-#if NET40
-            return type.IsGenericTypeDefinition;
-#else
             return type.GetTypeInfo().IsGenericTypeDefinition;
-#endif
         }
 
         public static TypeAttributes Attributes(this Type type)
         {
             DebugCheck.NotNull(type);
-#if NET40
-            return type.Attributes;
-#else
             return type.GetTypeInfo().Attributes;
-#endif
         }
 
         public static bool IsClass(this Type type)
         {
             DebugCheck.NotNull(type);
-#if NET40
-            return type.IsClass;
-#else
             return type.GetTypeInfo().IsClass;
-#endif
         }
 
         public static bool IsInterface(this Type type)
         {
             DebugCheck.NotNull(type);
 
-#if NET40
-            return type.IsInterface;
-#else
             return type.GetTypeInfo().IsInterface;
-#endif
         }
 
         public static bool IsValueType(this Type type)
         {
             DebugCheck.NotNull(type);
-#if NET40
-            return type.IsValueType;
-#else
             return type.GetTypeInfo().IsValueType;
-#endif
         }
 
         public static bool IsAbstract(this Type type)
         {
             DebugCheck.NotNull(type);
-#if NET40
-            return type.IsAbstract;
-#else
             return type.GetTypeInfo().IsAbstract;
-#endif
         }
 
         public static bool IsSealed(this Type type)
         {
             DebugCheck.NotNull(type);
-#if NET40
-            return type.IsSealed;
-#else
             return type.GetTypeInfo().IsSealed;
-#endif
         }
 
         public static bool IsEnum(this Type type)
         {
             DebugCheck.NotNull(type);
-#if NET40
-            return type.IsEnum;
-#else
             return type.GetTypeInfo().IsEnum;
-#endif
         }
 
         public static bool IsVectorParameter(this Type type)
@@ -701,56 +578,38 @@ namespace System.Data.Entity.Utilities
             return !type.IsAbstract() && type.IsSubclassOf(typeof(VectorParameter));
         }
 
+#if NET10_0_OR_GREATER
+        [Obsolete("This API supports obsolete formatter-based serialization. It should not be called or extended by application code.", DiagnosticId = "SYSLIB0051", UrlFormat = "https://aka.ms/dotnet-warnings/{0}")]
+#endif
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public static bool IsSerializable(this Type type)
         {
             DebugCheck.NotNull(type);
-#if NET40
-            return type.IsSerializable;
-#else
             return type.GetTypeInfo().IsSerializable;
-#endif
         }
 
         public static bool IsGenericParameter(this Type type)
         {
             DebugCheck.NotNull(type);
-#if NET40
-            return type.IsGenericParameter;
-#else
             return type.GetTypeInfo().IsGenericParameter;
-#endif
         }
 
         public static bool ContainsGenericParameters(this Type type)
         {
             DebugCheck.NotNull(type);
-#if NET40
-            return type.ContainsGenericParameters;
-#else
             return type.GetTypeInfo().ContainsGenericParameters;
-#endif
         }
 
         public static bool IsPrimitive(this Type type)
         {
             DebugCheck.NotNull(type);
-#if NET40
-            return type.IsPrimitive;
-#else
             return type.GetTypeInfo().IsPrimitive;
-#endif
         }
 
         public static IEnumerable<ConstructorInfo> GetDeclaredConstructors(this Type type)
         {
             DebugCheck.NotNull(type);
-#if NET40
-            const BindingFlags bindingFlags
-                = BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly;
-            return type.GetConstructors(bindingFlags);
-#else
             return type.GetTypeInfo().DeclaredConstructors;
-#endif
         }
 
         public static ConstructorInfo GetDeclaredConstructor(this Type type, params Type[] parameterTypes)
@@ -783,7 +642,6 @@ namespace System.Data.Entity.Utilities
                 .FirstOrDefault(c => c != null && predicate(c));
         }
 
-#if !NET40
         // This extension method will only be used when compiling for a platform on which Type
         // does not expose this method directly.
         public static bool IsSubclassOf(this Type type, Type otherType)
@@ -793,6 +651,5 @@ namespace System.Data.Entity.Utilities
 
             return type.GetTypeInfo().IsSubclassOf(otherType);
         }
-#endif
     }
 }

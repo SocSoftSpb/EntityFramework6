@@ -18,10 +18,7 @@ namespace System.Data.Entity.Core.Objects
     /// </summary>
     /// <typeparam name="T">The type of the result.</typeparam>
     [SuppressMessage("Microsoft.Naming", "CA1710:IdentifiersShouldHaveCorrectSuffix")]
-    public class ObjectResult<T> : ObjectResult, IEnumerable<T>
-#if !NET40
-, IDbAsyncEnumerable<T>
-#endif
+    public class ObjectResult<T> : ObjectResult, IEnumerable<T>, IDbAsyncEnumerable<T>
     {
         private Shaper<T> _shaper;
         private DbDataReader _reader;
@@ -100,16 +97,12 @@ namespace System.Data.Entity.Core.Objects
 
         #region IDbAsyncEnumerable
 
-#if !NET40
-
         /// <inheritdoc />
         [SuppressMessage("Microsoft.Design", "CA1033:InterfaceMethodsShouldBeCallableByChildTypes")]
         IDbAsyncEnumerator<T> IDbAsyncEnumerable<T>.GetAsyncEnumerator()
         {
             return GetDbEnumerator();
         }
-
-#endif
 
         #endregion
 
@@ -150,14 +143,10 @@ namespace System.Data.Entity.Core.Objects
             }
         }
 
-#if !NET40
-
         internal override IDbAsyncEnumerator GetAsyncEnumeratorInternal()
         {
             return GetDbEnumerator();
         }
-
-#endif
 
         internal override IEnumerator GetEnumeratorInternal()
         {

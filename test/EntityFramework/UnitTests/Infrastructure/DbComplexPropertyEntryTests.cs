@@ -49,8 +49,8 @@ namespace System.Data.Entity.Infrastructure
             [Fact]
             public void Non_generic_DbMemberEntry_for_complex_property_can_be_converted_to_generic_version()
             {
-                var memberEntry =
-                    new DbEntityEntry<FakeWithProps>(FakeWithProps.CreateMockInternalEntityEntry().Object).Member("ComplexProp");
+                var dbEntityEntry = new DbEntityEntry<FakeWithProps>(FakeWithProps.CreateMockInternalEntityEntry().Object);
+                var memberEntry = dbEntityEntry.Member("ComplexProp");
 
                 var generic = memberEntry.Cast<FakeWithProps, FakeWithProps>();
 

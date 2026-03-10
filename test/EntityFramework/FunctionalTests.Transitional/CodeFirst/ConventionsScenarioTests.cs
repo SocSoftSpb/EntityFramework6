@@ -1310,6 +1310,7 @@ namespace FunctionalTests
                     .HasAnnotation("A2", "V2");
             }
 
+#if COMPLEX_TYPE_REQ
             [Fact]
             public void Can_configure_annotations_on_complex_type_properties()
             {
@@ -1328,6 +1329,7 @@ namespace FunctionalTests
                     .Column("ComplexProperty_StringProperty")
                     .HasAnnotation("A1", "V1");
             }
+#endif
 
             [Fact]
             public void Annotations_configured_on_multiple_properties_are_unified_to_same_column()

@@ -51,8 +51,10 @@ namespace System.Data.Entity.SqlServer.SqlGen
                 var mockSet = new Mock<EntitySetBase>();
                 mockSet.Setup(m => m.MetadataProperties).Returns(
                     new ReadOnlyMetadataCollection<MetadataProperty>(new List<MetadataProperty>() { mockProperty.Object }));
+                mockSet.Object.Schema = "Run";
+                mockSet.Object.Table = "Run";
 
-                Assert.Equal("(Run Run Run)", SqlGenerator.GetTargetTSql(mockSet.Object));
+                Assert.Equal("[Run].[Run]", SqlGenerator.GetTargetTSql(mockSet.Object));
             }
 
             [Fact]
@@ -69,6 +71,9 @@ namespace System.Data.Entity.SqlServer.SqlGen
                 mockTableProperty.Setup(m => m.Value).Returns("Underground");
 
                 var mockSet = new Mock<EntitySetBase>();
+                mockSet.Object.Schema = "Velvet";
+                mockSet.Object.Table = "Underground";
+
                 mockSet.Setup(m => m.MetadataProperties).Returns(
                     new ReadOnlyMetadataCollection<MetadataProperty>(new List<MetadataProperty>() { mockSchemaProperty.Object, mockTableProperty.Object }));
 

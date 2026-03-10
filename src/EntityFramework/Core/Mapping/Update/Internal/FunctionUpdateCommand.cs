@@ -330,8 +330,6 @@ namespace System.Data.Entity.Core.Mapping.Update.Internal
             return GetRowsAffected(rowsAffected, Translator);
         }
 
-#if !NET40
-
         // <summary>
         // See comments in <see cref="UpdateCommand" />.
         // </summary>
@@ -422,8 +420,6 @@ namespace System.Data.Entity.Core.Mapping.Update.Internal
 
             return GetRowsAffected(rowsAffected, Translator);
         }
-
-#endif
 
         protected virtual long GetRowsAffected(long rowsAffected, UpdateTranslator translator)
         {

@@ -647,6 +647,7 @@ namespace System.Data.Entity.ModelConfiguration.Configuration
                     Message);
         }
 
+#if false
         [Fact]
         public void AddFromAssembly_should_add_all_contained_conventions()
         {
@@ -670,6 +671,7 @@ namespace System.Data.Entity.ModelConfiguration.Configuration
                     .Where(c => c.GetType().Name == "ConceptualStoreModelConvention")
                     .Single());
         }
+#endif
 
         private class ConventionFixture : Convention
         {

@@ -2,6 +2,7 @@
 
 namespace System.Data.Entity.Validation
 {
+    using System.ComponentModel;
     using System.Diagnostics.CodeAnalysis;
     using System.Runtime.Serialization;
 
@@ -45,6 +46,10 @@ namespace System.Data.Entity.Validation
         /// <param name="info"> The serialization info. </param>
         /// <param name="context"> The streaming context. </param>
         [ExcludeFromCodeCoverage]
+#if NET10_0_OR_GREATER
+        [Obsolete("This API supports obsolete formatter-based serialization. It should not be called or extended by application code.", DiagnosticId = "SYSLIB0051", UrlFormat = "https://aka.ms/dotnet-warnings/{0}")]
+#endif
+        [EditorBrowsable(EditorBrowsableState.Never)]
         protected DbUnexpectedValidationException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {

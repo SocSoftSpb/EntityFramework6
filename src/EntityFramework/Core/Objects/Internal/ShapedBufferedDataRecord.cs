@@ -9,10 +9,8 @@ namespace System.Data.Entity.Core.Objects.Internal
     using System.Data.Entity.Utilities;
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
-#if !NET40
     using System.Threading;
     using System.Threading.Tasks;
-#endif
 
     internal class ShapedBufferedDataRecord : BufferedDataRecord
     {
@@ -73,8 +71,6 @@ namespace System.Data.Entity.Core.Objects.Internal
             return record.Initialize(reader, spatialDataReader, columnTypes, nullableColumns);
         }
 
-#if !NET40
-
         internal static Task<BufferedDataRecord> InitializeAsync(
             string providerManifestToken, DbProviderServices providerServices, DbDataReader reader, Type[] columnTypes,
             bool[] nullableColumns, CancellationToken cancellationToken)
@@ -92,8 +88,6 @@ namespace System.Data.Entity.Core.Objects.Internal
 
             return record.InitializeAsync(reader, spatialDataReader, columnTypes, nullableColumns, cancellationToken);
         }
-
-#endif
 
         [SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity")]
         private BufferedDataRecord Initialize(
@@ -327,8 +321,6 @@ namespace System.Data.Entity.Core.Objects.Internal
 
             return this;
         }
-
-#if !NET40
 
         private async Task<BufferedDataRecord> InitializeAsync(
             DbDataReader reader, DbSpatialDataReader spatialDataReader, Type[] columnTypes, bool[] nullableColumns,
@@ -567,9 +559,6 @@ namespace System.Data.Entity.Core.Objects.Internal
             return this;
         }
 
-
-#endif
-
         private void InitializeFields(Type[] columnTypes, bool[] nullableColumns)
         {
             _columnTypeCases = Enumerable.Repeat(TypeCase.Empty, columnTypes.Length).ToArray();
@@ -755,8 +744,6 @@ namespace System.Data.Entity.Core.Objects.Internal
             _tempBools[_currentRowNumber * _boolCount + _ordinalToIndexMap[ordinal]] = reader.GetBoolean(ordinal);
         }
 
-#if !NET40
-
         private async Task ReadBoolAsync(
             DbDataReader reader, int ordinal, CancellationToken cancellationToken)
         {
@@ -764,14 +751,10 @@ namespace System.Data.Entity.Core.Objects.Internal
                 await reader.GetFieldValueAsync<bool>(ordinal, cancellationToken).WithCurrentCulture();
         }
 
-#endif
-
         private void ReadByte(DbDataReader reader, int ordinal)
         {
             _bytes[_currentRowNumber * _byteCount + _ordinalToIndexMap[ordinal]] = reader.GetByte(ordinal);
         }
-
-#if !NET40
 
         private async Task ReadByteAsync(
             DbDataReader reader, int ordinal, CancellationToken cancellationToken)
@@ -780,14 +763,10 @@ namespace System.Data.Entity.Core.Objects.Internal
                 await reader.GetFieldValueAsync<byte>(ordinal, cancellationToken).WithCurrentCulture();
         }
 
-#endif
-
         private void ReadChar(DbDataReader reader, int ordinal)
         {
             _chars[_currentRowNumber * _charCount + _ordinalToIndexMap[ordinal]] = reader.GetChar(ordinal);
         }
-
-#if !NET40
 
         private async Task ReadCharAsync(
             DbDataReader reader, int ordinal, CancellationToken cancellationToken)
@@ -796,14 +775,10 @@ namespace System.Data.Entity.Core.Objects.Internal
                 await reader.GetFieldValueAsync<char>(ordinal, cancellationToken).WithCurrentCulture();
         }
 
-#endif
-
         private void ReadDateTime(DbDataReader reader, int ordinal)
         {
             _dateTimes[_currentRowNumber * _dateTimeCount + _ordinalToIndexMap[ordinal]] = reader.GetDateTime(ordinal);
         }
-
-#if !NET40
 
         private async Task ReadDateTimeAsync(
             DbDataReader reader, int ordinal, CancellationToken cancellationToken)
@@ -812,14 +787,10 @@ namespace System.Data.Entity.Core.Objects.Internal
                 await reader.GetFieldValueAsync<DateTime>(ordinal, cancellationToken).WithCurrentCulture();
         }
 
-#endif
-
         private void ReadDecimal(DbDataReader reader, int ordinal)
         {
             _decimals[_currentRowNumber * _decimalCount + _ordinalToIndexMap[ordinal]] = reader.GetDecimal(ordinal);
         }
-
-#if !NET40
 
         private async Task ReadDecimalAsync(
             DbDataReader reader, int ordinal, CancellationToken cancellationToken)
@@ -828,14 +799,10 @@ namespace System.Data.Entity.Core.Objects.Internal
                 await reader.GetFieldValueAsync<decimal>(ordinal, cancellationToken).WithCurrentCulture();
         }
 
-#endif
-
         private void ReadDouble(DbDataReader reader, int ordinal)
         {
             _doubles[_currentRowNumber * _doubleCount + _ordinalToIndexMap[ordinal]] = reader.GetDouble(ordinal);
         }
-
-#if !NET40
 
         private async Task ReadDoubleAsync(
             DbDataReader reader, int ordinal, CancellationToken cancellationToken)
@@ -844,14 +811,10 @@ namespace System.Data.Entity.Core.Objects.Internal
                 await reader.GetFieldValueAsync<double>(ordinal, cancellationToken).WithCurrentCulture();
         }
 
-#endif
-
         private void ReadFloat(DbDataReader reader, int ordinal)
         {
             _floats[_currentRowNumber * _floatCount + _ordinalToIndexMap[ordinal]] = reader.GetFloat(ordinal);
         }
-
-#if !NET40
 
         private async Task ReadFloatAsync(
             DbDataReader reader, int ordinal, CancellationToken cancellationToken)
@@ -860,14 +823,10 @@ namespace System.Data.Entity.Core.Objects.Internal
                 await reader.GetFieldValueAsync<float>(ordinal, cancellationToken).WithCurrentCulture();
         }
 
-#endif
-
         private void ReadGuid(DbDataReader reader, int ordinal)
         {
             _guids[_currentRowNumber * _guidCount + _ordinalToIndexMap[ordinal]] = reader.GetGuid(ordinal);
         }
-
-#if !NET40
 
         private async Task ReadGuidAsync(
             DbDataReader reader, int ordinal, CancellationToken cancellationToken)
@@ -876,14 +835,10 @@ namespace System.Data.Entity.Core.Objects.Internal
                 await reader.GetFieldValueAsync<Guid>(ordinal, cancellationToken).WithCurrentCulture();
         }
 
-#endif
-
         private void ReadShort(DbDataReader reader, int ordinal)
         {
             _shorts[_currentRowNumber * _shortCount + _ordinalToIndexMap[ordinal]] = reader.GetInt16(ordinal);
         }
-
-#if !NET40
 
         private async Task ReadShortAsync(
             DbDataReader reader, int ordinal, CancellationToken cancellationToken)
@@ -892,14 +847,10 @@ namespace System.Data.Entity.Core.Objects.Internal
                 await reader.GetFieldValueAsync<short>(ordinal, cancellationToken).WithCurrentCulture();
         }
 
-#endif
-
         private void ReadInt(DbDataReader reader, int ordinal)
         {
             _ints[_currentRowNumber * _intCount + _ordinalToIndexMap[ordinal]] = reader.GetInt32(ordinal);
         }
-
-#if !NET40
 
         private async Task ReadIntAsync(
             DbDataReader reader, int ordinal, CancellationToken cancellationToken)
@@ -908,14 +859,10 @@ namespace System.Data.Entity.Core.Objects.Internal
                 await reader.GetFieldValueAsync<int>(ordinal, cancellationToken).WithCurrentCulture();
         }
 
-#endif
-
         private void ReadLong(DbDataReader reader, int ordinal)
         {
             _longs[_currentRowNumber * _longCount + _ordinalToIndexMap[ordinal]] = reader.GetInt64(ordinal);
         }
-
-#if !NET40
 
         private async Task ReadLongAsync(
             DbDataReader reader, int ordinal, CancellationToken cancellationToken)
@@ -924,14 +871,10 @@ namespace System.Data.Entity.Core.Objects.Internal
                 await reader.GetFieldValueAsync<long>(ordinal, cancellationToken).WithCurrentCulture();
         }
 
-#endif
-
         private void ReadObject(DbDataReader reader, int ordinal)
         {
             _objects[_currentRowNumber * _objectCount + _ordinalToIndexMap[ordinal]] = reader.GetValue(ordinal);
         }
-
-#if !NET40
 
         private async Task ReadObjectAsync(
             DbDataReader reader, int ordinal, CancellationToken cancellationToken)
@@ -940,14 +883,10 @@ namespace System.Data.Entity.Core.Objects.Internal
                 await reader.GetFieldValueAsync<object>(ordinal, cancellationToken).WithCurrentCulture();
         }
 
-#endif
-
         private void ReadGeography(DbSpatialDataReader spatialReader, int ordinal)
         {
             _objects[_currentRowNumber * _objectCount + _ordinalToIndexMap[ordinal]] = spatialReader.GetGeography(ordinal);
         }
-
-#if !NET40
 
         private async Task ReadGeographyAsync(
             DbSpatialDataReader spatialReader, int ordinal, CancellationToken cancellationToken)
@@ -956,14 +895,10 @@ namespace System.Data.Entity.Core.Objects.Internal
                 await spatialReader.GetGeographyAsync(ordinal, cancellationToken).WithCurrentCulture();
         }
 
-#endif
-
         private void ReadGeometry(DbSpatialDataReader spatialReader, int ordinal)
         {
             _objects[_currentRowNumber * _objectCount + _ordinalToIndexMap[ordinal]] = spatialReader.GetGeometry(ordinal);
         }
-
-#if !NET40
 
         private async Task ReadGeometryAsync(
             DbSpatialDataReader spatialReader, int ordinal, CancellationToken cancellationToken)
@@ -971,8 +906,6 @@ namespace System.Data.Entity.Core.Objects.Internal
             _objects[_currentRowNumber * _objectCount + _ordinalToIndexMap[ordinal]] =
                 await spatialReader.GetGeometryAsync(ordinal, cancellationToken).WithCurrentCulture();
         }
-
-#endif
         
         public override bool GetBoolean(int ordinal)
         {
@@ -1125,42 +1058,30 @@ namespace System.Data.Entity.Core.Objects.Internal
             }
         }
         
-#if !NET40
-
         public override Task<T> GetFieldValueAsync<T>(int ordinal, CancellationToken cancellationToken)
         {
             return Task.FromResult(GetFieldValue<T>(ordinal));
         }
-
-#endif
 
         public override bool IsDBNull(int ordinal)
         {
             return _nulls[_currentRowNumber * _nullCount + _nullOrdinalToIndexMap[ordinal]];
         }
         
-#if !NET40
-
         public override Task<bool> IsDBNullAsync(int ordinal, CancellationToken cancellationToken)
         {
             return Task.FromResult(IsDBNull(ordinal));
         }
-
-#endif
 
         public override bool Read()
         {
             return IsDataReady = ++_currentRowNumber < _rowCount;
         }
         
-#if !NET40
-
         public override Task<bool> ReadAsync(CancellationToken cancellationToken)
         {
             return Task.FromResult(Read());
         }
-
-#endif
 
         private enum TypeCase
         {

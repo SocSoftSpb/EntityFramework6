@@ -542,9 +542,8 @@ namespace System.Data.Entity
         {
             var obbl = new ObservableBackedBindingList<XNode>(new ObservableCollection<XNode>());
 
-            const BindingFlags bindingAttr = BindingFlags.CreateInstance | BindingFlags.Public | BindingFlags.Instance;
             Assert.Equal(
-                GenerateException(() => Activator.CreateInstance(typeof(XNode), bindingAttr, null, null, null)).Message,
+                GenerateException(() => Activator.CreateInstance(typeof(XNode))).Message,
                 Assert.Throws<MissingMethodException>(() => obbl.AddNew()).Message);
         }
 
@@ -566,9 +565,8 @@ namespace System.Data.Entity
         {
             var obbl = new ObservableBackedBindingList<XText>(new ObservableCollection<XText>());
 
-            const BindingFlags bindingAttr = BindingFlags.CreateInstance | BindingFlags.Public | BindingFlags.Instance;
             Assert.Equal(
-                GenerateException(() => Activator.CreateInstance(typeof(XText), bindingAttr, null, null, null)).Message,
+                GenerateException(() => Activator.CreateInstance(typeof(XText))).Message,
                 Assert.Throws<MissingMethodException>(() => obbl.AddNew()).Message);
         }
 

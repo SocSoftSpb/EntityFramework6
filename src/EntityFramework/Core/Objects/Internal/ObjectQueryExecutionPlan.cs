@@ -144,8 +144,6 @@ namespace System.Data.Entity.Core.Objects.Internal
             }
         }
 
-#if !NET40
-
         internal virtual async Task<ObjectResult<TResultType>> ExecuteAsync<TResultType>(
             ObjectContext context, ObjectParameterCollection parameterValues,
             CancellationToken cancellationToken)
@@ -223,8 +221,6 @@ namespace System.Data.Entity.Core.Objects.Internal
                 throw;
             }
         }
-
-#endif
 
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope",
             Justification = "Disposed by caller")]

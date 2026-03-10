@@ -214,8 +214,6 @@ namespace System.Data.Entity.Core.Objects.DataClasses
             OnAssociationChanged(CollectionChangeAction.Refresh, null);
         }
 
-#if !NET40
-
         /// <inheritdoc />
         public override async Task LoadAsync(MergeOption mergeOption, CancellationToken cancellationToken)
         {
@@ -250,8 +248,6 @@ namespace System.Data.Entity.Core.Objects.DataClasses
             // fire the AssociationChange with Refresh
             OnAssociationChanged(CollectionChangeAction.Refresh, null);
         }
-
-#endif
 
         private void HandleRefreshedValue(MergeOption mergeOption, IList<TEntity> refreshedValue)
         {

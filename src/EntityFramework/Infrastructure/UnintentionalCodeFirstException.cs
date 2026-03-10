@@ -2,6 +2,7 @@
 
 namespace System.Data.Entity.Infrastructure
 {
+    using System.ComponentModel;
     using System.Data.Entity.Resources;
     using System.Runtime.Serialization;
 
@@ -33,6 +34,10 @@ namespace System.Data.Entity.Infrastructure
         /// </summary>
         /// <param name="info"> The object that holds the serialized object data. </param>
         /// <param name="context"> The contextual information about the source or destination. </param>
+#if NET10_0_OR_GREATER
+        [Obsolete("This API supports obsolete formatter-based serialization. It should not be called or extended by application code.", DiagnosticId = "SYSLIB0051", UrlFormat = "https://aka.ms/dotnet-warnings/{0}")]
+#endif
+        [EditorBrowsable(EditorBrowsableState.Never)]
         protected UnintentionalCodeFirstException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {

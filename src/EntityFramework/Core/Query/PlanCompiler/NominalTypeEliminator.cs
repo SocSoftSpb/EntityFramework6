@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
-using md = System.Data.Entity.Core.Metadata.Edm;
+using Md = System.Data.Entity.Core.Metadata.Edm;
 
 namespace System.Data.Entity.Core.Query.PlanCompiler
 {
@@ -92,8 +92,8 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         }
 
         private readonly StructuredTypeInfo m_typeInfo;
-        private readonly Dictionary<md.EdmFunction, md.EdmProperty[]> m_tvfResultKeys;
-        private readonly Dictionary<md.TypeUsage, md.TypeUsage> m_typeToNewTypeMap;
+        private readonly Dictionary<Md.EdmFunction, Md.EdmProperty[]> m_tvfResultKeys;
+        private readonly Dictionary<Md.TypeUsage, Md.TypeUsage> m_typeToNewTypeMap;
         private const string PrefixMatchCharacter = "%"; // This is ANSI-SQL defined, but it should probably be configurable.
 
         #endregion
@@ -105,7 +105,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             StructuredTypeInfo typeInfo,
             Dictionary<Var, PropertyRefList> varPropertyMap,
             Dictionary<Node, PropertyRefList> nodePropertyMap,
-            Dictionary<md.EdmFunction, md.EdmProperty[]> tvfResultKeys)
+            Dictionary<Md.EdmFunction, Md.EdmProperty[]> tvfResultKeys)
         {
             m_compilerState = compilerState;
             m_typeInfo = typeInfo;
@@ -113,7 +113,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             m_nodePropertyMap = nodePropertyMap;
             m_varInfoMap = new VarInfoMap();
             m_tvfResultKeys = tvfResultKeys;
-            m_typeToNewTypeMap = new Dictionary<md.TypeUsage, md.TypeUsage>(TypeUsageEqualityComparer.Instance);
+            m_typeToNewTypeMap = new Dictionary<Md.TypeUsage, Md.TypeUsage>(TypeUsageEqualityComparer.Instance);
         }
 
         #endregion
@@ -128,7 +128,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         internal static void Process(
             PlanCompiler compilerState,
             StructuredTypeInfo structuredTypeInfo,
-            Dictionary<md.EdmFunction, md.EdmProperty[]> tvfResultKeys)
+            Dictionary<Md.EdmFunction, Md.EdmProperty[]> tvfResultKeys)
         {
 #if DEBUG
             //string phase0 = Dump.ToXml(compilerState.Command);
@@ -177,9 +177,9 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             foreach (
                 var paramVar in
                     m_command.Vars.OfType<ParameterVar>().Where(
-                        v => md.TypeSemantics.IsEnumerationType(v.Type) || md.TypeSemantics.IsStrongSpatialType(v.Type)).ToArray())
+                        v => Md.TypeSemantics.IsEnumerationType(v.Type) || Md.TypeSemantics.IsStrongSpatialType(v.Type)).ToArray())
             {
-                var newVar = md.TypeSemantics.IsEnumerationType(paramVar.Type)
+                var newVar = Md.TypeSemantics.IsEnumerationType(paramVar.Type)
                                  ? m_command.ReplaceEnumParameterVar(paramVar)
                                  : m_command.ReplaceStrongSpatialParameterVar(paramVar);
                 m_varInfoMap.CreatePrimitiveTypeVarInfo(paramVar, newVar);
@@ -198,7 +198,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         // <summary>
         // The datatype of the typeid property
         // </summary>
-        private md.TypeUsage DefaultTypeIdType
+        private Md.TypeUsage DefaultTypeIdType
         {
             get { return m_command.StringType; }
         }
@@ -212,16 +212,16 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         // For strong spatial types we return the union type that includes the strong spatial type.
         // For all other types, we simply return the input type
         // </summary>
-        private md.TypeUsage GetNewType(md.TypeUsage type)
+        private Md.TypeUsage GetNewType(Md.TypeUsage type)
         {
-            md.TypeUsage newType;
+            Md.TypeUsage newType;
 
             if (m_typeToNewTypeMap.TryGetValue(type, out newType))
             {
                 return newType;
             }
 
-            md.CollectionType collectionType;
+            Md.CollectionType collectionType;
             if (TypeHelpers.TryGetEdmType(type, out collectionType))
             {
                 // If this is a collection type, then clone a new collection type
@@ -233,11 +233,11 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
                 // structured type => we've already calculated the input
                 newType = m_typeInfo.GetTypeInfo(type).FlattenedTypeUsage;
             }
-            else if (md.TypeSemantics.IsEnumerationType(type))
+            else if (Md.TypeSemantics.IsEnumerationType(type))
             {
                 newType = TypeHelpers.CreateEnumUnderlyingTypeUsage(type);
             }
-            else if (md.TypeSemantics.IsStrongSpatialType(type))
+            else if (Md.TypeSemantics.IsStrongSpatialType(type))
             {
                 newType = TypeHelpers.CreateSpatialUnionTypeUsage(type);
             }
@@ -268,7 +268,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         // </summary>
         // <param name="input"> The input expression </param>
         // <param name="property"> The desired property </param>
-        private Node BuildAccessor(Node input, md.EdmProperty property)
+        private Node BuildAccessor(Node input, Md.EdmProperty property)
         {
             var inputOp = input.Op;
 
@@ -304,12 +304,12 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         // A BuildAccessor variant. If the appropriate property was not found, then
         // build up a null constant instead
         // </summary>
-        private Node BuildAccessorWithNulls(Node input, md.EdmProperty property)
+        private Node BuildAccessorWithNulls(Node input, Md.EdmProperty property)
         {
             var newNode = BuildAccessor(input, property);
             if (newNode == null)
             {
-                newNode = CreateNullConstantNode(md.Helper.GetModelTypeUsage(property));
+                newNode = CreateNullConstantNode(Md.Helper.GetModelTypeUsage(property));
             }
             return newNode;
         }
@@ -347,7 +347,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         [SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "non-ScalarOp")]
         [SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters",
             MessageId = "System.Data.Entity.Core.Query.PlanCompiler.PlanCompiler.Assert(System.Boolean,System.String)")]
-        private Node BuildSoftCast(Node node, md.TypeUsage targetType)
+        private Node BuildSoftCast(Node node, Md.TypeUsage targetType)
         {
             PlanCompiler.Assert(node.Op.IsScalarOp, "Attempting SoftCast around non-ScalarOp?");
             if (Command.EqualTypes(node.Op.Type, targetType))
@@ -378,7 +378,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         // <summary>
         // Returns a node for a null constant of the desired type
         // </summary>
-        private Node CreateNullConstantNode(md.TypeUsage type)
+        private Node CreateNullConstantNode(Md.TypeUsage type)
         {
             return m_command.CreateNode(m_command.CreateNullOp(type));
         }
@@ -401,10 +401,10 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         private Node CreateTypeIdConstant(TypeInfo typeInfo)
         {
             var value = typeInfo.TypeId;
-            md.TypeUsage typeIdType;
+            Md.TypeUsage typeIdType;
             if (typeInfo.RootType.DiscriminatorMap != null)
             {
-                typeIdType = md.Helper.GetModelTypeUsage(typeInfo.RootType.DiscriminatorMap.DiscriminatorProperty);
+                typeIdType = Md.Helper.GetModelTypeUsage(typeInfo.RootType.DiscriminatorMap.DiscriminatorProperty);
             }
             else
             {
@@ -444,7 +444,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
 
             var currentType = typeInfo.Type;
 
-            md.RowType recordType = null;
+            Md.RowType recordType = null;
             if (TypeHelpers.TryGetEdmType(currentType, out recordType))
             {
                 if (opKind == OperationKind.IsNull
@@ -456,13 +456,13 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
                 {
                     foreach (var m in recordType.Properties)
                     {
-                        if (!TypeUtils.IsStructuredType(md.Helper.GetModelTypeUsage(m)))
+                        if (!TypeUtils.IsStructuredType(Md.Helper.GetModelTypeUsage(m)))
                         {
                             yield return new SimplePropertyRef(m);
                         }
                         else
                         {
-                            var nestedTypeInfo = m_typeInfo.GetTypeInfo(md.Helper.GetModelTypeUsage(m));
+                            var nestedTypeInfo = m_typeInfo.GetTypeInfo(Md.Helper.GetModelTypeUsage(m));
                             foreach (var p in GetPropertyRefs(nestedTypeInfo, opKind))
                             {
                                 var nestedPropertyRef = p.CreateNestedPropertyRef(m);
@@ -474,7 +474,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
                 yield break;
             }
 
-            md.EntityType entityType = null;
+            Md.EntityType entityType = null;
             if (TypeHelpers.TryGetEdmType(currentType, out entityType))
             {
                 if (opKind == OperationKind.Equality
@@ -493,7 +493,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
                 yield break;
             }
 
-            md.ComplexType complexType = null;
+            Md.ComplexType complexType = null;
             if (TypeHelpers.TryGetEdmType(currentType, out complexType))
             {
                 PlanCompiler.Assert(opKind == OperationKind.IsNull, "complex types not equality-comparable");
@@ -502,7 +502,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
                 yield break;
             }
 
-            md.RefType refType = null;
+            Md.RefType refType = null;
             if (TypeHelpers.TryGetEdmType(currentType, out refType))
             {
                 foreach (var p in typeInfo.GetAllPropertyRefs())
@@ -567,7 +567,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         // <param name="typeInfo"> Type information for the current op </param>
         // <param name="opKind"> Current operation kind </param>
         // <returns> List of desired properties </returns>
-        private IEnumerable<md.EdmProperty> GetProperties(TypeInfo typeInfo, OperationKind opKind)
+        private IEnumerable<Md.EdmProperty> GetProperties(TypeInfo typeInfo, OperationKind opKind)
         {
             if (opKind == OperationKind.All)
             {
@@ -599,10 +599,10 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         // <param name="values"> Output: corresponding list of values </param>
         private void GetPropertyValues(
             TypeInfo typeInfo, OperationKind opKind, Node input, bool ignoreMissingProperties,
-            out List<md.EdmProperty> properties, out List<Node> values)
+            out List<Md.EdmProperty> properties, out List<Node> values)
         {
             values = new List<Node>();
-            properties = new List<md.EdmProperty>();
+            properties = new List<Md.EdmProperty>();
             foreach (var prop in GetProperties(typeInfo, opKind))
             {
                 var kv = GetPropertyValue(input, prop, ignoreMissingProperties);
@@ -621,7 +621,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         // <param name="input"> The input (structured type) expression </param>
         // <param name="property"> The property in question </param>
         // <param name="ignoreMissingProperties"> should we ignore missing properties </param>
-        private KeyValuePair<md.EdmProperty, Node> GetPropertyValue(Node input, md.EdmProperty property, bool ignoreMissingProperties)
+        private KeyValuePair<Md.EdmProperty, Node> GetPropertyValue(Node input, Md.EdmProperty property, bool ignoreMissingProperties)
         {
             Node n = null;
 
@@ -633,7 +633,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             {
                 n = BuildAccessor(input, property);
             }
-            return new KeyValuePair<md.EdmProperty, Node>(property, n);
+            return new KeyValuePair<Md.EdmProperty, Node>(property, n);
         }
 
         // <summary>
@@ -691,14 +691,14 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         private Node CreateTVFProjection(
             Node unnestNode, List<Var> unnestOpTableColumns, TypeInfo unnestOpTableTypeInfo, out List<Var> newVars)
         {
-            var originalRowType = unnestOpTableTypeInfo.Type.EdmType as md.RowType;
+            var originalRowType = unnestOpTableTypeInfo.Type.EdmType as Md.RowType;
             PlanCompiler.Assert(originalRowType != null, "Unexpected TVF return type (must be row): " + unnestOpTableTypeInfo.Type);
 
             var convertToFlattenedTypeVars = new List<Var>();
             var convertToFlattenedTypeVarDefs = new List<Node>();
             var propRefs = unnestOpTableTypeInfo.PropertyRefList.ToArray();
 
-            var flattenedTypePropertyToPropertyRef = new Dictionary<md.EdmProperty, PropertyRef>();
+            var flattenedTypePropertyToPropertyRef = new Dictionary<Md.EdmProperty, PropertyRef>();
             foreach (var propRef in propRefs)
             {
                 flattenedTypePropertyToPropertyRef.Add(unnestOpTableTypeInfo.GetNewProperty(propRef), propRef);
@@ -780,7 +780,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
                     || TypeUtils.IsCollectionType(varDefOp.Var.Type))
                 {
                     List<Node> newChiList;
-                    md.TypeUsage x;
+                    Md.TypeUsage x;
 
                     FlattenComputedVar((ComputedVar)varDefOp.Var, chi, out newChiList, out x);
 
@@ -789,8 +789,8 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
                         newChildren.Add(newChi);
                     }
                 }
-                else if (md.TypeSemantics.IsEnumerationType(varDefOp.Var.Type)
-                         || md.TypeSemantics.IsStrongSpatialType(varDefOp.Var.Type))
+                else if (Md.TypeSemantics.IsEnumerationType(varDefOp.Var.Type)
+                         || Md.TypeSemantics.IsStrongSpatialType(varDefOp.Var.Type))
                 {
                     newChildren.Add(FlattenEnumOrStrongSpatialVar(varDefOp, chi.Child0));
                 }
@@ -811,7 +811,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         // <param name="newNodes"> list of new nodes produced </param>
         [SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters",
             MessageId = "System.Data.Entity.Core.Query.PlanCompiler.PlanCompiler.Assert(System.Boolean,System.String)")]
-        private void FlattenComputedVar(ComputedVar v, Node node, out List<Node> newNodes, out md.TypeUsage newType)
+        private void FlattenComputedVar(ComputedVar v, Node node, out List<Node> newNodes, out Md.TypeUsage newType)
         {
             newNodes = new List<Node>();
             var definingExprNode = node.Child0; // defining expression for the VarDefOp
@@ -833,7 +833,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             // Get a list of properties that we think are necessary 
             var desiredProperties = m_varPropertyMap[v];
             var newVars = new List<Var>();
-            var newProps = new List<md.EdmProperty>();
+            var newProps = new List<Md.EdmProperty>();
             newNodes = new List<Node>();
             var hasNullSentinelVar = false;
             foreach (var p in typeInfo.PropertyRefList)
@@ -1159,10 +1159,10 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             var typeInfo = m_typeInfo.GetTypeInfo(columnVar.Type);
             var newRowType = typeInfo.FlattenedType;
 
-            var properties = new List<md.EdmProperty>();
-            var keyProperties = new List<md.EdmMember>();
+            var properties = new List<Md.EdmProperty>();
+            var keyProperties = new List<Md.EdmMember>();
             var declaredProps = new HashSet<string>();
-            foreach (md.EdmProperty p in TypeHelpers.GetAllStructuralMembers(columnVar.Type.EdmType))
+            foreach (Md.EdmProperty p in TypeHelpers.GetAllStructuralMembers(columnVar.Type.EdmType))
             {
                 declaredProps.Add(p.Name);
             }
@@ -1326,7 +1326,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             VisitChildren(n);
 
             Var newUnnestVar = null;
-            md.EdmFunction processingTVF = null;
+            Md.EdmFunction processingTVF = null;
 
             if (n.HasChild0)
             {
@@ -1353,7 +1353,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
                         {
                             // Flatten the computer var and add it to m_varInfoMap.
                             var newChildren = new List<Node>();
-                            md.TypeUsage newType;
+                            Md.TypeUsage newType;
                             FlattenComputedVar(computedVar, chi, out newChildren, out newType);
                             PlanCompiler.Assert(newChildren.Count == 1, "Flattening unnest var produced more than one Var.");
                             n.Child0 = newChildren[0];
@@ -1391,8 +1391,8 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
                 PlanCompiler.Assert(
                     processingTVF == null, "TVFs returning a collection of values of a non-structured type are not supported");
 
-                if (md.TypeSemantics.IsEnumerationType(unnestTableColumnVar.Type)
-                    || md.TypeSemantics.IsStrongSpatialType(unnestTableColumnVar.Type))
+                if (Md.TypeSemantics.IsEnumerationType(unnestTableColumnVar.Type)
+                    || Md.TypeSemantics.IsStrongSpatialType(unnestTableColumnVar.Type))
                 {
                     var unnestOp = m_command.CreateUnnestOp(newUnnestVar);
                     m_varInfoMap.CreatePrimitiveTypeVarInfo(unnestTableColumnVar, unnestOp.Table.Columns[0]);
@@ -1472,14 +1472,14 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             return n;
         }
 
-        private IEnumerable<md.EdmProperty> GetTvfResultKeys(md.EdmFunction tvf)
+        private IEnumerable<Md.EdmProperty> GetTvfResultKeys(Md.EdmFunction tvf)
         {
-            md.EdmProperty[] keys;
+            Md.EdmProperty[] keys;
             if (m_tvfResultKeys.TryGetValue(tvf, out keys))
             {
                 return keys;
             }
-            return Enumerable.Empty<md.EdmProperty>();
+            return Enumerable.Empty<Md.EdmProperty>();
         }
 
         #region SetOps
@@ -1660,8 +1660,8 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
                 Var newVar = m_command.CreateSetOpVar(newType);
                 return m_varInfoMap.CreateCollectionVarInfo(v, newVar);
             }
-            else if (md.TypeSemantics.IsEnumerationType(v.Type)
-                     || md.TypeSemantics.IsStrongSpatialType(v.Type))
+            else if (Md.TypeSemantics.IsEnumerationType(v.Type)
+                     || Md.TypeSemantics.IsStrongSpatialType(v.Type))
             {
                 var newType = GetNewType(v.Type);
                 Var newVar = m_command.CreateSetOpVar(newType);
@@ -1673,7 +1673,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             // Get a list of properties that we think are necessary 
             var desiredProperties = m_varPropertyMap[v];
             var newVars = new List<Var>();
-            var newProps = new List<md.EdmProperty>();
+            var newProps = new List<Md.EdmProperty>();
             var hasNullSentinelVar = false;
             foreach (var p in typeInfo.PropertyRefList)
             {
@@ -1683,7 +1683,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
                 }
                 var newProperty = typeInfo.GetNewProperty(p);
                 newProps.Add(newProperty);
-                var newVar = m_command.CreateSetOpVar(md.Helper.GetModelTypeUsage(newProperty));
+                var newVar = m_command.CreateSetOpVar(Md.Helper.GetModelTypeUsage(newProperty));
                 newVars.Add(newVar);
 
                 // Check if it is a null sentinel var
@@ -1745,7 +1745,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
 
             var newType = GetNewType(oldType);
 
-            if (md.TypeSemantics.IsRowType(oldType))
+            if (Md.TypeSemantics.IsRowType(oldType))
             {
                 PlanCompiler.Assert(
                     n.Child0.Op.OpType == OpType.NewRecord, "Expected a record constructor here. Found " + n.Child0.Op.OpType + " instead");
@@ -1760,7 +1760,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
                 // We have to adjust for when we're supposed to add/remove null sentinels; 
                 // it is entirely possible that we may need to add multiple null sentinel
                 // columns (See SQLBUDT #549068 for an example).  
-                IEnumerator<md.EdmProperty> outputs = newOp.Properties.GetEnumerator();
+                IEnumerator<Md.EdmProperty> outputs = newOp.Properties.GetEnumerator();
                 var outputPropertyCount = newOp.Properties.Count;
                 outputs.MoveNext();
 
@@ -1799,7 +1799,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
                 do
                 {
                     var p = outputs.Current;
-                    var arg = BuildSoftCast(inputs.Current, md.Helper.GetModelTypeUsage(p));
+                    var arg = BuildSoftCast(inputs.Current, Md.Helper.GetModelTypeUsage(p));
                     newArgs.Add(arg);
                     outputs.MoveNext();
                 }
@@ -1808,7 +1808,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
                 var newNode = m_command.CreateNode(newOp, newArgs);
                 return newNode;
             }
-            else if (md.TypeSemantics.IsCollectionType(oldType))
+            else if (Md.TypeSemantics.IsCollectionType(oldType))
             {
                 //
                 // Our collection type may have changed - 'coz the 
@@ -1817,7 +1817,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
                 //
                 return BuildSoftCast(n.Child0, newType);
             }
-            else if (md.TypeSemantics.IsPrimitiveType(oldType))
+            else if (Md.TypeSemantics.IsPrimitiveType(oldType))
             {
                 // How primitive! Well, the Prime Directive prohibits me
                 // from doing much with these. 
@@ -1826,8 +1826,8 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             else
             {
                 PlanCompiler.Assert(
-                    md.TypeSemantics.IsNominalType(oldType) ||
-                    md.TypeSemantics.IsReferenceType(oldType),
+                    Md.TypeSemantics.IsNominalType(oldType) ||
+                    Md.TypeSemantics.IsReferenceType(oldType),
                     "Gasp! Not a nominal type or even a reference type");
                 // I'm dealing with a nominal type (entity, complex type) or
                 // a reference type here. Every type in the same hierarchy 
@@ -1860,20 +1860,20 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             // if casting to enum (e.g. (Color)3) - get rid of the cast if underlying type of the enum is the same
             // as the type of the cast argument. If they are not the same rewrite the cast so that the argument 
             // is casted to the underlying enum type. 
-            if (md.TypeSemantics.IsEnumerationType(op.Type))
+            if (Md.TypeSemantics.IsEnumerationType(op.Type))
             {
                 // We visited subtree so the result type of the cast argument should be now primitive even if it originally was not (e.g. enum). 
-                PlanCompiler.Assert(md.TypeSemantics.IsPrimitiveType(n.Child0.Op.Type), "Primitive type expected.");
-                var underlyingType = md.Helper.GetUnderlyingEdmTypeForEnumType(op.Type.EdmType);
+                PlanCompiler.Assert(Md.TypeSemantics.IsPrimitiveType(n.Child0.Op.Type), "Primitive type expected.");
+                var underlyingType = Md.Helper.GetUnderlyingEdmTypeForEnumType(op.Type.EdmType);
                 return RewriteAsCastToUnderlyingType(underlyingType, op, n);
             }
-            if (md.TypeSemantics.IsSpatialType(op.Type))
+            if (Md.TypeSemantics.IsSpatialType(op.Type))
             {
                 // We visited subtree so the result type of the cast argument should now be a union spatial type even if it was originally strong). 
                 PlanCompiler.Assert(
-                    md.TypeSemantics.IsPrimitiveType(n.Child0.Op.Type, md.PrimitiveTypeKind.Geography)
-                    || md.TypeSemantics.IsPrimitiveType(n.Child0.Op.Type, md.PrimitiveTypeKind.Geometry), "Union spatial type expected.");
-                var underlyingType = md.Helper.GetSpatialNormalizedPrimitiveType(op.Type.EdmType);
+                    Md.TypeSemantics.IsPrimitiveType(n.Child0.Op.Type, Md.PrimitiveTypeKind.Geography)
+                    || Md.TypeSemantics.IsPrimitiveType(n.Child0.Op.Type, Md.PrimitiveTypeKind.Geometry), "Union spatial type expected.");
+                var underlyingType = Md.Helper.GetSpatialNormalizedPrimitiveType(op.Type.EdmType);
                 return RewriteAsCastToUnderlyingType(underlyingType, op, n);
             }
 
@@ -1881,17 +1881,17 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             return n;
         }
 
-        private Node RewriteAsCastToUnderlyingType(md.PrimitiveType underlyingType, CastOp op, Node n)
+        private Node RewriteAsCastToUnderlyingType(Md.PrimitiveType underlyingType, CastOp op, Node n)
         {
             // if type of the argument and the underlying type match we can strip the Cast entirely
             if (underlyingType.PrimitiveTypeKind
-                == ((md.PrimitiveType)n.Child0.Op.Type.EdmType).PrimitiveTypeKind)
+                == ((Md.PrimitiveType)n.Child0.Op.Type.EdmType).PrimitiveTypeKind)
             {
                 return n.Child0;
             }
             else
             {
-                return m_command.CreateNode(m_command.CreateCastOp(md.TypeUsage.Create(underlyingType, op.Type.Facets)), n.Child0);
+                return m_command.CreateNode(m_command.CreateCastOp(Md.TypeUsage.Create(underlyingType, op.Type.Facets)), n.Child0);
             }
         }
 
@@ -1915,7 +1915,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
 
             // No need to visit children as none are expected
 
-            if (md.TypeSemantics.IsEnumerationType(op.Type))
+            if (Md.TypeSemantics.IsEnumerationType(op.Type))
             {
                 // For enums the value can be specified either as enum (e.g. Color.Yellow) or as a number.
                 // We need the numeric value only so if it was not specified as a number we need to cast it to the 
@@ -1929,7 +1929,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
                     m_command.CreateConstantOp(
                         TypeHelpers.CreateEnumUnderlyingTypeUsage(op.Type), constValue));
             }
-            if (md.TypeSemantics.IsStrongSpatialType(op.Type))
+            if (Md.TypeSemantics.IsStrongSpatialType(op.Type))
             {
                 op.Type = TypeHelpers.CreateSpatialUnionTypeUsage(op.Type);
             }
@@ -1983,8 +1983,8 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             // the enum type to the underlying type of the enum type, and
             // for spatial types we must convert it to the underlying spatial union type.
             if (TypeUtils.IsCollectionType(op.Type)
-                || md.TypeSemantics.IsEnumerationType(op.Type)
-                || md.TypeSemantics.IsStrongSpatialType(op.Type))
+                || Md.TypeSemantics.IsEnumerationType(op.Type)
+                || Md.TypeSemantics.IsStrongSpatialType(op.Type))
             {
                 var newType = GetNewType(op.Type);
 
@@ -2082,7 +2082,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         {
             // Build up a type constructor - with only as many fields filled in 
             // as are desired. 
-            var fieldTypes = new List<md.EdmProperty>();
+            var fieldTypes = new List<Md.EdmProperty>();
             var fieldValues = new List<Node>();
 
             foreach (var pref in typeInfo.PropertyRefList)
@@ -2109,7 +2109,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
                 var elseNode = BuildAccessorWithNulls(n.Children[n.Children.Count - 1], property);
                 caseChildren.Add(elseNode);
 
-                var caseNode = m_command.CreateNode(m_command.CreateCaseOp(md.Helper.GetModelTypeUsage(property)), caseChildren);
+                var caseNode = m_command.CreateNode(m_command.CreateCaseOp(Md.Helper.GetModelTypeUsage(property)), caseChildren);
 
                 fieldTypes.Add(property);
                 fieldValues.Add(caseNode);
@@ -2156,7 +2156,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
 
             // We're now dealing with a structured type
             PlanCompiler.Assert(
-                !(md.TypeSemantics.IsComplexType(child0Type) || md.TypeSemantics.IsComplexType(child1Type)), "complex type?");
+                !(Md.TypeSemantics.IsComplexType(child0Type) || Md.TypeSemantics.IsComplexType(child1Type)), "complex type?");
             // cannot be a complex type
             PlanCompiler.Assert(op.OpType == OpType.EQ || op.OpType == OpType.NE, "non-equality comparison of structured types?");
 
@@ -2169,8 +2169,8 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             //
             var child0TypeInfo = m_typeInfo.GetTypeInfo(child0Type);
             var child1TypeInfo = m_typeInfo.GetTypeInfo(child1Type);
-            List<md.EdmProperty> properties1;
-            List<md.EdmProperty> properties2;
+            List<Md.EdmProperty> properties1;
+            List<Md.EdmProperty> properties2;
             List<Node> values1;
             List<Node> values2;
 
@@ -2247,7 +2247,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
 
             // Otherwise, build up an and-chain of is null checks for each appropriate
             // property - which should consist only of key properties for Entity types.
-            List<md.EdmProperty> properties = null;
+            List<Md.EdmProperty> properties = null;
             List<Node> values = null;
             GetPropertyValues(typeInfo, OperationKind.IsNull, n.Child0, false, out properties, out values);
 
@@ -2332,7 +2332,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             VisitChildren(n);
 
             // Get "key" properties (and the corresponding values) from the input
-            List<md.EdmProperty> inputFieldTypes;
+            List<Md.EdmProperty> inputFieldTypes;
             List<Node> inputFieldValues;
 
             // Get the key properties for GetRefKey; get the Identity properties
@@ -2360,7 +2360,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             }
 
             // create an appropriate record constructor
-            var outputFieldTypes = new List<md.EdmProperty>(outputTypeInfo.FlattenedType.Properties);
+            var outputFieldTypes = new List<Md.EdmProperty>(outputTypeInfo.FlattenedType.Properties);
             PlanCompiler.Assert(inputFieldValues.Count == outputFieldTypes.Count, "fieldTypes.Count mismatch?");
 
             var rec = m_command.CreateNewRecordOp(outputTypeInfo.FlattenedTypeUsage, outputFieldTypes);
@@ -2393,7 +2393,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             if (TypeUtils.IsStructuredType(outputType))
             {
                 var outputTypeInfo = m_typeInfo.GetTypeInfo(outputType);
-                var fieldTypes = new List<md.EdmProperty>();
+                var fieldTypes = new List<Md.EdmProperty>();
                 var fieldValues = new List<Node>();
                 var expectedProperties = m_nodePropertyMap[n];
 
@@ -2403,7 +2403,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
                     if (expectedProperties.Contains(npr))
                     {
                         var newPropRef = npr.CreateNestedPropertyRef(propertyRef);
-                        md.EdmProperty newNestedProp;
+                        Md.EdmProperty newNestedProp;
 
                         if (inputTypeInfo.TryGetNewProperty(newPropRef, throwIfMissing, out newNestedProp))
                         {
@@ -2473,12 +2473,12 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             VisitChildren(n);
 
             // Get the list of fields and properties from the input (key) op
-            List<md.EdmProperty> inputFields;
+            List<Md.EdmProperty> inputFields;
             List<Node> inputFieldValues;
             GetPropertyValues(inputTypeInfo, OperationKind.All, n.Child0, false, out inputFields, out inputFieldValues);
 
             // Get my property list
-            var outputFields = new List<md.EdmProperty>(outputTypeInfo.FlattenedType.Properties);
+            var outputFields = new List<Md.EdmProperty>(outputTypeInfo.FlattenedType.Properties);
 
             if (outputTypeInfo.HasEntitySetIdProperty)
             {
@@ -2505,7 +2505,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
                 inputFieldValues.Insert(
                     0,
                     m_command.CreateNode(
-                        m_command.CreateInternalConstantOp(md.Helper.GetModelTypeUsage(outputTypeInfo.EntitySetIdProperty), entitySetId)));
+                        m_command.CreateInternalConstantOp(Md.Helper.GetModelTypeUsage(outputTypeInfo.EntitySetIdProperty), entitySetId)));
             }
             else
             {
@@ -2534,7 +2534,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         // them (the fact that the key is null is good enough...)
         [SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters",
             MessageId = "System.Data.Entity.Core.Query.PlanCompiler.PlanCompiler.Assert(System.Boolean,System.String)")]
-        private static void RemoveNullSentinel(TypeInfo inputTypeInfo, List<md.EdmProperty> inputFields, List<Node> inputFieldValues)
+        private static void RemoveNullSentinel(TypeInfo inputTypeInfo, List<Md.EdmProperty> inputFields, List<Node> inputFieldValues)
         {
             PlanCompiler.Assert(inputFields[0] == inputTypeInfo.NullSentinelProperty, "InputField0 must be the null sentinel property");
             inputFields.RemoveAt(0);
@@ -2651,7 +2651,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             {
                 var discriminatorValue = op.DiscriminatorMap.TypeMap[i].Key;
                 var type = op.DiscriminatorMap.TypeMap[i].Value;
-                var currentTypeInfo = m_typeInfo.GetTypeInfo(md.TypeUsage.Create(type));
+                var currentTypeInfo = m_typeInfo.GetTypeInfo(Md.TypeUsage.Create(type));
 
                 var normalizedDiscriminatorConstant = CreateTypeIdConstant(currentTypeInfo);
                 // for the last type, return the 'then' value
@@ -2665,7 +2665,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
                     // WHEN discriminator = discriminatorValue THEN normalizedDiscriminatorValue
                     var discriminatorValueOp =
                         m_command.CreateConstantOp(
-                            md.Helper.GetModelTypeUsage(op.DiscriminatorMap.DiscriminatorProperty.TypeUsage),
+                            Md.Helper.GetModelTypeUsage(op.DiscriminatorMap.DiscriminatorProperty.TypeUsage),
                             discriminatorValue);
                     var discriminatorConstant = m_command.CreateNode(discriminatorValueOp);
                     var discriminatorPredicateOp = m_command.CreateComparisonOp(OpType.EQ);
@@ -2696,14 +2696,14 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         // </summary>
         // <param name="entitySetIdProperty"> the property corresponding to the entitysetid </param>
         // <param name="op"> the *NewEntity op </param>
-        private Node GetEntitySetIdExpr(md.EdmProperty entitySetIdProperty, NewEntityBaseOp op)
+        private Node GetEntitySetIdExpr(Md.EdmProperty entitySetIdProperty, NewEntityBaseOp op)
         {
             Node entitySetIdNode;
             var entitySet = op.EntitySet;
             if (entitySet != null)
             {
                 var entitySetId = m_typeInfo.GetEntitySetId(entitySet);
-                var entitySetIdOp = m_command.CreateInternalConstantOp(md.Helper.GetModelTypeUsage(entitySetIdProperty), entitySetId);
+                var entitySetIdOp = m_command.CreateInternalConstantOp(Md.Helper.GetModelTypeUsage(entitySetIdProperty), entitySetId);
                 entitySetIdNode = m_command.CreateNode(entitySetIdOp);
             }
             else
@@ -2711,7 +2711,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
                 //
                 // Not in a view context; simply assume a null entityset
                 //
-                entitySetIdNode = CreateNullConstantNode(md.Helper.GetModelTypeUsage(entitySetIdProperty));
+                entitySetIdNode = CreateNullConstantNode(Md.Helper.GetModelTypeUsage(entitySetIdProperty));
             }
 
             return entitySetIdNode;
@@ -2768,7 +2768,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
 
             // Next, walk through each of my field, and flatten out any field
             // that is structured.
-            var newFields = new List<md.EdmProperty>();
+            var newFields = new List<Md.EdmProperty>();
             var newFieldValues = new List<Node>();
 
             //
@@ -2827,13 +2827,13 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             //
             var childrenIndex = null == discriminatedNewInstanceOp ? 0 : 1;
 
-            foreach (md.EdmMember opField in opFields)
+            foreach (Md.EdmMember opField in opFields)
             {
                 var fieldValue = n.Children[childrenIndex];
-                if (TypeUtils.IsStructuredType(md.Helper.GetModelTypeUsage(opField)))
+                if (TypeUtils.IsStructuredType(Md.Helper.GetModelTypeUsage(opField)))
                 {
                     // Flatten out nested type
-                    var nestedFlatType = m_typeInfo.GetTypeInfo(md.Helper.GetModelTypeUsage(opField)).FlattenedType;
+                    var nestedFlatType = m_typeInfo.GetTypeInfo(Md.Helper.GetModelTypeUsage(opField)).FlattenedType;
 
                     // Find offset of opField in top-level flat type
                     var nestedPropertyOffset = typeInfo.RootType.GetNestedStructureOffset(new SimplePropertyRef(opField));
@@ -2919,11 +2919,11 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         {
             if (!TypeUtils.IsStructuredType(op.Type))
             {
-                if (md.TypeSemantics.IsEnumerationType(op.Type))
+                if (Md.TypeSemantics.IsEnumerationType(op.Type))
                 {
                     op.Type = TypeHelpers.CreateEnumUnderlyingTypeUsage(op.Type);
                 }
-                else if (md.TypeSemantics.IsStrongSpatialType(op.Type))
+                else if (Md.TypeSemantics.IsStrongSpatialType(op.Type))
                 {
                     op.Type = TypeHelpers.CreateSpatialUnionTypeUsage(op.Type);
                 }
@@ -2934,14 +2934,14 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             // Find the new type corresponding to the type
             var typeInfo = m_typeInfo.GetTypeInfo(op.Type);
 
-            var newFields = new List<md.EdmProperty>();
+            var newFields = new List<Md.EdmProperty>();
             var newFieldValues = new List<Node>();
 
             // Add a typeid property if we need one
             if (typeInfo.HasTypeIdProperty)
             {
                 newFields.Add(typeInfo.TypeIdProperty);
-                var typeIdType = md.Helper.GetModelTypeUsage(typeInfo.TypeIdProperty);
+                var typeIdType = Md.Helper.GetModelTypeUsage(typeInfo.TypeIdProperty);
                 newFieldValues.Add(CreateNullConstantNode(typeIdType));
             }
 
@@ -2995,9 +2995,9 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             var arg = (ScalarOp)n.Child0.Op;
             if (op.IsFakeTreat
                 ||
-                md.TypeSemantics.IsStructurallyEqual(arg.Type, op.Type)
+                Md.TypeSemantics.IsStructurallyEqual(arg.Type, op.Type)
                 ||
-                md.TypeSemantics.IsSubTypeOf(arg.Type, op.Type))
+                Md.TypeSemantics.IsSubTypeOf(arg.Type, op.Type))
             {
                 return n.Child0;
             }

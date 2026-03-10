@@ -256,6 +256,7 @@ namespace System.Data.Entity.ProductivityApi
             }
         }
 
+#if !NET10_0_OR_GREATER
         [Fact]
         public void Serializing_an_entity_that_overrides_GetHashCode_shouldnt_shouldnt_throw()
         {
@@ -272,5 +273,6 @@ namespace System.Data.Entity.ProductivityApi
 #pragma warning restore SYSLIB0011
             }
         }
+#endif
     }
 }

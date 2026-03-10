@@ -221,7 +221,7 @@ namespace System.Data.Entity
         {
             var connectionState = ConnectionState.Open;
             var mockEntityTransaction = new Mock<EntityTransaction>();
-            mockEntityTransaction.Protected().Setup("Dispose", true).Verifiable();
+            mockEntityTransaction.Protected().Setup("Dispose", true, true).Verifiable();
             var mockEntityConnection = new Mock<EntityConnection>();
             mockEntityConnection.SetupGet(m => m.State).Returns(() => connectionState);
             mockEntityConnection.Setup(m => m.Open()).Callback(() => connectionState = ConnectionState.Open);
@@ -233,7 +233,7 @@ namespace System.Data.Entity
 
             dbContextTransaction.Dispose();
 
-            mockEntityTransaction.Protected().Verify("Dispose", Times.Once(), true);
+            mockEntityTransaction.Protected().Verify("Dispose", Times.Once(), true, true);
             Assert.Equal(ConnectionState.Open, connectionState);
         }
 
@@ -242,7 +242,7 @@ namespace System.Data.Entity
         {
             var connectionState = ConnectionState.Closed;
             var mockEntityTransaction = new Mock<EntityTransaction>();
-            mockEntityTransaction.Protected().Setup("Dispose", true).Verifiable();
+            mockEntityTransaction.Protected().Setup("Dispose", true, true).Verifiable();
             var mockEntityConnection = new Mock<EntityConnection>();
             mockEntityConnection.SetupGet(m => m.State).Returns(() => connectionState);
             mockEntityConnection.Setup(m => m.Open()).Callback(() => connectionState = ConnectionState.Open);
@@ -254,7 +254,7 @@ namespace System.Data.Entity
 
             dbContextTransaction.Dispose();
 
-            mockEntityTransaction.Protected().Verify("Dispose", Times.Once(), true);
+            mockEntityTransaction.Protected().Verify("Dispose", Times.Once(), true, true);
             Assert.Equal(ConnectionState.Closed, connectionState);
         }
 

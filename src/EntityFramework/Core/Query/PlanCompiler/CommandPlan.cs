@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
-using md = System.Data.Entity.Core.Metadata.Edm;
-using cqt = System.Data.Entity.Core.Common.CommandTrees;
+using Cqt = System.Data.Entity.Core.Common.CommandTrees;
 
 //using System.Diagnostics; // Please use PlanCompiler.Assert instead of Debug.Assert in this class...
 
@@ -38,7 +37,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         // <summary>
         // Internal methods to get the command tree
         // </summary>
-        internal cqt.DbCommandTree CommandTree
+        internal Cqt.DbCommandTree CommandTree
         {
             get { return _commandTree; }
         }
@@ -47,7 +46,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
 
         #region private state
 
-        private readonly cqt.DbCommandTree _commandTree;
+        private readonly Cqt.DbCommandTree _commandTree;
 
         #endregion
 
@@ -57,7 +56,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         // Internal constructor for a ProviderCommandInfo object
         // </summary>
         // <param name="commandTree"> command tree for the provider command </param>
-        internal ProviderCommandInfo(cqt.DbCommandTree commandTree)
+        internal ProviderCommandInfo(Cqt.DbCommandTree commandTree)
         {
             _commandTree = commandTree;
         }

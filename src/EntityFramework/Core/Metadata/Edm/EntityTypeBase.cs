@@ -7,9 +7,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
     using System.Data.Entity.Utilities;
     using System.Diagnostics;
     using System.Linq;
-#if !NET40
     using System.Runtime.CompilerServices;
-#endif
 
     /// <summary>
     /// Represents the Entity Type
@@ -87,9 +85,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
         }
 
 
-#if !NET40
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
         internal void ResetKeyPropertiesCache()
         {
             // PERF: this code written this way since it's part of a hotpath, consider its performance when refactoring. See codeplex #2298.

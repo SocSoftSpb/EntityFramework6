@@ -2,7 +2,6 @@
 
 namespace System.Data.Entity
 {
-    using System.Data.Entity.SqlServerCompact;
     using System.Data.Entity.Utilities;
     using System.Linq;
     using System.Reflection;
@@ -11,10 +10,12 @@ namespace System.Data.Entity
 
     public class AssemblyTests : TestBase
     {
+#if false
         public static Assembly EntityFrameworkSqlServerCompactAssembly
         {
             get { return typeof(SqlCeProviderServices).Assembly(); }
         }
+#endif
 
         [Fact]
         public void EntityFramework_assembly_is_CLSCompliant()
@@ -115,6 +116,7 @@ namespace System.Data.Entity
             Assert.False(EntityFrameworkSqlServerAssembly.GetCustomAttributes<SecurityRulesAttribute>().Any());
         }
 
+#if false
         [Fact]
         public void EntityFramework_SqlCompact_assembly_has_no_security_attributes()
         {
@@ -123,5 +125,6 @@ namespace System.Data.Entity
             Assert.False(EntityFrameworkSqlServerCompactAssembly.GetCustomAttributes<AllowPartiallyTrustedCallersAttribute>().Any());
             Assert.False(EntityFrameworkSqlServerCompactAssembly.GetCustomAttributes<SecurityRulesAttribute>().Any());
         }
+#endif
     }
 }

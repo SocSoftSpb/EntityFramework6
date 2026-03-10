@@ -9,9 +9,7 @@ namespace System.Data.Entity.Migrations.Utilities
     using System.Diagnostics;
     using System.Linq;
     using System.Reflection;
-#if !NET40
     using System.Runtime.ExceptionServices;
-#endif
 
     internal class MigrationsConfigurationFinder
     {
@@ -64,9 +62,7 @@ namespace System.Data.Entity.Migrations.Utilities
             catch (TargetInvocationException ex)
             {
                 Debug.Assert(ex.InnerException != null);
-#if !NET40
                 ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
-#endif
                 throw ex.InnerException;
             }
         }

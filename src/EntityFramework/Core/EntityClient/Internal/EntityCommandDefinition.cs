@@ -476,8 +476,6 @@ namespace System.Data.Entity.Core.EntityClient.Internal
             return result;
         }
 
-#if !NET40
-
         // <summary>
         // Internal execute method -- Asynchronously copies command information from the map command
         // to the command objects, executes them, and builds the result assembly
@@ -532,8 +530,6 @@ namespace System.Data.Entity.Core.EntityClient.Internal
 
             return result;
         }
-
-#endif
 
         private IEnumerable<ColumnMap> GetNextResultColumnMaps(DbDataReader storeDataReader)
         {
@@ -607,8 +603,6 @@ namespace System.Data.Entity.Core.EntityClient.Internal
             return reader;
         }
 
-#if !NET40
-
         // <summary>
         // Execute the store commands, and return IteratorSources for each one
         // </summary>
@@ -643,7 +637,6 @@ namespace System.Data.Entity.Core.EntityClient.Internal
             return reader;
         }
 
-#endif
         internal DbCommand CreateStoreCommand()
         {
             var definition = _mappedCommandDefinitions[0];

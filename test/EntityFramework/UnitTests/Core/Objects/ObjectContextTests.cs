@@ -727,10 +727,17 @@ namespace System.Data.Entity.Core.Objects
                 dbConnectionMock.Protected().Setup<DbCommand>("CreateDbCommand").Returns(() => dbCommandMock.Object);
                 dbConnectionMock.Setup(m => m.DataSource).Returns("fake");
 
+                var storeItemCollectionMock = new Mock<StoreItemCollection>();
+                storeItemCollectionMock.SetupGet(e => e.ProviderFactory).Returns(FakeSqlProviderFactory.Instance);
+
+                var metadataWorkspaceMock = new Mock<MetadataWorkspace> { CallBase = true };
+                metadataWorkspaceMock.Setup(m => m.GetItemCollection(DataSpace.SSpace, It.IsAny<bool>())).Returns(storeItemCollectionMock.Object);
+
                 var entityConnectionMock = new Mock<EntityConnection>();
                 entityConnectionMock.SetupGet(m => m.ConnectionString).Returns("Foo");
                 entityConnectionMock.SetupGet(m => m.State).Returns(() => ConnectionState.Open);
                 entityConnectionMock.SetupGet(m => m.StoreConnection).Returns(dbConnectionMock.Object);
+                entityConnectionMock.Setup(m => m.GetMetadataWorkspace()).Returns(metadataWorkspaceMock.Object);
 
                 var objectContext = CreateObjectContext(entityConnectionMock);
                 objectContext.ExecuteStoreCommand("{0} Foo {1} Bar {2} Baz {3}", 1, null, "Bar", DBNull.Value);
@@ -966,12 +973,12 @@ namespace System.Data.Entity.Core.Objects
                 dbCommandMock.Protected().Verify("ExecuteDbDataReader", Times.Once(), CommandBehavior.SequentialAccess);
                 Assert.True(correctParameters);
 
-                dbCommandMock.Protected().Verify("Dispose", Times.Never(), true);
+                dbCommandMock.Protected().Verify("Dispose", Times.Never(), true, true);
 
                 result.Dispose();
 
                 Mock.Get(objectContext).Verify(m => m.ReleaseConnection(), Times.Once());
-                dbCommandMock.Protected().Verify("Dispose", Times.Once(), true);
+                dbCommandMock.Protected().Verify("Dispose", Times.Once(), true, true);
             }
 
             [Fact]
@@ -1014,12 +1021,12 @@ namespace System.Data.Entity.Core.Objects
                 dbCommandMock.Protected().Verify("ExecuteDbDataReader", Times.Once(), CommandBehavior.Default);
                 Assert.True(correctParameters);
 
-                dbCommandMock.Protected().Verify("Dispose", Times.Never(), true);
+                dbCommandMock.Protected().Verify("Dispose", Times.Never(), true, true);
 
                 result.Dispose();
 
                 Mock.Get(objectContext).Verify(m => m.ReleaseConnection(), Times.Once());
-                dbCommandMock.Protected().Verify("Dispose", Times.Once(), true);
+                dbCommandMock.Protected().Verify("Dispose", Times.Once(), true, true);
             }
 
             [Fact]
@@ -1175,7 +1182,7 @@ namespace System.Data.Entity.Core.Objects
                     Assert.Throws<InvalidOperationException>(
                         () => objectContext.ExecuteStoreQuery<object>("Bar")).Message);
                 Mock.Get(objectContext).Verify(m => m.ReleaseConnection(), Times.Once());
-                dbCommandMock.Protected().Verify("Dispose", Times.Once(), true);
+                dbCommandMock.Protected().Verify("Dispose", Times.Once(), true, true);
             }
 
             [Fact]
@@ -1204,8 +1211,8 @@ namespace System.Data.Entity.Core.Objects
                           .Message);
 
                 Mock.Get(objectContext).Verify(m => m.ReleaseConnection(), Times.Once());
-                Mock.Get(dataReader).Protected().Verify("Dispose", Times.Once(), true);
-                dbCommandMock.Protected().Verify("Dispose", Times.Once(), true);
+                Mock.Get(dataReader).Protected().Verify("Dispose", Times.Once(), true, true);
+                dbCommandMock.Protected().Verify("Dispose", Times.Once(), true, true);
             }
 
             [Fact]
@@ -1873,13 +1880,13 @@ namespace System.Data.Entity.Core.Objects
                 var entityConnectionMock = new Mock<EntityConnection>(null, null, true, true);
                 entityConnectionMock.SetupGet(m => m.ConnectionString).Returns("Fake connection string");
                 entityConnectionMock.Setup(m => m.GetMetadataWorkspace()).Returns(new Mock<MetadataWorkspace>().Object);
-                entityConnectionMock.Protected().Setup("Dispose", true).Verifiable();
+                entityConnectionMock.Protected().Setup("Dispose", true, true).Verifiable();
 
                 var objectContext = new ObjectContext(entityConnectionMock.Object, true);
 
                 objectContext.Dispose();
 
-                entityConnectionMock.Protected().Verify("Dispose", Times.Once(), true);
+                entityConnectionMock.Protected().Verify("Dispose", Times.Once(), true, true);
             }
 
             [Fact]
@@ -1888,12 +1895,12 @@ namespace System.Data.Entity.Core.Objects
                 var entityConnectionMock = new Mock<EntityConnection>(null, null, true, true);
                 entityConnectionMock.SetupGet(m => m.ConnectionString).Returns("Fake connection string");
                 entityConnectionMock.Setup(m => m.GetMetadataWorkspace()).Returns(new Mock<MetadataWorkspace>().Object);
-                entityConnectionMock.Protected().Setup("Dispose", false).Verifiable();
+                entityConnectionMock.Protected().Setup("Dispose", true, false).Verifiable();
 
                 var objectContext = new ObjectContext(entityConnectionMock.Object, false);
                 objectContext.Dispose();
 
-                entityConnectionMock.Protected().Verify("Dispose", Times.Never(), true);
+                entityConnectionMock.Protected().Verify("Dispose", Times.Never(), true, true);
             }
 
             [Fact]
@@ -1902,12 +1909,12 @@ namespace System.Data.Entity.Core.Objects
                 var entityConnectionMock = new Mock<EntityConnection>(null, null, true, true);
                 entityConnectionMock.SetupGet(m => m.ConnectionString).Returns("Fake connection string");
                 entityConnectionMock.Setup(m => m.GetMetadataWorkspace()).Returns(new Mock<MetadataWorkspace>().Object);
-                entityConnectionMock.Protected().Setup("Dispose", true).Verifiable();
+                entityConnectionMock.Protected().Setup("Dispose", true, true).Verifiable();
 
                 var objectContext = new ObjectContext(entityConnectionMock.Object);
                 objectContext.Dispose();
 
-                entityConnectionMock.Protected().Verify("Dispose", Times.Never(), true);
+                entityConnectionMock.Protected().Verify("Dispose", Times.Never(), true, true);
             }
 
             [Fact]
@@ -2653,10 +2660,17 @@ namespace System.Data.Entity.Core.Objects
                 dbConnectionMock.Protected().Setup<DbCommand>("CreateDbCommand").Returns(() => dbCommandMock.Object);
                 dbConnectionMock.Setup(m => m.DataSource).Returns("fake");
 
+                var storeItemCollectionMock = new Mock<StoreItemCollection>();
+                storeItemCollectionMock.SetupGet(e => e.ProviderFactory).Returns(FakeSqlProviderFactory.Instance);
+
+                var metadataWorkspaceMock = new Mock<MetadataWorkspace> { CallBase = true };
+                metadataWorkspaceMock.Setup(m => m.GetItemCollection(DataSpace.SSpace, It.IsAny<bool>())).Returns(storeItemCollectionMock.Object);
+
                 var entityConnectionMock = new Mock<EntityConnection>();
                 entityConnectionMock.SetupGet(m => m.ConnectionString).Returns("Foo");
                 entityConnectionMock.SetupGet(m => m.State).Returns(() => ConnectionState.Open);
                 entityConnectionMock.SetupGet(m => m.StoreConnection).Returns(dbConnectionMock.Object);
+                entityConnectionMock.Setup(m => m.GetMetadataWorkspace()).Returns(metadataWorkspaceMock.Object);
 
                 var objectContext = CreateObjectContext(entityConnectionMock);
                 objectContext.ExecuteStoreCommandAsync("{0} Foo {1} Bar {2} Baz {3}", 1, null, "Bar", DBNull.Value).Wait();
@@ -3185,7 +3199,7 @@ namespace System.Data.Entity.Core.Objects
                                          .Wait())).Message);
 
                 Mock.Get(objectContext).Verify(m => m.ReleaseConnection(), Times.Once());
-                Mock.Get(dataReader).Protected().Verify("Dispose", Times.Once(), true);
+                Mock.Get(dataReader).Protected().Verify("Dispose", Times.Once(), true, true);
             }
 
             [Fact]

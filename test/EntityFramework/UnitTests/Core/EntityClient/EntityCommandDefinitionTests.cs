@@ -140,7 +140,7 @@ namespace System.Data.Entity.Core.EntityClient
                 Assert.Throws<InvalidOperationException>(
                     () => entityCommandDefinition.Execute(default(EntityCommand), CommandBehavior.SequentialAccess));
 
-                dbDataReaderMock.Protected().Verify("Dispose", Times.Once(), true);
+                dbDataReaderMock.Protected().Verify("Dispose", Times.Once(), true, true);
             }
 
             [Fact]
@@ -310,7 +310,7 @@ namespace System.Data.Entity.Core.EntityClient
                     entityCommandDefinition.ExecuteAsync(default(EntityCommand), CommandBehavior.SequentialAccess, CancellationToken.None).
                                             Wait());
 
-                dbDataReaderMock.Protected().Verify("Dispose", Times.Once(), true);
+                dbDataReaderMock.Protected().Verify("Dispose", Times.Once(), true, true);
             }
 
             [Fact]

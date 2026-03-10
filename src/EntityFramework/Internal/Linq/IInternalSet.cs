@@ -19,11 +19,6 @@ namespace System.Data.Entity.Internal.Linq
         void Initialize();
         void TryInitialize();
         IEnumerator ExecuteSqlQuery(string sql, bool asNoTracking, bool? streaming, object[] parameters);
-
-#if !NET40
-
         IDbAsyncEnumerator ExecuteSqlQueryAsync(string sql, bool asNoTracking, bool? streaming, object[] parameters);
-
-#endif
     }
 }

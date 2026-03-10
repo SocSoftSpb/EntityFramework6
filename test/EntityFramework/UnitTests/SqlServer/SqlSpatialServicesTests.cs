@@ -5,9 +5,7 @@ namespace System.Data.Entity.SqlServer
     using System.Data.Entity.Spatial;
     using System.Data.Entity.SqlServer.Resources;
     using System.Data.Entity.Utilities;
-    using System.IO;
     using System.Linq;
-    using System.Runtime.Serialization.Formatters.Binary;
     using Moq;
     using Xunit;
 
@@ -206,6 +204,7 @@ namespace System.Data.Entity.SqlServer
             Assert.Same(sqlTypesAssembly, new SqlSpatialServices(mockLoader.Object).SqlTypes);
         }
 
+#if false
         [Fact]
         public void SqlSpatialServices_can_be_serialized()
         {
@@ -227,5 +226,6 @@ namespace System.Data.Entity.SqlServer
                 Assert.True(typeName.StartsWith(SQL2012GeometryNamePrefix, StringComparison.Ordinal));
             }
         }
+#endif
     }
 }

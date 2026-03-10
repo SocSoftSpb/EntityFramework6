@@ -5,7 +5,6 @@ namespace System.Data.Entity.Infrastructure
     using System.Collections.Generic;
     using System.Data.Entity.Core;
     using System.Data.Entity.Resources;
-    using System.Diagnostics.Eventing.Reader;
     using System.Runtime.InteropServices;
     using System.Threading;
     using System.Threading.Tasks;
@@ -350,7 +349,7 @@ namespace System.Data.Entity.Infrastructure
 
                 var executionCount = 0;
 
-                Assert.Throws<EventLogException>(
+                Assert.Throws<TestException>(
                     () =>
                     execute(
                         executionStrategyMock.Object, () =>
@@ -361,7 +360,7 @@ namespace System.Data.Entity.Infrastructure
                                                               }
                                                               else
                                                               {
-                                                                  throw new EventLogException();
+                                                                  throw new TestException();
                                                               }
                                                           }));
 
@@ -733,7 +732,7 @@ namespace System.Data.Entity.Infrastructure
 
                 var executionCount = 0;
 
-                Assert.Throws<EventLogException>(
+                Assert.Throws<TestException>(
                     () =>
                     ExceptionHelpers.UnwrapAggregateExceptions(
                         () =>
@@ -746,7 +745,7 @@ namespace System.Data.Entity.Infrastructure
                                                                   }
                                                                   else
                                                                   {
-                                                                      throw new EventLogException();
+                                                                      throw new TestException();
                                                                   }
                                                               }).Wait()));
 
@@ -974,6 +973,11 @@ namespace System.Data.Entity.Infrastructure
                                 return true;
                             }));
             }
+        }
+
+        private sealed class TestException : Exception
+        {
+            
         }
     }
 }

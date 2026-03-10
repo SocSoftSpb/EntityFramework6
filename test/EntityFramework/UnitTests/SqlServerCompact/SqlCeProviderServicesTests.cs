@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
+﻿#if false
+// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
 namespace System.Data.Entity.SqlServerCompact
 {
@@ -96,7 +97,7 @@ namespace System.Data.Entity.SqlServerCompact
                 {
                     var storeItemCollection =
                         (StoreItemCollection)
-                            ((IObjectContextAdapter)context).ObjectContext.MetadataWorkspace.GetItemCollection(DataSpace.SSpace);
+                        ((IObjectContextAdapter)context).ObjectContext.MetadataWorkspace.GetItemCollection(DataSpace.SSpace);
 
                     context.Database.Delete();
 
@@ -253,3 +254,5 @@ namespace System.Data.Entity.SqlServerCompact
         }
     }
 }
+
+#endif

@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
-using md = System.Data.Entity.Core.Metadata.Edm;
+using Md = System.Data.Entity.Core.Metadata.Edm;
 
 namespace System.Data.Entity.Core.Query.PlanCompiler
 {
@@ -45,8 +45,8 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             cqtree.DmlOperation = dmlOperation;
 
             // Get the rowtype for the result cqt
-            var collType = TypeHelpers.GetEdmType<md.CollectionType>(cqtree.Query.ResultType);
-            PlanCompiler.Assert(md.TypeSemantics.IsRowType(collType.TypeUsage), "command rowtype is not a record");
+            var collType = TypeHelpers.GetEdmType<Md.CollectionType>(cqtree.Query.ResultType);
+            PlanCompiler.Assert(Md.TypeSemantics.IsRowType(collType.TypeUsage), "command rowtype is not a record");
 
             // Build up a mapping from Vars to the corresponding output property/column
             BuildOutputVarMap(projectOp, collType.TypeUsage);
@@ -68,13 +68,13 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         [SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "PhysicalProjectOp")]
         [SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters",
             MessageId = "System.Data.Entity.Core.Query.PlanCompiler.PlanCompiler.Assert(System.Boolean,System.String)")]
-        private static Dictionary<Var, md.EdmProperty> BuildOutputVarMap(PhysicalProjectOp projectOp, md.TypeUsage outputType)
+        private static Dictionary<Var, Md.EdmProperty> BuildOutputVarMap(PhysicalProjectOp projectOp, Md.TypeUsage outputType)
         {
-            var outputVarMap = new Dictionary<Var, md.EdmProperty>();
+            var outputVarMap = new Dictionary<Var, Md.EdmProperty>();
 
-            PlanCompiler.Assert(md.TypeSemantics.IsRowType(outputType), "PhysicalProjectOp result type is not a RowType?");
+            PlanCompiler.Assert(Md.TypeSemantics.IsRowType(outputType), "PhysicalProjectOp result type is not a RowType?");
 
-            IEnumerator<md.EdmProperty> propertyEnumerator = TypeHelpers.GetEdmType<md.RowType>(outputType).Properties.GetEnumerator();
+            IEnumerator<Md.EdmProperty> propertyEnumerator = TypeHelpers.GetEdmType<Md.RowType>(outputType).Properties.GetEnumerator();
             IEnumerator<Var> varEnumerator = projectOp.Outputs.GetEnumerator();
             while (true)
             {

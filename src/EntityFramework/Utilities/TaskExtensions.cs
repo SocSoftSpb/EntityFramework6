@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
-#if !NET40
 #if SQLSERVER
 namespace System.Data.Entity.SqlServer.Utilities
 #else
@@ -242,5 +241,3 @@ namespace System.Data.Entity.Utilities
         }
     }
 }
-
-#endif

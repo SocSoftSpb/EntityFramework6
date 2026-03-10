@@ -88,6 +88,7 @@ namespace System.Data.Entity.Objects
             public string Word { get; set; }
         }
 
+#if !NET10_0_OR_GREATER
         [Fact]
         public void Change_tracking_proxy_can_be_binary_deserialized_when_running_under_full_trust()
         {
@@ -125,6 +126,7 @@ namespace System.Data.Entity.Objects
                 Assert.Equal(88, deserialized.MeComplexTypeS.Number);
             }
         }
+#endif
 
         [Fact]
         public void Change_tracking_proxy_can_be_data_contract_deserialized_with_resolver_when_running_under_full_trust()
@@ -192,6 +194,7 @@ namespace System.Data.Entity.Objects
             }
         }
 
+#if !NET10_0_OR_GREATER
         [Fact]
         public void Simple_entities_can_be_binary_serialized_when_running_under_full_trust()
         {
@@ -239,6 +242,7 @@ namespace System.Data.Entity.Objects
                 Assert.Equal((MeSimpleEntitiesS.EnumType)7, deserialized.Enum);
             }
         }
+#endif
 
         [Fact]
         public void Simple_entities_can_be_data_contract_deserialized_with_resolver_when_running_under_full_trust()
@@ -272,6 +276,7 @@ namespace System.Data.Entity.Objects
             }
         }
 
+#if false
         [Fact]
         public void Stored_change_tracking_proxy_can_be_binary_deserialized_when_running_under_full_trust()
         {
@@ -303,9 +308,8 @@ namespace System.Data.Entity.Objects
                 Assert.Equal(88, deserialized.MeComplexTypeS.Number);
             }
         }
+#endif
 
-
-        
         [Fact]
         public void Stored_change_tracking_proxy_can_be_data_contract_deserialized_with_resolver_when_running_under_full_trust()
         {
@@ -334,6 +338,7 @@ namespace System.Data.Entity.Objects
             Assert.Equal(88, deserialized.MeComplexTypeS.Number);
         }
 
+#if false
         [Fact]
         public void Stored_lazy_loading_proxy_can_be_data_contract_deserialized_with_known_types_when_running_under_full_trust()
         {
@@ -350,6 +355,7 @@ namespace System.Data.Entity.Objects
                 Assert.Equal(88, deserialized.MeComplexTypeS.Number);
             }
         }
+#endif
 
         [Fact]
         public void Graph_serialization_preserves_related_entities_deserialized_with_data_contract_deserializer()
@@ -375,6 +381,7 @@ namespace System.Data.Entity.Objects
             }
         }
 
+#if !NET10_0_OR_GREATER
         [Fact]
         public void Graph_serialization_preserves_related_entities_deserialized_with_binary_deserializer()
         {
@@ -585,6 +592,7 @@ namespace System.Data.Entity.Objects
                 } 
             }
         }
+#endif
 
         //Helpers
         private MemoryStream BuildStreamFromBase64String(string base64String)
@@ -598,6 +606,7 @@ namespace System.Data.Entity.Objects
             return stream;
         }
 
+#if false
         private T DeserializeStringWithFormatter<T>(string base64String)
         {
             var formatter = new BinaryFormatter();
@@ -607,6 +616,7 @@ namespace System.Data.Entity.Objects
             return (T)formatter.Deserialize(stream);           
 #pragma warning restore SYSLIB0011
         }
+#endif
         
         private T DeserializeStringWithDatacontractSerializer<T>(string base64String, DataContractSerializer serializer)
         {
@@ -626,6 +636,7 @@ namespace System.Data.Entity.Objects
             return base64String;
         }
 
+#if !NET10_0_OR_GREATER
         private T DeserializeFromBinaryFormatter<T>(T proxy)
         {
             var stream = new MemoryStream();
@@ -638,6 +649,7 @@ namespace System.Data.Entity.Objects
             return (T)formatter.Deserialize(stream);
 #pragma warning restore SYSLIB0011
         }
+#endif
 
         private T DeserializeWithDatacontractSerializer<T>(T proxy, DataContractSerializer serializer)
         {

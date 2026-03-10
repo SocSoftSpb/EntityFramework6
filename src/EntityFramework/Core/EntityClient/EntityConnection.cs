@@ -601,8 +601,6 @@ namespace System.Data.Entity.Core.EntityClient
             }
         }
 
-#if !NET40
-
         /// <summary>
         /// Asynchronously establishes a connection to the data store by calling the Open method on the underlying data provider
         /// </summary>
@@ -658,8 +656,6 @@ namespace System.Data.Entity.Core.EntityClient
                 throw Error.EntityClient_ConnectionNotOpen();
             }
         }
-
-#endif
 
         /// <summary>
         /// Creates a new instance of an <see cref="T:System.Data.Entity.Core.EntityClient.EntityCommand" />, with the

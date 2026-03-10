@@ -507,8 +507,6 @@ namespace System.Data.Entity.Core.EntityClient
             return reader;
         }
 
-#if !NET40
-
         /// <summary>
         /// Asynchronously executes the command and returns a data reader for reading the results. May only
         /// be called on CommandType.CommandText (otherwise, use the standard Execute* methods)
@@ -593,8 +591,6 @@ namespace System.Data.Entity.Core.EntityClient
             return reader;
         }
 
-#endif
-
         /// <summary>
         /// Executes the command and returns a data reader for reading the results
         /// </summary>
@@ -604,8 +600,6 @@ namespace System.Data.Entity.Core.EntityClient
         {
             return ExecuteReader(behavior);
         }
-
-#if !NET40
 
         /// <summary>
         /// Asynchronously executes the command and returns a data reader for reading the results
@@ -621,8 +615,6 @@ namespace System.Data.Entity.Core.EntityClient
             return await ExecuteReaderAsync(behavior, cancellationToken).WithCurrentCulture();
         }
 
-#endif
-
         /// <summary>Executes the current command.</summary>
         /// <returns>The number of rows affected.</returns>
         public override int ExecuteNonQuery()
@@ -633,8 +625,6 @@ namespace System.Data.Entity.Core.EntityClient
                 return reader.RecordsAffected;
             }
         }
-
-#if !NET40
 
         /// <summary>
         /// Asynchronously executes the command and discard any results returned from the command
@@ -658,8 +648,6 @@ namespace System.Data.Entity.Core.EntityClient
                 return reader.RecordsAffected;
             }
         }
-
-#endif
 
         /// <summary>Executes the command, and returns the first column of the first row in the result set. Additional columns or rows are ignored.</summary>
         /// <returns>The first column of the first row in the result set, or a null reference (Nothing in Visual Basic) if the result set is empty.</returns>

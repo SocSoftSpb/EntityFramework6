@@ -25,7 +25,7 @@ namespace System.Data.Entity.Core.EntityClient
                                             {
                                                 CallBase = true
                                             };
-                entityCommandMock.Setup(m => m.ExecuteReader(It.IsAny<CommandBehavior>()));
+                entityCommandMock.Setup(m => m.ExecuteReader(It.IsAny<CommandBehavior>())).Returns((EntityDataReader)null);
                 var entityCommand = entityCommandMock.Object;
                 entityCommand.ExecuteReader();
 

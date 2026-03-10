@@ -285,7 +285,6 @@ namespace System.Data.Entity.Infrastructure.Interception
                 (i, t, c) => i.Opened(t, c));
         }
 
-#if !NET40
         /// <summary>
         /// Sends <see cref="IDbConnectionInterceptor.Opening" /> and
         /// <see cref="IDbConnectionInterceptor.Opened" /> to any <see cref="IDbConnectionInterceptor" />
@@ -310,7 +309,6 @@ namespace System.Data.Entity.Infrastructure.Interception
                 (i, t, c) => i.Opened(t, c),
                 cancellationToken);
         }
-#endif
 
         /// <summary>
         /// Sends <see cref="IDbConnectionInterceptor.ServerVersionGetting" /> and

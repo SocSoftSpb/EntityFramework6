@@ -23,6 +23,7 @@ namespace System.Data.Entity.ModelConfiguration.Internal.UnitTests
         {
             // Explicit static constructor to tell C# compiler
             // not to mark type as beforefieldinit
+            DbProviderFactories.RegisterFactory("System.Data.FakeSqlClient", typeof(FakeSqlProviderFactory));
         }
 
         public bool ForceNullConnection { get; set; }

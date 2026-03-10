@@ -65,11 +65,7 @@ namespace System.Data.Entity.Core.Objects.Internal
                 assemblyName.Version = new Version(1, 0, 0, 0);
 
                 var assemblyBuilder =
-#if NET40
-                    AppDomain.CurrentDomain.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run);
-#else
                     AssemblyBuilder.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run);
-#endif
 
                 moduleBuilder = assemblyBuilder.DefineDynamicModule("EntityProxyModule");
 
@@ -720,10 +716,12 @@ namespace System.Data.Entity.Core.Objects.Internal
                     if (_typeBuilder == null)
                     {
                         var proxyTypeAttributes = TypeAttributes.Class | TypeAttributes.Public | TypeAttributes.Sealed;
+#if !NET10_0_OR_GREATER
                         if ((BaseType.Attributes() & TypeAttributes.Serializable) == TypeAttributes.Serializable)
                         {
                             proxyTypeAttributes |= TypeAttributes.Serializable;
                         }
+#endif
 
                         // If the type as a long name, then use only the first part of it so that there is no chance that the generated
                         // name will be too long.  Note that the full name always gets used to compute the hash.

@@ -53,8 +53,6 @@ namespace System.Data.Entity.SqlServer
             }
         }
 
-#if !NET40
-
         public Task ExecuteAsync(Func<Task> operation, CancellationToken cancellationToken)
         {
             Check.NotNull(operation, "operation");
@@ -94,6 +92,5 @@ namespace System.Data.Entity.SqlServer
                 throw;
             }
         }
-#endif
     }
 }

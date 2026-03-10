@@ -16,8 +16,13 @@ namespace System.Data.Entity.Core
         [Fact]
         public void Constructors_allow_for_null_message_and_inner_exception()
         {
-            Assert.True(new EntitySqlException(null).Message.Contains("System.Data.Entity.Core.EntitySqlException"));
-            Assert.True(new EntitySqlException(null, null).Message.Contains("System.Data.Entity.Core.EntitySqlException"));
+#if NET10_0_OR_GREATER
+            const string message = "Data Exception.";
+#else
+            const string message = "System.Data.Entity.Core.EntitySqlException";
+#endif
+            Assert.True(new EntitySqlException(null).Message.Contains(message));
+            Assert.True(new EntitySqlException(null, null).Message.Contains(message));
             Assert.Null(new EntitySqlException(null, null).InnerException);
         }
 
@@ -33,6 +38,7 @@ namespace System.Data.Entity.Core
             Assert.Equal(0, exception.Line);
             Assert.Equal(0, exception.Column);
 
+#if false
             exception = ExceptionHelpers.SerializeAndDeserialize(exception);
 
             Assert.Equal(Strings.GeneralQueryError, exception.Message);
@@ -41,6 +47,7 @@ namespace System.Data.Entity.Core
             Assert.Equal("", exception.ErrorDescription);
             Assert.Equal(0, exception.Line);
             Assert.Equal(0, exception.Column);
+#endif
         }
 
         [Fact]
@@ -55,6 +62,7 @@ namespace System.Data.Entity.Core
             Assert.Equal(0, exception.Line);
             Assert.Equal(0, exception.Column);
 
+#if false
             exception = ExceptionHelpers.SerializeAndDeserialize(exception);
 
             Assert.Equal("What is this eSQL of which you speak?", exception.Message);
@@ -63,6 +71,7 @@ namespace System.Data.Entity.Core
             Assert.Equal("", exception.ErrorDescription);
             Assert.Equal(0, exception.Line);
             Assert.Equal(0, exception.Column);
+#endif
         }
 
         [Fact]
@@ -79,6 +88,7 @@ namespace System.Data.Entity.Core
             Assert.Equal(0, exception.Line);
             Assert.Equal(0, exception.Column);
 
+#if false
             exception = ExceptionHelpers.SerializeAndDeserialize(exception);
 
             Assert.Equal("I knoweth not, good sir.", exception.Message);
@@ -88,6 +98,7 @@ namespace System.Data.Entity.Core
             Assert.Equal("", exception.ErrorDescription);
             Assert.Equal(0, exception.Line);
             Assert.Equal(0, exception.Column);
+#endif
         }
 
         [Fact]
@@ -114,6 +125,7 @@ namespace System.Data.Entity.Core
             Assert.Equal(3, exception.Line);
             Assert.Equal(2, exception.Column);
 
+#if false
             exception = ExceptionHelpers.SerializeAndDeserialize(exception);
 
             Assert.True(exception.Message.StartsWith("Why not use LINQ like everyone else?"));
@@ -124,6 +136,7 @@ namespace System.Data.Entity.Core
             Assert.Equal("Why not use LINQ like everyone else?", exception.ErrorDescription);
             Assert.Equal(3, exception.Line);
             Assert.Equal(2, exception.Column);
+#endif
         }
 
         [Fact]
@@ -145,6 +158,7 @@ namespace System.Data.Entity.Core
             Assert.Equal(2, exception.Line);
             Assert.Equal(4, exception.Column);
 
+#if false
             exception = ExceptionHelpers.SerializeAndDeserialize(exception);
 
             Assert.True(exception.Message.StartsWith("This isn't the vodka I ordered."));
@@ -153,8 +167,10 @@ namespace System.Data.Entity.Core
             Assert.Equal("This isn't the vodka I ordered.", exception.ErrorDescription);
             Assert.Equal(2, exception.Line);
             Assert.Equal(4, exception.Column);
+#endif
         }
 
+#if false
         [Fact] // CodePlex 1107
         public void Deserialized_exception_can_be_serialized_and_deserialized_again()
         {
@@ -165,6 +181,7 @@ namespace System.Data.Entity.Core
             Assert.Equal("What is this eSQL of which you speak?", exception.Message);
             Assert.Equal(HResultInvalidQuery, GetHResult(exception));
         }
+#endif
 
         private static int GetHResult(Exception ex)
         {

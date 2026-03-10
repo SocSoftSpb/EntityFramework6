@@ -9,10 +9,8 @@ namespace System.Data.Entity.Core.Objects.Internal
     using System.Data.Entity.Utilities;
     using System.Diagnostics;
     using System.Diagnostics.CodeAnalysis;
-#if !NET40
     using System.Threading;
     using System.Threading.Tasks;
-#endif
 
     internal class ShapelessBufferedDataRecord : BufferedDataRecord
     {
@@ -76,8 +74,6 @@ namespace System.Data.Entity.Core.Objects.Internal
             return record;
         }
 
-#if !NET40
-
         internal static async Task<ShapelessBufferedDataRecord> InitializeAsync(
             string providerManifestToken, DbProviderServices providerServices, DbDataReader reader, CancellationToken cancellationToken)
         {
@@ -120,8 +116,6 @@ namespace System.Data.Entity.Core.Objects.Internal
             record._resultSet = resultSet;
             return record;
         }
-
-#endif
 
         protected override void ReadMetadata(string providerManifestToken, DbProviderServices providerServices, DbDataReader reader)
         {
@@ -218,15 +212,11 @@ namespace System.Data.Entity.Core.Objects.Internal
             return (T)_currentRow[ordinal];
         }
 
-#if !NET40
-
         [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "cancellationToken")]
         public override Task<T> GetFieldValueAsync<T>(int ordinal, CancellationToken cancellationToken)
         {
             return Task.FromResult((T)_currentRow[ordinal]);
         }
-
-#endif
 
         public override object GetValue(int ordinal)
         {
@@ -254,15 +244,11 @@ namespace System.Data.Entity.Core.Objects.Internal
             return DBNull.Value == _currentRow[ordinal];
         }
 
-#if !NET40
-
         [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "cancellationToken")]
         public override Task<bool> IsDBNullAsync(int ordinal, CancellationToken cancellationToken)
         {
             return Task.FromResult(IsDBNull(ordinal));
         }
-
-#endif
 
         public override bool Read()
         {
@@ -280,14 +266,10 @@ namespace System.Data.Entity.Core.Objects.Internal
             return IsDataReady;
         }
 
-#if !NET40
-
         [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "cancellationToken")]
         public override Task<bool> ReadAsync(CancellationToken cancellationToken)
         {
             return Task.FromResult(Read());
         }
-
-#endif
     }
 }

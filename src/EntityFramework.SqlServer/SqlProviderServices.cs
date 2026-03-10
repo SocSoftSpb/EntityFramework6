@@ -600,7 +600,7 @@ namespace System.Data.Entity.SqlServer
 
             var sqlDbType = GetSqlDbType(type, isOutParam, version, out size, out precision, out scale, out udtTypeName);
 
-            if (result.SqlDbType != sqlDbType)
+            if (sqlDbType == SqlDbType.Udt || result.SqlDbType != sqlDbType)
             {
                 result.SqlDbType = sqlDbType;
             }

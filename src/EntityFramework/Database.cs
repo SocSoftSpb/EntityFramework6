@@ -605,8 +605,6 @@ namespace System.Data.Entity
             return _internalContext.ExecuteSqlCommand(transactionalBehavior, sql, parameters);
         }
 
-#if !NET40
-
         /// <summary>
         /// Asynchronously executes the given DDL/DML command against the database.
         ///
@@ -722,8 +720,6 @@ namespace System.Data.Entity
 
             return _internalContext.ExecuteSqlCommandAsync(transactionalBehavior, sql, cancellationToken, parameters);
         }
-
-#endif
 
         #endregion
 

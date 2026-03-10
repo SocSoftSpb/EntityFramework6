@@ -672,9 +672,9 @@ namespace System.Data.Entity.Infrastructure
 
         private void CreateInstance_should_use_passed_provider_info_when_building_model(Type contextType)
         {
-            var contextInfo = new DbContextInfo(contextType, ProviderRegistry.SqlCe4_ProviderInfo);
+            var contextInfo = new DbContextInfo(contextType, ProviderRegistry.SqlAzure2012_ProviderInfo);
 
-            Assert.Equal(ProviderRegistry.SqlCe4_ProviderInfo.ProviderInvariantName, contextInfo.ConnectionProviderName);
+            Assert.Equal(ProviderRegistry.SqlAzure2012_ProviderInfo.ProviderInvariantName, contextInfo.ConnectionProviderName);
             Assert.Equal(string.Empty, contextInfo.ConnectionString);
 
             using (var context = contextInfo.CreateInstance())
@@ -682,7 +682,7 @@ namespace System.Data.Entity.Infrastructure
                 var objectContext = ((IObjectContextAdapter)context).ObjectContext;
 
                 Assert.NotNull(objectContext);
-                Assert.Equal("SqlCeConnection", ((EntityConnection)objectContext.Connection).StoreConnection.GetType().Name);
+                Assert.Equal("SqlConnection", ((EntityConnection)objectContext.Connection).StoreConnection.GetType().Name);
             }
         }
 
@@ -706,14 +706,14 @@ namespace System.Data.Entity.Infrastructure
         private void CreateInstance_should_use_passed_provider_info_when_building_model_even_when_connection_is_in_app_config(
             Type contextType)
         {
-            var contextInfo = new DbContextInfo(contextType, ProviderRegistry.SqlCe4_ProviderInfo);
+            var contextInfo = new DbContextInfo(contextType, ProviderRegistry.SqlAzure2012_ProviderInfo);
 
             using (var context = contextInfo.CreateInstance())
             {
                 var objectContext = ((IObjectContextAdapter)context).ObjectContext;
 
                 Assert.NotNull(objectContext);
-                Assert.Equal("SqlCeConnection", ((EntityConnection)objectContext.Connection).StoreConnection.GetType().Name);
+                Assert.Equal("SqlConnection", ((EntityConnection)objectContext.Connection).StoreConnection.GetType().Name);
             }
         }
 
@@ -1240,9 +1240,9 @@ namespace System.Data.Entity.Infrastructure
                     typeof(FakeDbContextInfoConnectionFactory).FullName + ", EntityFramework.UnitTests",
                     new string[0]));
 
-            var contextInfo = new DbContextInfo(contextType, config, ProviderRegistry.SqlCe4_ProviderInfo);
+            var contextInfo = new DbContextInfo(contextType, config, ProviderRegistry.SqlAzure2012_ProviderInfo);
 
-            Assert.Equal(ProviderRegistry.SqlCe4_ProviderInfo.ProviderInvariantName, contextInfo.ConnectionProviderName);
+            Assert.Equal(ProviderRegistry.SqlAzure2012_ProviderInfo.ProviderInvariantName, contextInfo.ConnectionProviderName);
             Assert.Equal(string.Empty, contextInfo.ConnectionString);
 
             using (var context = contextInfo.CreateInstance())
@@ -1250,7 +1250,7 @@ namespace System.Data.Entity.Infrastructure
                 var objectContext = ((IObjectContextAdapter)context).ObjectContext;
 
                 Assert.NotNull(objectContext);
-                Assert.Equal("SqlCeConnection", ((EntityConnection)objectContext.Connection).StoreConnection.GetType().Name);
+                Assert.Equal("SqlConnection", ((EntityConnection)objectContext.Connection).StoreConnection.GetType().Name);
             }
         }
 

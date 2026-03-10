@@ -1194,7 +1194,8 @@ namespace System.Data.Entity.SqlServer
                                             out _,
                                             generateReturningSql: false,
                                             upperCaseKeywords: true,
-                                            createParameters: false));
+                                            createParameters: false,
+                                            createParametersForParameterReference: true));
                                 break;
 
                             case DbCommandTreeKind.Delete:

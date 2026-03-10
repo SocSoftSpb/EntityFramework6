@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
-using md = System.Data.Entity.Core.Metadata.Edm;
+using Md = System.Data.Entity.Core.Metadata.Edm;
 
 //
 // The PropertyRef class (and its subclasses) represent references to a property
@@ -55,7 +55,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         // </summary>
         // <param name="p"> the simple property </param>
         // <returns> a nestedPropertyRef </returns>
-        internal PropertyRef CreateNestedPropertyRef(md.EdmMember p)
+        internal PropertyRef CreateNestedPropertyRef(Md.EdmMember p)
         {
             return CreateNestedPropertyRef(new SimplePropertyRef(p));
         }

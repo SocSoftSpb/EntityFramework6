@@ -2,17 +2,11 @@
 
 using System.Reflection;
 
-#if !NET40
-
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.CompilerServices;
 
-#endif
-
 [assembly: AssemblyDefaultAlias("EntityFramework.dll")]
-
-#if !NET40
 
 // In EF 4.1-4.3, these attributes were all in the System.ComponentModel.DataAnnotations
 // namespace of EntityFramework.dll.
@@ -35,5 +29,3 @@ using System.Runtime.CompilerServices;
 [assembly: TypeForwardedTo(typeof(InversePropertyAttribute))]
 [assembly: TypeForwardedTo(typeof(NotMappedAttribute))]
 [assembly: TypeForwardedTo(typeof(TableAttribute))]
-
-#endif

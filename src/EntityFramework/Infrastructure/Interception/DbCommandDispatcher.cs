@@ -116,7 +116,6 @@ namespace System.Data.Entity.Infrastructure.Interception
                 (i, t, c) => i.ReaderExecuted(t, c));
         }
 
-#if !NET40
         /// <summary>
         /// Sends <see cref="IDbCommandInterceptor.NonQueryExecuting" /> and
         /// <see cref="IDbCommandInterceptor.NonQueryExecuted" /> to any <see cref="IDbCommandInterceptor" />
@@ -206,7 +205,6 @@ namespace System.Data.Entity.Infrastructure.Interception
                 (i, t, c) => i.ReaderExecuted(t, c),
                 cancellationToken);
         }
-#endif
 
         /// <inheritdoc />
         [EditorBrowsable(EditorBrowsableState.Never)]

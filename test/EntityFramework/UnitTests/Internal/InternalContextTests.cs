@@ -342,7 +342,7 @@ namespace System.Data.Entity.Internal
                     }.Object;
                 var objectContextMock = Mock.Get(internalContext.ObjectContext);
                 objectContextMock.Setup(
-                    m => m.ExecuteStoreCommand(It.IsAny<TransactionalBehavior>(), It.IsAny<string>(), It.IsAny<object[]>()));
+                    m => m.ExecuteStoreCommand(It.IsAny<TransactionalBehavior>(), It.IsAny<string>(), It.IsAny<object[]>())).Returns(0);
 
                 var parameters = new object[] { "param" };
 

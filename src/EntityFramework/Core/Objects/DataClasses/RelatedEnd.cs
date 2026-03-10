@@ -746,8 +746,6 @@ namespace System.Data.Entity.Core.Objects.DataClasses
             Load(DefaultMergeOption);
         }
 
-#if !NET40
-
         /// <summary>
         /// Asynchronously loads the related object or objects into the related end with the default merge option.
         /// </summary>
@@ -777,8 +775,6 @@ namespace System.Data.Entity.Core.Objects.DataClasses
             return LoadAsync(DefaultMergeOption, cancellationToken);
         }
 
-#endif
-
         /// <summary>
         /// Loads an object or objects from the related end with the specified merge option.
         /// </summary>
@@ -799,8 +795,6 @@ namespace System.Data.Entity.Core.Objects.DataClasses
         /// is <see cref="F:System.Data.Entity.Core.Objects.MergeOption.NoTracking" />.
         /// </exception>
         public abstract void Load(MergeOption mergeOption);
-
-#if !NET40
 
         /// <summary>
         /// Asynchronously loads an object or objects from the related end with the specified merge option.
@@ -832,8 +826,6 @@ namespace System.Data.Entity.Core.Objects.DataClasses
         /// is <see cref="F:System.Data.Entity.Core.Objects.MergeOption.NoTracking" />.
         /// </exception>
         public abstract Task LoadAsync(MergeOption mergeOption, CancellationToken cancellationToken);
-
-#endif
 
         internal void DeferredLoad()
         {

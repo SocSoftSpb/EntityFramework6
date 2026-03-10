@@ -10,6 +10,8 @@ namespace System.Data.Entity.Core.Metadata.Edm
 
     public class EdmXmlSchemaWriterTests
     {
+        private static readonly string _randomTypeName = typeof(Random).AssemblyQualifiedName;
+
         [Fact]
         public void WriteFunctionElementHeader_should_write_element_and_attributes()
         {
@@ -27,7 +29,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
             fixture.Writer.WriteFunctionElementHeader(function);
 
             Assert.Equal(
-                "<Function Name=\"Foo\" Aggregate=\"false\" BuiltIn=\"false\" NiladicFunction=\"false\" IsComposable=\"true\" ParameterTypeSemantics=\"AllowImplicitConversion\" Schema=\"dbo\"",
+                "<Function Name=\"Foo\" Aggregate=\"false\" Window=\"false\" BuiltIn=\"false\" NiladicFunction=\"false\" IsComposable=\"true\" ParameterTypeSemantics=\"AllowImplicitConversion\" Schema=\"dbo\"",
                 fixture.ToString());
         }
 
@@ -58,7 +60,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
             fixture.Writer.WriteFunctionElementHeader(function);
 
             Assert.Equal(
-                "<Function Name=\"Foo\" Aggregate=\"false\" BuiltIn=\"false\" NiladicFunction=\"false\" IsComposable=\"true\" ParameterTypeSemantics=\"AllowImplicitConversion\" Schema=\"dbo\" ReturnType=\"Int32\"",
+                "<Function Name=\"Foo\" Aggregate=\"false\" Window=\"false\" BuiltIn=\"false\" NiladicFunction=\"false\" IsComposable=\"true\" ParameterTypeSemantics=\"AllowImplicitConversion\" Schema=\"dbo\" ReturnType=\"Int32\"",
                 fixture.ToString());
         }
 
@@ -90,7 +92,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
             fixture.Writer.WriteFunctionElementHeader(function);
 
             Assert.Equal(
-                "<Function Name=\"Foo\" Aggregate=\"false\" BuiltIn=\"false\" NiladicFunction=\"false\" IsComposable=\"true\" ParameterTypeSemantics=\"AllowImplicitConversion\" Schema=\"dbo\"",
+                "<Function Name=\"Foo\" Aggregate=\"false\" Window=\"false\" BuiltIn=\"false\" NiladicFunction=\"false\" IsComposable=\"true\" ParameterTypeSemantics=\"AllowImplicitConversion\" Schema=\"dbo\"",
                 fixture.ToString());
         }
 
@@ -112,7 +114,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
             fixture.Writer.WriteFunctionElementHeader(function);
 
             Assert.Equal(
-                "<Function Name=\"Foo\" Aggregate=\"false\" BuiltIn=\"false\" NiladicFunction=\"false\" IsComposable=\"true\" ParameterTypeSemantics=\"AllowImplicitConversion\" Schema=\"dbo\" StoreFunctionName=\"Not Foo\"",
+                "<Function Name=\"Foo\" Aggregate=\"false\" Window=\"false\" BuiltIn=\"false\" NiladicFunction=\"false\" IsComposable=\"true\" ParameterTypeSemantics=\"AllowImplicitConversion\" Schema=\"dbo\" StoreFunctionName=\"Not Foo\"",
                 fixture.ToString());
         }
 
@@ -134,7 +136,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
             fixture.Writer.WriteFunctionElementHeader(function);
 
             Assert.Equal(
-                "<Function Name=\"Foo\" Aggregate=\"false\" BuiltIn=\"false\" NiladicFunction=\"false\" IsComposable=\"true\" ParameterTypeSemantics=\"AllowImplicitConversion\" Schema=\"dbo\"",
+                "<Function Name=\"Foo\" Aggregate=\"false\" Window=\"false\" BuiltIn=\"false\" NiladicFunction=\"false\" IsComposable=\"true\" ParameterTypeSemantics=\"AllowImplicitConversion\" Schema=\"dbo\"",
                 fixture.ToString());
         }
 
@@ -430,7 +432,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
             fixture.Writer.WriteEntityTypeElementHeader(mockEntityType.Object);
 
             Assert.Equal(
-                @"<EntityType Name=""E"" p1:ClrType=""System.Random, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089""",
+                $@"<EntityType Name=""E"" p1:ClrType=""{_randomTypeName}""",
                 fixture.ToString());
         }
 
@@ -448,7 +450,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
             fixture.Writer.WriteComplexTypeElementHeader(mockComplexType.Object);
 
             Assert.Equal(
-                @"<ComplexType Name=""C"" p1:ClrType=""System.Random, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089""",
+                $@"<ComplexType Name=""C"" p1:ClrType=""{_randomTypeName}""",
                 fixture.ToString());
         }
 
@@ -466,7 +468,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
             fixture.Writer.WriteEnumTypeElementHeader(mockEnumType.Object);
 
             Assert.Equal(
-                @"<EnumType Name=""E"" IsFlags=""false"" p1:ClrType=""System.Random, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"" UnderlyingType=""Int32""",
+                $@"<EnumType Name=""E"" IsFlags=""false"" p1:ClrType=""{_randomTypeName}"" UnderlyingType=""Int32""",
                 fixture.ToString());
         }
         
@@ -484,7 +486,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
             fixture.Writer.WriteExtendedProperties(mockEntityType.Object);
 
             Assert.Equal(
-                @"<EntityType p1:ClrType=""System.Random, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089""",
+                $@"<EntityType p1:ClrType=""{_randomTypeName}""",
                 fixture.ToString());
         }
 

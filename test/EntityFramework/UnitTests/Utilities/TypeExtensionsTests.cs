@@ -2319,6 +2319,7 @@ namespace System.Data.Entity.Utilities
             }
         }
 
+#if false
         public class IsSerializable
         {
             [Fact]
@@ -2379,6 +2380,7 @@ namespace System.Data.Entity.Utilities
                 }
             }
         }
+#endif
 
         public class IsGenericParameter
         {

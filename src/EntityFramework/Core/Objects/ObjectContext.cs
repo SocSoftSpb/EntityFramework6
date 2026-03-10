@@ -36,10 +36,8 @@ namespace System.Data.Entity.Core.Objects
     using System.Reflection;
     using System.Runtime.Versioning;
     using System.Text;
-#if !NET40
     using System.Threading;
     using System.Threading.Tasks;
-#endif
     using System.Transactions;
     using System.Collections.ObjectModel;
 
@@ -1693,8 +1691,6 @@ namespace System.Data.Entity.Core.Objects
             }
         }
 
-#if !NET40
-
         // <summary>
         // Ensures that the connection is opened for an operation that requires an open connection to the store.
         // Calls to EnsureConnection MUST be matched with a single call to ReleaseConnection.
@@ -1753,8 +1749,6 @@ namespace System.Data.Entity.Core.Objects
                 throw;
             }
         }
-
-#endif
 
         private void EnsureTransactionHandlerRegistered()
         {
@@ -2357,8 +2351,6 @@ namespace System.Data.Entity.Core.Objects
             RefreshEntities(refreshMode, new[] { entity });
         }
 
-#if !NET40
-
         /// <summary>Asynchronously updates a collection of objects in the object context with data from the database. </summary>
         /// <remarks>
         /// Multiple active operations on the same context instance are not supported.  Use 'await' to ensure
@@ -2469,8 +2461,6 @@ namespace System.Data.Entity.Core.Objects
 
             return RefreshEntitiesAsync(refreshMode, new[] { entity }, cancellationToken);
         }
-
-#endif
 
         // <summary>
         // Validates that the given entity/key pair has an ObjectStateEntry
@@ -2652,8 +2642,6 @@ namespace System.Data.Entity.Core.Objects
             return queryPlanAndNextPosition.Item2;
         }
 
-#if !NET40
-
         private async Task RefreshEntitiesAsync(RefreshMode refreshMode, IEnumerable collection, CancellationToken cancellationToken)
         {
             // refreshMode and collection should already be validated prior to this call -- collection can be empty in one Refresh overload
@@ -2802,8 +2790,6 @@ namespace System.Data.Entity.Core.Objects
             return queryPlanAndNextPosition.Item2;
         }
 
-#endif
-
         internal virtual Tuple<ObjectQueryExecutionPlan, int> PrepareRefreshQuery(
             RefreshMode refreshMode, EntitySet targetSet, List<EntityKey> targetKeys, int startFrom)
         {
@@ -2936,8 +2922,6 @@ namespace System.Data.Entity.Core.Objects
             return SaveChanges(SaveOptions.DetectChangesBeforeSave | SaveOptions.AcceptAllChangesAfterSave);
         }
 
-#if !NET40
-
         /// <summary>Asynchronously persists all updates to the database and resets change tracking in the object context.</summary>
         /// <remarks>
         /// Multiple active operations on the same context instance are not supported.  Use 'await' to ensure
@@ -2976,8 +2960,6 @@ namespace System.Data.Entity.Core.Objects
         {
             return SaveChangesAsync(SaveOptions.DetectChangesBeforeSave | SaveOptions.AcceptAllChangesAfterSave, cancellationToken);
         }
-
-#endif
 
         /// <summary>Persists all updates to the database and optionally resets change tracking in the object context.</summary>
         /// <param name="acceptChangesDuringSave">
@@ -3046,8 +3028,6 @@ namespace System.Data.Entity.Core.Objects
             ObjectStateManager.AssertAllForeignKeyIndexEntriesAreValid();
             return entriesAffected;
         }
-
-#if !NET40
 
         /// <summary>Asynchronously persists all updates to the database and optionally resets change tracking in the object context.</summary>
         /// <remarks>
@@ -3135,8 +3115,6 @@ namespace System.Data.Entity.Core.Objects
             }
         }
 
-#endif
-
         private void PrepareToSaveChanges(SaveOptions options)
         {
             if (_disposed)
@@ -3190,8 +3168,6 @@ namespace System.Data.Entity.Core.Objects
             return entriesAffected;
         }
 
-#if !NET40
-
         private async Task<int> SaveChangesToStoreAsync(
             SaveOptions options, IDbExecutionStrategy executionStrategy, bool startLocalTransaction, CancellationToken cancellationToken)
         {
@@ -3221,8 +3197,6 @@ namespace System.Data.Entity.Core.Objects
 
             return entriesAffected;
         }
-
-#endif
 
         #endregion //SaveChanges
 
@@ -3304,8 +3278,6 @@ namespace System.Data.Entity.Core.Objects
             }
         }
 
-#if !NET40
-
         // <summary>
         // An asynchronous version of ExecuteStoreQuery, which
         // executes a function in a local transaction and returns the result.
@@ -3385,8 +3357,6 @@ namespace System.Data.Entity.Core.Objects
                 // else on failure with an exception being thrown, caller generally aborts (default action with transaction without an explict commit)
             }
         }
-
-#endif
 
         /// <summary>
         /// Ensures that <see cref="T:System.Data.Entity.Core.Objects.ObjectStateEntry" /> changes are synchronized with changes in all objects that are tracked by the
@@ -4120,8 +4090,6 @@ namespace System.Data.Entity.Core.Objects
             }
         }
 
-#if !NET40
-
         /// <summary>
         /// Asynchronously executes an arbitrary command directly against the data source using the existing connection.
         /// The command is specified using the server's native query language, such as SQL.
@@ -4280,8 +4248,6 @@ namespace System.Data.Entity.Core.Objects
                 command.Dispose();
             }
         }
-
-#endif
 
         /// <summary>
         /// Executes a query directly against the data source and returns a sequence of typed results. 
@@ -4513,8 +4479,6 @@ namespace System.Data.Entity.Core.Objects
                 edmType, 
                 command);
         }
-
-#if !NET40
 
         /// <summary>
         /// Asynchronously executes a query directly against the data source and returns a sequence of typed results. 
@@ -4871,8 +4835,6 @@ namespace System.Data.Entity.Core.Objects
                 edmType,
                 command);
         }
-
-#endif
 
         /// <summary>
         /// Translates a <see cref="T:System.Data.Common.DbDataReader" /> that contains rows of entity data to objects of the requested entity type.

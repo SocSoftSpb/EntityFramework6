@@ -188,6 +188,7 @@ namespace System.Data.Entity
             return null;
         }
 
+#if false
         /// <summary>
         /// Serializes and de-serializes the given exception and returns the de-serialized instance.
         /// </summary>
@@ -205,6 +206,7 @@ namespace System.Data.Entity
             return (TException)formatter.Deserialize(stream);
 #pragma warning restore SYSLIB0011
         }
+#endif
 
         /// <summary>
         /// Asserts the specified condition to be true and throws exception if it is not.

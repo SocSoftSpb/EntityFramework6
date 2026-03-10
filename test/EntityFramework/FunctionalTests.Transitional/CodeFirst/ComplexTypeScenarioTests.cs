@@ -16,6 +16,7 @@ namespace FunctionalTests
 
     public class ComplexTypeScenarioTests : TestBase
     {
+#if COMPLEX_TYPE_REQ
         [Fact]
         public void Can_configure_complex_column_name_after_entity_splitting()
         {
@@ -26,25 +27,26 @@ namespace FunctionalTests
             modelBuilder.Entity<EntityWithColumnsRename>()
                 .Map(
                     mapping =>
-                        {
-                            mapping.ToTable("Table1");
-                            mapping.Properties(e => e.Property1);
-                        });
+                    {
+                        mapping.ToTable("Table1");
+                        mapping.Properties(e => e.Property1);
+                    });
 
             modelBuilder.Entity<EntityWithColumnsRename>()
                 .Map(
                     mapping =>
-                        {
-                            mapping.ToTable("Table2");
-                            mapping.Properties(e => e.Property2);
-                            mapping.Properties(e => e.ComplexProp);
-                        });
+                    {
+                        mapping.ToTable("Table2");
+                        mapping.Properties(e => e.Property2);
+                        mapping.Properties(e => e.ComplexProp);
+                    });
 
             var databaseMapping = BuildMapping(modelBuilder);
 
             databaseMapping.AssertValid();
             databaseMapping.Assert<EntityWithColumnsRename>("Table2").HasColumn("ColumnFor_Details");
         }
+#endif
 
         public class ComplexTypeWithColumnRename
         {
@@ -65,6 +67,7 @@ namespace FunctionalTests
             public ComplexTypeWithColumnRename ComplexProp { get; set; }
         }
 
+#if COMPLEX_TYPE_REQ
         [Fact]
         public void Complex_types_in_tpt_should_have_configuration_applied()
         {
@@ -79,6 +82,7 @@ namespace FunctionalTests
             databaseMapping.AssertValid();
             databaseMapping.Assert<Address_166889>(c => c.Street).DbEqual("test", c => c.Name);
         }
+#endif
 
         public class Person_166889
         {
@@ -101,6 +105,7 @@ namespace FunctionalTests
             public string ZipCode { get; set; }
         }
 
+#if COMPLEX_TYPE_REQ
         [Fact]
         public void Complex_types_discovered_by_convention_should_have_configuration_applied()
         {
@@ -114,9 +119,11 @@ namespace FunctionalTests
             databaseMapping.Assert<ChildComplexType>(c => c.Property).DbEqual("Foo", c => c.Name).DbEqual(
                 false,
                 c =>
-                c.Nullable);
+                    c.Nullable);
         }
+#endif
 
+#if COMPLEX_TYPE_REQ
         [Fact]
         public void Complex_property_configuration_should_configure_complex_types()
         {
@@ -135,6 +142,7 @@ namespace FunctionalTests
                 "Id", "Bar",
                 "Foo", "Foo1");
         }
+#endif
 
         [Fact]
         public void Nested_complex_types_are_discovered()
@@ -179,6 +187,7 @@ namespace FunctionalTests
                 "Foo1");
         }
 
+#if COMPLEX_TYPE_REQ
         [Fact]
         public void Complex_type_can_have_column_names_configured_whithout_altering_order()
         {
@@ -197,6 +206,7 @@ namespace FunctionalTests
                 "Id", "Bar",
                 "Foo", "Foo1");
         }
+#endif
 
         [Fact]
         public void Complex_type_and_nested_complex_type_column_names_configured_using_complex_type_configuration_throws()

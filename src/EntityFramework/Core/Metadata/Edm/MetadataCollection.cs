@@ -510,9 +510,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
         // Gets the case sensitive dictionary.
         // </summary>
         // Internal for test purpose only, do not use outside this class.
-#if !NET40
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
         internal Dictionary<string, T> GetCaseSensitiveDictionary()
         {
             if (_caseSensitiveDictionary == null
@@ -545,9 +543,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
         // Gets the case insensitive dictionary.
         // </summary>
         // Internal for test purpose only, do not use outside this class.
-#if !NET40
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
         internal Dictionary<string, int> GetCaseInsensitiveDictionary()
         {
             if (_caseInsensitiveDictionary == null
@@ -740,9 +736,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
         // Removes the item with the specified identity from the case sensitive dictionary.
         // </summary>
         // <param name="identity">The identity of the item to be removed.</param>
-#if !NET40
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
         private void RemoveFromCaseSensitiveDictionary(string identity)
         {
             Debug.Assert(_caseSensitiveDictionary != null);
@@ -756,9 +750,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
         // <summary>
         // Throws InvalidOperationException if the collection is readonly.
         // </summary>
-#if !NET40
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
         private void ThrowIfReadOnly()
         {
             if (IsReadOnly)

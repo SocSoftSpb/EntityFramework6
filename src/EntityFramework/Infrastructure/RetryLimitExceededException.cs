@@ -2,6 +2,7 @@
 
 namespace System.Data.Entity.Infrastructure
 {
+    using System.ComponentModel;
     using System.Data.Entity.Core;
     using System.Data.Entity.Resources;
     using System.Runtime.Serialization;
@@ -53,6 +54,10 @@ namespace System.Data.Entity.Infrastructure
         // <exception cref="SerializationException">
         // The class name is null or <see cref="P:System.Exception.HResult" /> is zero (0).
         // </exception>
+#if NET10_0_OR_GREATER
+        [Obsolete("This API supports obsolete formatter-based serialization. It should not be called or extended by application code.", DiagnosticId = "SYSLIB0051", UrlFormat = "https://aka.ms/dotnet-warnings/{0}")]
+#endif
+        [EditorBrowsable(EditorBrowsableState.Never)]
         private RetryLimitExceededException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {

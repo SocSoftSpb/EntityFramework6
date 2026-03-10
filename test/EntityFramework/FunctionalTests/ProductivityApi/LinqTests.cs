@@ -12411,7 +12411,7 @@ namespace ProductivityApiTests
             var queryOption = SampleEnumGitHub20.Value1;
             using (var context = new SimpleModelContext())
             {
-                int[] ids = { 1, 2, 3, 4 };
+                IList<int> ids = new[] { 1, 2, 3, 4 };
 
                 return await (from product in context.Set<Product>()
                               where ids.Contains(product.Id)
@@ -12441,7 +12441,7 @@ namespace ProductivityApiTests
             public async Task<List<Category>> ExecuteProductsQuery()
             {
                 var queryOption = SampleEnumGitHub20.Value1;
-                int[] ids = { 1, 2, 3, 4 };
+                IList<int> ids = new[] { 1, 2, 3, 4 };
                 return await (from product in Set<Product>()
                               where ids.Contains(product.Id)
                                  && queryOption == SampleEnumGitHub20.Value1
@@ -12597,7 +12597,7 @@ namespace ProductivityApiTests
             }
             catch (XunitException ex)
             {
-                Assert.Equal("Assert.Equal() Failure\r\nExpected: 5\r\nActual:   4", ex.Message, ignoreLineEndingDifferences: true);
+                Assert.Equal("Assert.Equal() Failure: Values differ\r\nExpected: 5\r\nActual:   4", ex.Message, ignoreLineEndingDifferences: true);
             }
         }
 

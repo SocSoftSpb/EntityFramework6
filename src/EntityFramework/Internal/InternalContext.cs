@@ -34,9 +34,7 @@ namespace System.Data.Entity.Internal
     using System.Threading;
     using System.Threading.Tasks;
     using SaveOptions = System.Data.Entity.Core.Objects.SaveOptions;
-#if !NET40
     using System.Runtime.CompilerServices;
-#endif
 
     // <summary>
     // An <see cref="InternalContext" /> underlies every instance of <see cref="DbContext" /> and wraps an
@@ -61,23 +59,16 @@ namespace System.Data.Entity.Internal
         public static readonly MethodInfo ExecuteSqlQueryAsIEnumeratorMethod
             = typeof(InternalContext).GetOnlyDeclaredMethod("ExecuteSqlQueryAsIEnumerator");
 
-#if !NET40
-
         public static readonly MethodInfo ExecuteSqlQueryAsIDbAsyncEnumeratorMethod
             = typeof(InternalContext).GetOnlyDeclaredMethod("ExecuteSqlQueryAsIDbAsyncEnumerator");
-#endif
 
         private static readonly ConcurrentDictionary<Type, Func<InternalContext, string, bool?, object[], IEnumerator>>
             _queryExecutors =
                 new ConcurrentDictionary<Type, Func<InternalContext, string, bool?, object[], IEnumerator>>();
 
-#if !NET40
-
         private static readonly ConcurrentDictionary<Type, Func<InternalContext, string, bool?, object[], IDbAsyncEnumerator>>
             _asyncQueryExecutors =
                 new ConcurrentDictionary<Type, Func<InternalContext, string, bool?, object[], IDbAsyncEnumerator>>();
-
-#endif
 
         private static readonly ConcurrentDictionary<Type, Func<InternalContext, IInternalSet, IInternalSetAdapter>>
             _setFactories =
@@ -442,8 +433,6 @@ namespace System.Data.Entity.Internal
             }
         }
 
-#if !NET40
-
         public virtual Task<int> SaveChangesAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -489,8 +478,6 @@ namespace System.Data.Entity.Internal
 
             return tcs.Task;
         }
-
-#endif
 
         #endregion
 
@@ -892,8 +879,6 @@ namespace System.Data.Entity.Internal
                     });
         }
 
-#if !NET40
-
         // <summary>
         // Returns an <see cref="IDbAsyncEnumerator{TElement}" /> which when enumerated will execute the given SQL query against the
         // database backing this context. The results are not materialized as entities or tracked.
@@ -920,8 +905,6 @@ namespace System.Data.Entity.Internal
                         sql, new ExecutionOptions(MergeOption.AppendOnly, streaming), cancellationToken, parameters);
                 });
         }
-
-#endif
 
         // <summary>
         // Returns an <see cref="IEnumerator" /> which when enumerated will execute the given SQL query against the
@@ -959,8 +942,6 @@ namespace System.Data.Entity.Internal
             return ExecuteSqlQuery<TElement>(sql, streaming, parameters);
         }
 
-#if !NET40
-
         // <summary>
         // Returns an <see cref="IDbAsyncEnumerator" /> which when enumerated will execute the given SQL query against the
         // database backing this context. The results are not materialized as entities or tracked.
@@ -997,8 +978,6 @@ namespace System.Data.Entity.Internal
             return ExecuteSqlQueryAsync<TElement>(sql, streaming, parameters);
         }
 
-#endif
-
         // <summary>
         // Executes the given SQL command against the database backing this context.
         // </summary>
@@ -1015,8 +994,6 @@ namespace System.Data.Entity.Internal
 
             return ObjectContext.ExecuteStoreCommand(transactionalBehavior, sql, parameters);
         }
-
-#if !NET40
 
         // <summary>
         // An asynchronous version of ExecuteSqlCommand, which
@@ -1037,8 +1014,6 @@ namespace System.Data.Entity.Internal
 
             return ObjectContext.ExecuteStoreCommandAsync(transactionalBehavior, sql, cancellationToken, parameters);
         }
-
-#endif
 
         #endregion
 
@@ -1322,9 +1297,7 @@ namespace System.Data.Entity.Internal
         // <summary>
         // Performs o-space loading for the type and returns false if the type is not in the model.
         // </summary>
-#if !NET40
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
         private bool TryUpdateEntitySetMappingsForType(Type entityType)
         {
             return GetObjectContextWithoutDatabaseInitialization().MetadataWorkspace
@@ -1337,9 +1310,7 @@ namespace System.Data.Entity.Internal
         // </summary>
         // <param name="entityType">The CLR type</param>
         // <returns>The Entity Set mapping for the given CLR type</returns>
-#if !NET40
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
         private EntitySetTypePair GetEntitySetMappingForType(Type entityType)
         {
             return GetObjectContextWithoutDatabaseInitialization().MetadataWorkspace

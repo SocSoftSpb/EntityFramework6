@@ -80,8 +80,6 @@ namespace System.Data.Entity
             return GetInternalSetWithCheck("Find").Find(keyValues);
         }
 
-#if !NET40
-
         /// <summary>
         /// Asynchronously finds an entity with the given primary key values.
         /// If an entity with the given primary key values exists in the context, then it is
@@ -130,7 +128,6 @@ namespace System.Data.Entity
         {
             return FindAsync(CancellationToken.None, keyValues);
         }
-#endif
 
         #endregion
 

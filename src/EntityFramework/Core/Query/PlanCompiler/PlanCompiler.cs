@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
-using cqt = System.Data.Entity.Core.Common.CommandTrees;
-using md = System.Data.Entity.Core.Metadata.Edm;
+using Cqt = System.Data.Entity.Core.Common.CommandTrees;
+using Md = System.Data.Entity.Core.Metadata.Edm;
 
 namespace System.Data.Entity.Core.Query.PlanCompiler
 {
@@ -122,7 +122,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         // <summary>
         // The CTree we're compiling a plan for.
         // </summary>
-        private readonly cqt.DbCommandTree m_ctree;
+        private readonly Cqt.DbCommandTree m_ctree;
 
         // <summary>
         // The ITree we're working on.
@@ -161,7 +161,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         // private constructor
         // </summary>
         // <param name="ctree"> the input cqt </param>
-        private PlanCompiler(cqt.DbCommandTree ctree)
+        private PlanCompiler(Cqt.DbCommandTree ctree)
         {
             m_ctree = ctree; // the input command tree
         }
@@ -203,8 +203,8 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         [SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters",
             MessageId = "System.Data.Entity.Core.Query.PlanCompiler.PlanCompiler.Assert(System.Boolean,System.String)")]
         internal static void Compile(
-            cqt.DbCommandTree ctree, out List<ProviderCommandInfo> providerCommands, out ColumnMap resultColumnMap, out int columnCount,
-            out Set<md.EntitySet> entitySets)
+            Cqt.DbCommandTree ctree, out List<ProviderCommandInfo> providerCommands, out ColumnMap resultColumnMap, out int columnCount,
+            out Set<Md.EntitySet> entitySets)
         {
             Assert(ctree != null, "Expected a valid, non-null Command Tree input");
             var pc = new PlanCompiler(ctree);
@@ -232,7 +232,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
 
         internal QueryOptions QueryOptions { get; private set; }
 
-        internal cqt.DbDmlOperation DmlOperation { get; private set; }
+        internal Cqt.DbDmlOperation DmlOperation { get; private set; }
 
         // <summary>
         // Keeps track of foreign key relationships. Needed by  Join Elimination
@@ -286,7 +286,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         // <summary>
         // The MetadataWorkspace
         // </summary>
-        internal md.MetadataWorkspace MetadataWorkspace
+        internal Md.MetadataWorkspace MetadataWorkspace
         {
             get { return m_ctree.MetadataWorkspace; }
         }
@@ -327,7 +327,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         [SuppressMessage("Microsoft.Performance", "CA1804:RemoveUnusedLocals", MessageId = "size", Justification = "Only used in debug mode.")]
         private void Compile(
             out List<ProviderCommandInfo> providerCommands, out ColumnMap resultColumnMap, out int columnCount,
-            out Set<md.EntitySet> entitySets)
+            out Set<Md.EntitySet> entitySets)
         {
             Initialize(); // initialize the ITree
 
@@ -366,7 +366,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
 
             // Perform any necessary preprocessing
             StructuredTypeInfo typeInfo;
-            Dictionary<md.EdmFunction, md.EdmProperty[]> tvfResultKeys;
+            Dictionary<Md.EdmFunction, Md.EdmProperty[]> tvfResultKeys;
             beforePreProcessor = SwitchToPhase(PlanCompilerPhase.PreProcessor);
             PreProcessor.Process(this, out typeInfo, out tvfResultKeys);
             entitySets = typeInfo.GetEntitySets();
@@ -584,7 +584,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         private void Initialize()
         {
             // Only support queries for now
-            var cqtree = m_ctree as cqt.DbQueryCommandTree;
+            var cqtree = m_ctree as Cqt.DbQueryCommandTree;
             Assert(cqtree != null, "Unexpected command tree kind. Only query command tree is supported.");
 
             if (cqtree != null)

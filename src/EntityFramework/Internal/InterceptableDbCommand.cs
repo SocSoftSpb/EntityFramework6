@@ -134,7 +134,6 @@ namespace System.Data.Entity.Internal
             return _dispatchers.Command.Reader(_command, interceptionContext);
         }
 
-#if !NET40
         public override Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -176,7 +175,6 @@ namespace System.Data.Entity.Internal
 
             return _dispatchers.Command.ReaderAsync(_command, interceptionContext, cancellationToken);
         }
-#endif
 
         protected override void Dispose(bool disposing)
         {

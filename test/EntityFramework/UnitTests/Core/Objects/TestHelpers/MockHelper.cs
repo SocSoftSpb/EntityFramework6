@@ -144,10 +144,20 @@ namespace System.Data.Entity.Core.Objects
                 new DbProviderInfo(GenericProviderFactory<DbProviderFactory>.Instance.InvariantProviderName, "2008"),
                 new SqlProviderManifest("2008"));
             
+            var clrEntityType = new ClrEntityType(typeof(FakeWithProps), typeof(FakeWithProps).Namespace, nameof(FakeWithProps));
+            clrEntityType.SetReadOnly();
+
             var storeItemCollectionMock = new Mock<StoreItemCollection>(model) { CallBase = true };
+            var objectItemCollectionMock = new Mock<ObjectItemCollection>() { CallBase = true };
+            objectItemCollectionMock.Object.AddInternal(clrEntityType);
             
             var metadataWorkspaceMock = new Mock<MetadataWorkspace>();
             metadataWorkspaceMock.Setup(m => m.GetItemCollection(DataSpace.SSpace)).Returns(storeItemCollectionMock.Object);
+            metadataWorkspaceMock.Setup(m => m.GetItemCollection(DataSpace.OSpace)).Returns(objectItemCollectionMock.Object);
+            metadataWorkspaceMock.Setup(m => m.GetItem<StructuralType>(It.IsAny<string>(), It.IsAny<DataSpace>())).Returns((string typeName, DataSpace dataSpace) =>
+            {
+                return clrEntityType;
+            });
             objectContextMock.Setup(m => m.MetadataWorkspace).Returns(metadataWorkspaceMock.Object);
 
             var objectStateManagerMock = new Mock<ObjectStateManager>(metadataWorkspaceMock.Object);

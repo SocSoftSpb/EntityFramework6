@@ -31,8 +31,10 @@ namespace System.Data.Entity.Migrations.Utilities
                         new XAttribute("publicKeyToken", "cc7b13ffcd2ddd51")),
                     new XElement(
                         _asm + "codeBase",
-                        new XAttribute("version", executingAssemblyName.Version.ToString()),
-                        new XAttribute("href", executingAssemblyName.CodeBase)));
+                        new XAttribute("version", executingAssemblyName.Version!.ToString()),
+#pragma warning disable SYSLIB0044
+                        new XAttribute("href", executingAssemblyName.CodeBase!)));
+#pragma warning restore SYSLIB0044
         }
 
         // <summary>

@@ -24,11 +24,7 @@ namespace System.Data.Entity.Internal.Linq
 
         string ToTraceString();
  
-#if !NET40
-
         IDbAsyncEnumerator GetAsyncEnumerator();
-
-#endif
 
         IEnumerator GetEnumerator();
     }

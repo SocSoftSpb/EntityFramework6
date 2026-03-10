@@ -91,7 +91,7 @@ namespace System.Data.Entity.Core.Common
                 TestWithDataDirectory(
                     "",
                     () => Assert.Equal(
-                        AppDomain.CurrentDomain.BaseDirectory + @"\",
+                        AppDomain.CurrentDomain.BaseDirectory,
                         DbProviderServices.ExpandDataDirectory("|DataDirectory|")));
             }
 

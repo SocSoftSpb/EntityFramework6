@@ -3,6 +3,7 @@
 namespace System.Data.Entity.Infrastructure
 {
     using System.Collections.Generic;
+    using System.ComponentModel;
     using System.Data.Entity.Core;
     using System.Data.Entity.Internal;
     using System.Data.Entity.Resources;
@@ -110,6 +111,10 @@ namespace System.Data.Entity.Infrastructure
         /// </summary>
         /// <param name="info"> The data necessary to serialize or deserialize an object. </param>
         /// <param name="context"> Description of the source and destination of the specified serialized stream. </param>
+#if NET10_0_OR_GREATER
+        [Obsolete("This API supports obsolete formatter-based serialization. It should not be called or extended by application code.", DiagnosticId = "SYSLIB0051", UrlFormat = "https://aka.ms/dotnet-warnings/{0}")]
+#endif
+        [EditorBrowsable(EditorBrowsableState.Never)]
         protected DbUpdateException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
@@ -121,6 +126,10 @@ namespace System.Data.Entity.Infrastructure
         /// </summary>
         /// <param name="info"> The <see cref="SerializationInfo" /> that holds the serialized object data about the exception being thrown. </param>
         /// <param name="context"> The <see cref="StreamingContext" /> that contains contextual information about the source or destination. </param>
+#if NET10_0_OR_GREATER
+        [Obsolete("This API supports obsolete formatter-based serialization. It should not be called or extended by application code.", DiagnosticId = "SYSLIB0051", UrlFormat = "https://aka.ms/dotnet-warnings/{0}")]
+#endif
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public override void GetObjectData(SerializationInfo info, StreamingContext context)
         {
             base.GetObjectData(info, context);

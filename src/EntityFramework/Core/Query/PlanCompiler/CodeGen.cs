@@ -1,7 +1,5 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
-using md = System.Data.Entity.Core.Metadata.Edm;
-
 //
 // The CodeGen module is responsible for translating the ITree finally into a query
 //  We assume that various tree transformations have taken place, and the tree

@@ -34,8 +34,6 @@ namespace System.Data.Entity.Infrastructure
         /// <returns>The result from the operation.</returns>
         TResult Execute<TResult>(Func<TResult> operation);
 
-#if !NET40
-
         /// <summary>
         /// Executes the specified asynchronous operation.
         /// </summary>
@@ -71,7 +69,5 @@ namespace System.Data.Entity.Infrastructure
         /// </returns>
         [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures")]
         Task<TResult> ExecuteAsync<TResult>(Func<Task<TResult>> operation, CancellationToken cancellationToken);
-
-#endif
     }
 }

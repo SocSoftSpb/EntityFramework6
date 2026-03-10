@@ -8,7 +8,6 @@ namespace System.Data.Entity.Internal
     using System.Data.Entity.Infrastructure.Interception;
     using System.Data.Entity.Resources;
     using System.Data.SqlClient;
-    using System.Data.SqlServerCe;
     using Moq;
     using Moq.Protected;
     using Xunit;
@@ -665,8 +664,8 @@ namespace System.Data.Entity.Internal
                 var connection = new LazyInternalConnection(new DbContext("LazyConnectionTest"), new DbConnectionInfo("LazyConnectionTest"))
                 )
             {
-                Assert.IsType<SqlCeConnection>(connection.Connection);
-                Assert.Equal("ConnectionFromAppConfig.sdf", connection.Connection.Database);
+                Assert.IsType<SqlConnection>(connection.Connection);
+                Assert.Equal("ConnectionFromAppConfig", connection.Connection.Database);
                 Assert.Equal("LazyConnectionTest", connection.ConnectionStringName);
                 Assert.Equal(DbConnectionStringOrigin.DbContextInfo, connection.ConnectionStringOrigin);
             }
@@ -840,7 +839,7 @@ namespace System.Data.Entity.Internal
         {
             using (var connection = new LazyInternalConnection("name=LazyConnectionTest"))
             {
-                Assert.Equal("System.Data.SqlServerCe.4.0", connection.ProviderName);
+                Assert.Equal("System.Data.SqlClient", connection.ProviderName);
             }
         }
 
@@ -850,10 +849,10 @@ namespace System.Data.Entity.Internal
             using (
                 var connection =
                     new LazyInternalConnection(
-                        new DbContext("Data Source=ConnectionFromDbConnectionInfo.sdf"),
-                        new DbConnectionInfo("Data Source=ConnectionFromDbConnectionInfo.sdf", "System.Data.SqlServerCe.4.0")))
+                    new DbContext("Database=DatabaseFromDbConnectionInfo"),
+                    new DbConnectionInfo("Database=DatabaseFromDbConnectionInfo", "System.Data.SqlClient")))
             {
-                Assert.Equal("System.Data.SqlServerCe.4.0", connection.ProviderName);
+                Assert.Equal("System.Data.SqlClient", connection.ProviderName);
             }
         }
 

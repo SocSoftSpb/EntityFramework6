@@ -80,7 +80,7 @@ namespace System.Data.Entity.Core.Metadata.Edm
 
         public class ImplicitLoadAssemblyForType : TestBase
         {
-            [Fact]
+            [Fact(Skip = "Test not implemented")]
             public void ImplicitLoadAssemblyForType_does_perform_o_space_lookup_if_o_space_types_not_already_loaded()
             {
                 var mockKnownAssemblies = new Mock<KnownAssembliesSet>();

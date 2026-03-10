@@ -280,7 +280,7 @@ namespace System.Data.Entity.ModelConfiguration
         [Fact]
         public void ModelConfiguration_has_expected_number_of_fields()
         {
-            VerifyFieldCount<ModelConfiguration>(5);
+            VerifyFieldCount<ModelConfiguration>(6);
         }
 
         [Fact]
@@ -305,7 +305,7 @@ namespace System.Data.Entity.ModelConfiguration
         [Fact]
         public void EntityTypeConfiguration_has_expected_number_of_fields()
         {
-            VerifyFieldCount<EntityTypeConfiguration>(13);
+            VerifyFieldCount<EntityTypeConfiguration>(14);
         }
 
         [Fact]
@@ -545,7 +545,7 @@ namespace System.Data.Entity.ModelConfiguration
         [Fact]
         public void PrimitivePropertyConfiguration_has_expected_number_of_fields()
         {
-            VerifyFieldCount<PrimitivePropertyConfiguration>(10);
+            VerifyFieldCount<PrimitivePropertyConfiguration>(12);
         }
 
         [Fact]

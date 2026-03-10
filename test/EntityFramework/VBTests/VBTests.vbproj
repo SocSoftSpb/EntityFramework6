@@ -3,34 +3,34 @@
   <PropertyGroup>
     <RootNamespace />
     <AssemblyName>EntityFramework.VBTests</AssemblyName>
-    <TargetFrameworks>net472;$(DefaultNetCoreTargetFramework)</TargetFrameworks>
+    <TargetFrameworks>net10.0</TargetFrameworks>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
-    <Reference Include="System.Transactions" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
-    <Content Include="$(NuGetPackageRoot)microsoft.sqlserver.types\$(MicrosoftSqlServerTypesVersion)\content\readme.htm">
-      <Link>SqlServerTypes\readme.htm</Link>
-    </Content>
-    <Content Include="$(NuGetPackageRoot)microsoft.sqlserver.types\$(MicrosoftSqlServerTypesVersion)\nativeBinaries\x64\msvcr120.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Link>SqlServerTypes\x64\msvcr120.dll</Link>
-    </Content>
-    <Content Include="$(NuGetPackageRoot)microsoft.sqlserver.types\$(MicrosoftSqlServerTypesVersion)\nativeBinaries\x64\SqlServerSpatial140.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Link>SqlServerTypes\x64\SqlServerSpatial140.dll</Link>
-    </Content>
-    <Content Include="$(NuGetPackageRoot)microsoft.sqlserver.types\$(MicrosoftSqlServerTypesVersion)\nativeBinaries\x86\msvcr120.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Link>SqlServerTypes\x86\msvcr120.dll</Link>
-    </Content>
-    <Content Include="$(NuGetPackageRoot)microsoft.sqlserver.types\$(MicrosoftSqlServerTypesVersion)\nativeBinaries\x86\SqlServerSpatial140.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Link>SqlServerTypes\x86\SqlServerSpatial140.dll</Link>
-    </Content>
-  </ItemGroup>
+  <!-- <ItemGroup Condition="'$(TargetFramework)' == 'net472'"> -->
+  <!--   <Reference Include="System.Transactions" /> -->
+  <!-- </ItemGroup> -->
+  <!-- -->
+  <!-- <ItemGroup Condition="'$(TargetFramework)' == 'net472'"> -->
+  <!--   <Content Include="$(NuGetPackageRoot)microsoft.sqlserver.types\$(MicrosoftSqlServerTypesVersion)\content\readme.htm"> -->
+  <!--     <Link>SqlServerTypes\readme.htm</Link> -->
+  <!--   </Content> -->
+  <!--   <Content Include="$(NuGetPackageRoot)microsoft.sqlserver.types\$(MicrosoftSqlServerTypesVersion)\nativeBinaries\x64\msvcr120.dll"> -->
+  <!--     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory> -->
+  <!--     <Link>SqlServerTypes\x64\msvcr120.dll</Link> -->
+  <!--   </Content> -->
+  <!--   <Content Include="$(NuGetPackageRoot)microsoft.sqlserver.types\$(MicrosoftSqlServerTypesVersion)\nativeBinaries\x64\SqlServerSpatial140.dll"> -->
+  <!--     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory> -->
+  <!--     <Link>SqlServerTypes\x64\SqlServerSpatial140.dll</Link> -->
+  <!--   </Content> -->
+  <!--   <Content Include="$(NuGetPackageRoot)microsoft.sqlserver.types\$(MicrosoftSqlServerTypesVersion)\nativeBinaries\x86\msvcr120.dll"> -->
+  <!--     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory> -->
+  <!--     <Link>SqlServerTypes\x86\msvcr120.dll</Link> -->
+  <!--   </Content> -->
+  <!--   <Content Include="$(NuGetPackageRoot)microsoft.sqlserver.types\$(MicrosoftSqlServerTypesVersion)\nativeBinaries\x86\SqlServerSpatial140.dll"> -->
+  <!--     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory> -->
+  <!--     <Link>SqlServerTypes\x86\SqlServerSpatial140.dll</Link> -->
+  <!--   </Content> -->
+  <!-- </ItemGroup> -->
 
   <ItemGroup>
     <Compile Update="VbAdvancedPatterns\AddressMf.vb">

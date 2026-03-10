@@ -32,8 +32,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
             var callExpression = Expression.Call(unsupportedMid, Expression.Constant("A"), Expression.Constant(1));
 
             Assert.Equal(
-                Strings.ELinq_UnsupportedMethodSuggestedAlternative(
-                    "System.String Mid(System.String, Int32)", "System.String Mid(System.String, Int32, Int32)"),
+                Strings.ELinq_UnsupportedMethod(unsupportedMid),
                 Assert.Throws<NotSupportedException>(() => transalter.Translate(null, callExpression)).Message);
         }
 
@@ -61,9 +60,9 @@ namespace System.Data.Entity.Core.Objects.ELinq
         [Fact]
         public void LikeTranslator_finds_all_expected_methods()
         {
-            var methods = new ExpressionConverter.MethodCallTranslator.LikeFunctionTranslator().Methods;
+            var methods = new ExpressionConverter.MethodCallTranslator.LikeFunctionTranslator().Methods.ToList();
 
-            Assert.Equal(4, methods.Count());
+            Assert.Equal(5, methods.Count());
             Assert.True(methods.All(m => m != null));
         }
 
@@ -187,9 +186,9 @@ namespace System.Data.Entity.Core.Objects.ELinq
         [Fact]
         public void StringConcatTranslator_finds_all_expected_methods()
         {
-            var methods = new ExpressionConverter.MethodCallTranslator.StringConcatTranslator().Methods;
+            var methods = new ExpressionConverter.MethodCallTranslator.StringConcatTranslator().Methods.ToList();
 
-            Assert.Equal(8, methods.Count());
+            Assert.Equal(7, methods.Count());
             Assert.True(methods.All(m => m != null));
         }
 
@@ -198,7 +197,13 @@ namespace System.Data.Entity.Core.Objects.ELinq
         {
             var methods = new ExpressionConverter.MethodCallTranslator.TrimTranslator().Methods;
 
-            Assert.Equal(1, methods.Count());
+            Assert.Equal(
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+                2
+#else
+                1
+#endif
+                , methods.Count());
             Assert.True(methods.All(m => m != null));
         }
 
@@ -207,7 +212,13 @@ namespace System.Data.Entity.Core.Objects.ELinq
         {
             var methods = new ExpressionConverter.MethodCallTranslator.TrimStartTranslator().Methods;
 
-            Assert.Equal(1, methods.Count());
+            Assert.Equal(
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+                3
+#else
+                1
+#endif
+                , methods.Count());
             Assert.True(methods.All(m => m != null));
         }
 
@@ -216,7 +227,13 @@ namespace System.Data.Entity.Core.Objects.ELinq
         {
             var methods = new ExpressionConverter.MethodCallTranslator.TrimEndTranslator().Methods;
 
-            Assert.Equal(1, methods.Count());
+            Assert.Equal(
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP
+                3
+#else
+                1
+#endif
+                , methods.Count());
             Assert.True(methods.All(m => m != null));
         }
 
@@ -262,9 +279,9 @@ namespace System.Data.Entity.Core.Objects.ELinq
         [Fact]
         public void RenameCanonicalFunctionPropertyTranslator_finds_all_expected_properties()
         {
-            var properties = new ExpressionConverter.MemberAccessTranslator.RenameCanonicalFunctionPropertyTranslator().Properties;
+            var properties = new ExpressionConverter.MemberAccessTranslator.RenameCanonicalFunctionPropertyTranslator().Properties.ToList();
 
-            Assert.Equal(7, properties.Count());
+            Assert.Equal(8, properties.Count());
             Assert.True(properties.All(p => p != null));
         }
 

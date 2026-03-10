@@ -165,11 +165,7 @@
     public sealed class DbDmlInsertOperation : DbDmlUpInsOperationBase
     {
         private IList<EdmProperty> _unmappedRequiredProperties;
-#if NET40
-        private static readonly EdmProperty[] _emptyEdmProperty = new EdmProperty[0];
-#else
         private static readonly EdmProperty[] _emptyEdmProperty = Array.Empty<EdmProperty>();
-#endif
 
         public ValueConditionMapping[] Discriminators { get; }
         public ObjectQuery FromObjectQuery { get; }

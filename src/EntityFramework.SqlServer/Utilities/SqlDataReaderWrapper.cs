@@ -6,10 +6,8 @@ namespace System.Data.Entity.SqlServer.Utilities
     using System.Data.SqlClient;
     using System.Data.SqlTypes;
     using System.IO;
-#if !NET40
     using System.Threading;
     using System.Threading.Tasks;
-#endif
     using System.Xml;
 
     // <summary>
@@ -38,8 +36,6 @@ namespace System.Data.Entity.SqlServer.Utilities
             _sqlDataReader.Dispose();
         }
 
-#if !NET40
-
         public virtual Task<T> GetFieldValueAsync<T>(int ordinal)
         {
             return _sqlDataReader.GetFieldValueAsync<T>(ordinal);
@@ -59,8 +55,6 @@ namespace System.Data.Entity.SqlServer.Utilities
         {
             return _sqlDataReader.NextResultAsync();
         }
-
-#endif
 
         public virtual void Close()
         {
@@ -117,8 +111,6 @@ namespace System.Data.Entity.SqlServer.Utilities
             return _sqlDataReader.GetBoolean(i);
         }
 
-#if !NET40
-
         public virtual XmlReader GetXmlReader(int i)
         {
             return _sqlDataReader.GetXmlReader(i);
@@ -128,8 +120,6 @@ namespace System.Data.Entity.SqlServer.Utilities
         {
             return _sqlDataReader.GetStream(i);
         }
-
-#endif
 
         public virtual byte GetByte(int i)
         {
@@ -141,14 +131,10 @@ namespace System.Data.Entity.SqlServer.Utilities
             return _sqlDataReader.GetBytes(i, dataIndex, buffer, bufferIndex, length);
         }
 
-#if !NET40
-
         public virtual TextReader GetTextReader(int i)
         {
             return _sqlDataReader.GetTextReader(i);
         }
-
-#endif
 
         public virtual char GetChar(int i)
         {
@@ -295,14 +281,10 @@ namespace System.Data.Entity.SqlServer.Utilities
             return _sqlDataReader.GetString(i);
         }
 
-#if !NET40
-
         public virtual T GetFieldValue<T>(int i)
         {
             return _sqlDataReader.GetFieldValue<T>(i);
         }
-
-#endif
 
         public virtual object GetValue(int i)
         {
@@ -339,8 +321,6 @@ namespace System.Data.Entity.SqlServer.Utilities
             return _sqlDataReader.Read();
         }
 
-#if !NET40
-
         public virtual Task<bool> NextResultAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -364,8 +344,6 @@ namespace System.Data.Entity.SqlServer.Utilities
         {
             return _sqlDataReader.GetFieldValueAsync<T>(i, cancellationToken);
         }
-
-#endif
 
         public virtual int Depth
         {

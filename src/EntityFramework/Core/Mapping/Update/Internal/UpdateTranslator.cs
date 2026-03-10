@@ -434,8 +434,6 @@ namespace System.Data.Entity.Core.Mapping.Update.Internal
             return AcceptChanges();
         }
 
-#if !NET40
-
         // <summary>
         // An asynchronous version of Update, which
         // persists state manager changes to the store.
@@ -482,8 +480,6 @@ namespace System.Data.Entity.Core.Mapping.Update.Internal
 
             return AcceptChanges();
         }
-
-#endif
 
         protected virtual IEnumerable<UpdateCommand> ProduceCommands()
         {

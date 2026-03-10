@@ -12,16 +12,19 @@ namespace System.Data.Entity
 
         private GenericProviderFactory()
         {
-            var providerTable =
-                (DataTable)
-                typeof(DbProviderFactories).GetOnlyDeclaredMethod("GetProviderTable").Invoke(null, null);
+            // var providerTable =
+            //     (DataTable)
+            //     typeof(DbProviderFactories).GetOnlyDeclaredMethod("GetProviderTable").Invoke(null, null);
+            //
+            // var row = providerTable.NewRow();
+            // row["Name"] = "GenericProviderFactory";
+            // row["InvariantName"] = InvariantProviderName;
+            // row["Description"] = "Fake GenericProviderFactory";
+            // row["AssemblyQualifiedName"] = GetType().AssemblyQualifiedName;
+            // providerTable.Rows.Add(row);
+            //
 
-            var row = providerTable.NewRow();
-            row["Name"] = "GenericProviderFactory";
-            row["InvariantName"] = InvariantProviderName;
-            row["Description"] = "Fake GenericProviderFactory";
-            row["AssemblyQualifiedName"] = GetType().AssemblyQualifiedName;
-            providerTable.Rows.Add(row);
+            DbProviderFactories.RegisterFactory(InvariantProviderName, this);
         }
 
         public string InvariantProviderName

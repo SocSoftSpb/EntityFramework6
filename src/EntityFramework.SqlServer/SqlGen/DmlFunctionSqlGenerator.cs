@@ -40,7 +40,8 @@ namespace System.Data.Entity.SqlServer.SqlGen
                     _sqlGenerator,
                     out _,
                     generateReturningSql: false,
-                    createParameters: false));
+                    createParameters: false,
+                    createParametersForParameterReference: true));
 
             sql.AppendLine();
 
@@ -57,7 +58,8 @@ namespace System.Data.Entity.SqlServer.SqlGen
                         _sqlGenerator,
                         out _,
                         generateReturningSql: false,
-                        createParameters: false));
+                        createParameters: false,
+                        createParametersForParameterReference: true));
 
                 sql.AppendLine();
             }
@@ -169,7 +171,8 @@ namespace System.Data.Entity.SqlServer.SqlGen
                     commandTrees.First(),
                     _sqlGenerator,
                     out _,
-                    generateReturningSql: false));
+                    generateReturningSql: false,
+                    createParametersForParameterReference:true));
 
             foreach (var commandTree in commandTrees.Skip(1))
             {
@@ -178,7 +181,8 @@ namespace System.Data.Entity.SqlServer.SqlGen
                         commandTree,
                         _sqlGenerator,
                         out _,
-                        generateReturningSql: false));
+                        generateReturningSql: false,
+                        createParametersForParameterReference:true));
 
                 sql.AppendLine("AND @@ROWCOUNT > 0");
                 sql.AppendLine();

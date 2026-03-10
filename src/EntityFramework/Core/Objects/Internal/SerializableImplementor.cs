@@ -3,6 +3,7 @@
 namespace System.Data.Entity.Core.Objects.Internal
 {
     using System.Collections.Generic;
+    using System.ComponentModel;
     using System.Data.Entity.Core.Metadata.Edm;
     using System.Data.Entity.Utilities;
     using System.Diagnostics;
@@ -35,7 +36,11 @@ namespace System.Data.Entity.Core.Objects.Internal
         internal SerializableImplementor(EntityType ospaceEntityType)
         {
             _baseClrType = ospaceEntityType.ClrType;
+#if NET10_0_OR_GREATER
+            _baseImplementsISerializable = false;
+#else
             _baseImplementsISerializable = _baseClrType.IsSerializable() && typeof(ISerializable).IsAssignableFrom(_baseClrType);
+#endif
 
             if (_baseImplementsISerializable)
             {

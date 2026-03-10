@@ -3,6 +3,7 @@
 namespace System.Data.Entity
 {
     using System.Collections.Generic;
+    using System.Data.Entity.Core.Metadata.Edm;
     using System.Data.Entity.Core.Objects.DataClasses;
     using System.Data.Entity.Internal;
     using Moq;
@@ -37,6 +38,10 @@ namespace System.Data.Entity
         {
             currentValues = currentValues ?? CreateSimpleValues(10);
             var entity = (FakeWithProps)currentValues.ToObject();
+
+            var clrEntityType = new ClrEntityType(typeof(FakeWithProps), typeof(FakeWithProps).Namespace, nameof(FakeWithProps));
+            clrEntityType.SetReadOnly();
+
             var mockInternalEntry = MockHelper.CreateMockInternalEntityEntry(
                 entity, new EntityReference<FakeEntity>(), new EntityCollection<FakeEntity>(), isDetached: false);
             mockInternalEntry.Setup(e => e.ValidateAndGetPropertyMetadata("ValueTypeProp", It.IsAny<Type>(), It.IsAny<Type>())).Returns(
@@ -58,6 +63,7 @@ namespace System.Data.Entity
             mockInternalEntry.Setup(e => e.GetNavigationMetadata("ComplexProp"));
             mockInternalEntry.SetupGet(e => e.CurrentValues).Returns(currentValues);
             mockInternalEntry.SetupGet(e => e.OriginalValues).Returns(originalValues ?? CreateSimpleValues(20));
+            mockInternalEntry.SetupGet(e => e.EdmEntityType).Returns(clrEntityType);
             mockInternalEntry.CallBase = true;
             return mockInternalEntry;
         }

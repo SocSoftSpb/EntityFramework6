@@ -1,8 +1,8 @@
+#if false
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
 namespace System.Data.Entity.SqlServerCompact
 {
-    using System.Data.Entity.SqlServerCompact.Resources;
     using Moq;
     using System.Data.Common;
     using System.Data.Entity.Core.Common.CommandTrees;
@@ -102,10 +102,10 @@ namespace System.Data.Entity.SqlServerCompact
             var migrationSqlGenerator = new SqlCeMigrationSqlGenerator();
 
             var column = new ColumnModel(PrimitiveTypeKind.Guid)
-                             {
-                                 Name = "Bar",
-                                 IsIdentity = true
-                             };
+            {
+                Name = "Bar",
+                IsIdentity = true
+            };
             var addColumnOperation = new AddColumnOperation("Foo", column);
 
             var sql = migrationSqlGenerator.Generate(new[] { addColumnOperation }, "4.0").Join(s => s.Sql, Environment.NewLine);
@@ -119,10 +119,10 @@ namespace System.Data.Entity.SqlServerCompact
             var migrationSqlGenerator = new SqlCeMigrationSqlGenerator();
 
             var column = new ColumnModel(PrimitiveTypeKind.Int32)
-                             {
-                                 Name = "Bar",
-                                 DefaultValue = 42
-                             };
+            {
+                Name = "Bar",
+                DefaultValue = 42
+            };
 
             var alterColumnOperation = new AlterColumnOperation("Foo", column, false);
 
@@ -143,10 +143,10 @@ ALTER TABLE [Foo] ALTER COLUMN [Bar] SET DEFAULT 42", sql);
                 = new AddColumnOperation(
                     "T",
                     new ColumnModel(PrimitiveTypeKind.Binary)
-                        {
-                            Name = "C",
-                            DefaultValue = 123.45m
-                        });
+                    {
+                        Name = "C",
+                        DefaultValue = 123.45m
+                    });
 
             var lastCulture = Thread.CurrentThread.CurrentCulture;
 
@@ -173,11 +173,11 @@ ALTER TABLE [Foo] ALTER COLUMN [Bar] SET DEFAULT 42", sql);
                 = new AddColumnOperation(
                     "T",
                     new ColumnModel(PrimitiveTypeKind.Binary)
-                        {
-                            IsNullable = false,
-                            Name = "C",
-                            IsTimestamp = true
-                        });
+                    {
+                        IsNullable = false,
+                        Name = "C",
+                        IsTimestamp = true
+                    });
 
             var sql = migrationSqlGenerator.Generate(new[] { addColumnOperation }, "4.0").Join(s => s.Sql, Environment.NewLine);
 
@@ -193,11 +193,11 @@ ALTER TABLE [Foo] ALTER COLUMN [Bar] SET DEFAULT 42", sql);
                 = new AddColumnOperation(
                     "T",
                     new ColumnModel(PrimitiveTypeKind.Binary)
-                        {
-                            IsNullable = false,
-                            Name = "C",
-                            StoreType = "RowVersion"
-                        });
+                    {
+                        IsNullable = false,
+                        Name = "C",
+                        StoreType = "RowVersion"
+                    });
 
             var sql = migrationSqlGenerator.Generate(new[] { addColumnOperation }, "4.0").Join(s => s.Sql, Environment.NewLine);
 
@@ -213,11 +213,11 @@ ALTER TABLE [Foo] ALTER COLUMN [Bar] SET DEFAULT 42", sql);
                 = new AddColumnOperation(
                     "T",
                     new ColumnModel(PrimitiveTypeKind.Binary)
-                        {
-                            IsNullable = false,
-                            Name = "C",
-                            StoreType = "timestamp"
-                        });
+                    {
+                        IsNullable = false,
+                        Name = "C",
+                        StoreType = "timestamp"
+                    });
 
             var sql = migrationSqlGenerator.Generate(new[] { addColumnOperation }, "4.0").Join(s => s.Sql, Environment.NewLine);
 
@@ -230,9 +230,9 @@ ALTER TABLE [Foo] ALTER COLUMN [Bar] SET DEFAULT 42", sql);
             var migrationSqlGenerator = new SqlCeMigrationSqlGenerator();
 
             var dropPrimaryKeyOperation = new DropPrimaryKeyOperation
-                                              {
-                                                  Table = "T"
-                                              };
+            {
+                Table = "T"
+            };
 
             var sql = migrationSqlGenerator.Generate(new[] { dropPrimaryKeyOperation }, "4.0").Join(s => s.Sql, Environment.NewLine);
 
@@ -245,10 +245,10 @@ ALTER TABLE [Foo] ALTER COLUMN [Bar] SET DEFAULT 42", sql);
             var migrationSqlGenerator = new SqlCeMigrationSqlGenerator();
 
             var addPrimaryKeyOperation = new AddPrimaryKeyOperation
-                                             {
-                                                 Table = "T",
-                                                 IsClustered = true
-                                             };
+            {
+                Table = "T",
+                IsClustered = true
+            };
 
             addPrimaryKeyOperation.Columns.Add("c1");
             addPrimaryKeyOperation.Columns.Add("c2");
@@ -264,10 +264,10 @@ ALTER TABLE [Foo] ALTER COLUMN [Bar] SET DEFAULT 42", sql);
             var migrationSqlGenerator = new SqlCeMigrationSqlGenerator();
 
             var addPrimaryKeyOperation = new AddPrimaryKeyOperation
-                                             {
-                                                 Table = "T",
-                                                 IsClustered = false
-                                             };
+            {
+                Table = "T",
+                IsClustered = false
+            };
 
             addPrimaryKeyOperation.Columns.Add("c1");
             addPrimaryKeyOperation.Columns.Add("c2");
@@ -322,10 +322,10 @@ ALTER TABLE [Foo] ALTER COLUMN [Bar] SET DEFAULT 42", sql);
 
             var createTableOperation = new CreateTableOperation("Customers");
             var column = new ColumnModel(PrimitiveTypeKind.Binary)
-                             {
-                                 Name = "Version",
-                                 IsTimestamp = true
-                             };
+            {
+                Name = "Version",
+                IsTimestamp = true
+            };
             createTableOperation.Columns.Add(column);
 
             var sql = migrationSqlGenerator.Generate(new[] { createTableOperation }, "4.0").Join(s => s.Sql, Environment.NewLine);
@@ -367,18 +367,18 @@ ALTER TABLE [Foo] ALTER COLUMN [Bar] SET DEFAULT 42", sql);
         {
             var createTableOperation = new CreateTableOperation("foo.Customers");
             var idColumn = new ColumnModel(PrimitiveTypeKind.Int32)
-                               {
-                                   Name = "Id",
-                                   IsNullable = true,
-                                   IsIdentity = true
-                               };
+            {
+                Name = "Id",
+                IsNullable = true,
+                IsIdentity = true
+            };
             createTableOperation.Columns.Add(idColumn);
             createTableOperation.Columns.Add(
                 new ColumnModel(PrimitiveTypeKind.String)
-                    {
-                        Name = "Name",
-                        IsNullable = false
-                    });
+                {
+                    Name = "Name",
+                    IsNullable = false
+                });
 
             createTableOperation.PrimaryKey = new AddPrimaryKeyOperation();
 
@@ -401,24 +401,24 @@ ALTER TABLE [Foo] ALTER COLUMN [Bar] SET DEFAULT 42", sql);
         {
             var createTableOperation = new CreateTableOperation("foo.Customers");
             var idColumn = new ColumnModel(PrimitiveTypeKind.Int32)
-                               {
-                                   Name = "Id",
-                                   IsNullable = true,
-                                   IsIdentity = true
-                               };
+            {
+                Name = "Id",
+                IsNullable = true,
+                IsIdentity = true
+            };
             createTableOperation.Columns.Add(idColumn);
             createTableOperation.Columns.Add(
                 new ColumnModel(PrimitiveTypeKind.String)
-                    {
-                        Name = "Name",
-                        IsNullable = false
-                    });
+                {
+                    Name = "Name",
+                    IsNullable = false
+                });
 
             createTableOperation.PrimaryKey
                 = new AddPrimaryKeyOperation
-                      {
-                          IsClustered = false
-                      };
+                {
+                    IsClustered = false
+                };
 
             createTableOperation.PrimaryKey.Columns.Add(idColumn.Name);
 
@@ -452,37 +452,37 @@ ALTER TABLE [Foo] ALTER COLUMN [Bar] SET DEFAULT 42", sql);
         {
             var createTableOperation = new CreateTableOperation("Customers");
             var idColumn = new ColumnModel(PrimitiveTypeKind.Int32)
-                               {
-                                   Name = "Id",
-                                   IsNullable = true,
-                                   IsIdentity = true
-                               };
+            {
+                Name = "Id",
+                IsNullable = true,
+                IsIdentity = true
+            };
             createTableOperation.Columns.Add(idColumn);
             createTableOperation.Columns.Add(
                 new ColumnModel(PrimitiveTypeKind.String)
-                    {
-                        Name = "Name",
-                        IsNullable = false
-                    });
+                {
+                    Name = "Name",
+                    IsNullable = false
+                });
             createTableOperation.PrimaryKey = new AddPrimaryKeyOperation();
             createTableOperation.PrimaryKey.Columns.Add(idColumn.Name);
 
             var migrationSqlGenerator = new SqlCeMigrationSqlGenerator();
 
             var createIndexOperation = new CreateIndexOperation
-                                           {
-                                               Table = createTableOperation.Name,
-                                               IsUnique = true
-                                           };
+            {
+                Table = createTableOperation.Name,
+                IsUnique = true
+            };
 
             createIndexOperation.Columns.Add(idColumn.Name);
 
             var sql
                 = migrationSqlGenerator.Generate(
                     new[]
-                        {
-                            createIndexOperation
-                        },
+                    {
+                        createIndexOperation
+                    },
                     "4.0").Join(s => s.Sql, Environment.NewLine);
 
             Assert.Contains(
@@ -494,38 +494,38 @@ ALTER TABLE [Foo] ALTER COLUMN [Bar] SET DEFAULT 42", sql);
         {
             var createTableOperation = new CreateTableOperation("Customers");
             var idColumn = new ColumnModel(PrimitiveTypeKind.Int32)
-                               {
-                                   Name = "Id",
-                                   IsNullable = true,
-                                   IsIdentity = true
-                               };
+            {
+                Name = "Id",
+                IsNullable = true,
+                IsIdentity = true
+            };
             createTableOperation.Columns.Add(idColumn);
             createTableOperation.Columns.Add(
                 new ColumnModel(PrimitiveTypeKind.String)
-                    {
-                        Name = "Name",
-                        IsNullable = false
-                    });
+                {
+                    Name = "Name",
+                    IsNullable = false
+                });
             createTableOperation.PrimaryKey = new AddPrimaryKeyOperation();
             createTableOperation.PrimaryKey.Columns.Add(idColumn.Name);
 
             var migrationSqlGenerator = new SqlCeMigrationSqlGenerator();
 
             var createIndexOperation = new CreateIndexOperation
-                                           {
-                                               Table = createTableOperation.Name,
-                                               IsUnique = true,
-                                               IsClustered = true
-                                           };
+            {
+                Table = createTableOperation.Name,
+                IsUnique = true,
+                IsClustered = true
+            };
 
             createIndexOperation.Columns.Add(idColumn.Name);
 
             var sql
                 = migrationSqlGenerator.Generate(
                     new[]
-                        {
-                            createIndexOperation
-                        },
+                    {
+                        createIndexOperation
+                    },
                     "4.0").Join(s => s.Sql, Environment.NewLine);
 
             Assert.Contains(
@@ -536,11 +536,11 @@ ALTER TABLE [Foo] ALTER COLUMN [Bar] SET DEFAULT 42", sql);
         public void Generate_can_output_add_fk_statement()
         {
             var addForeignKeyOperation = new AddForeignKeyOperation
-                                             {
-                                                 PrincipalTable = "Customers",
-                                                 DependentTable = "Orders",
-                                                 CascadeDelete = true
-                                             };
+            {
+                PrincipalTable = "Customers",
+                DependentTable = "Orders",
+                CascadeDelete = true
+            };
             addForeignKeyOperation.PrincipalColumns.Add("CustomerId");
             addForeignKeyOperation.DependentColumns.Add("CustomerId");
 
@@ -573,12 +573,12 @@ ALTER TABLE [Foo] ALTER COLUMN [Bar] SET DEFAULT 42", sql);
             {
                 historyContext.History.Add(
                     new HistoryRow
-                        {
-                            MigrationId = "House Lannister",
-                            ContextKey = "The pointy end",
-                            Model = new byte[0],
-                            ProductVersion = "Awesomeness"
-                        });
+                    {
+                        MigrationId = "House Lannister",
+                        ContextKey = "The pointy end",
+                        Model = new byte[0],
+                        ProductVersion = "Awesomeness"
+                    });
 
                 using (var commandTracer = new CommandTracer(historyContext))
                 {
@@ -607,10 +607,10 @@ VALUES (N'House Lannister', N'The pointy end',  0x , N'Awesomeness')", sql.Sql.T
             {
                 var historyRow
                     = new HistoryRow
-                          {
-                              MigrationId = "House Lannister",
-                              ContextKey = "The pointy end"
-                          };
+                    {
+                        MigrationId = "House Lannister",
+                        ContextKey = "The pointy end"
+                    };
 
                 historyContext.History.Attach(historyRow);
                 historyContext.History.Remove(historyRow);
@@ -639,10 +639,10 @@ WHERE (([MigrationId] = N'House Lannister') AND ([ContextKey] = N'The pointy end
             var migrationSqlGenerator = new SqlCeMigrationSqlGenerator();
 
             var column = new ColumnModel(PrimitiveTypeKind.Guid)
-                             {
-                                 Name = "Bar",
-                                 IsIdentity = true
-                             };
+            {
+                Name = "Bar",
+                IsIdentity = true
+            };
             var addColumnOperation = new AddColumnOperation("Foo", column);
 
             var sql = migrationSqlGenerator.Generate(new[] { addColumnOperation }, "4.0")
@@ -657,10 +657,10 @@ WHERE (([MigrationId] = N'House Lannister') AND ([ContextKey] = N'The pointy end
             var migrationSqlGenerator = new SqlCeMigrationSqlGenerator();
 
             var column = new ColumnModel(PrimitiveTypeKind.String)
-                             {
-                                 Name = "Bar",
-                                 StoreType = "nvarchar"
-                             };
+            {
+                Name = "Bar",
+                StoreType = "nvarchar"
+            };
             var addColumnOperation = new AddColumnOperation("Foo", column);
 
             var sql = migrationSqlGenerator.Generate(new[] { addColumnOperation }, "4.0").Join(s => s.Sql, Environment.NewLine);
@@ -692,11 +692,11 @@ WHERE (([MigrationId] = N'House Lannister') AND ([ContextKey] = N'The pointy end
             var migrationSqlGenerator = new SqlCeMigrationSqlGenerator();
 
             var column = new ColumnModel(PrimitiveTypeKind.Guid)
-                             {
-                                 Name = "Bar",
-                                 IsNullable = false,
-                                 DefaultValue = 42
-                             };
+            {
+                Name = "Bar",
+                IsNullable = false,
+                DefaultValue = 42
+            };
             var addColumnOperation = new AddColumnOperation("Foo", column);
 
             var sql = migrationSqlGenerator.Generate(new[] { addColumnOperation }, "4.0").Join(s => s.Sql, Environment.NewLine);
@@ -710,11 +710,11 @@ WHERE (([MigrationId] = N'House Lannister') AND ([ContextKey] = N'The pointy end
             var migrationSqlGenerator = new SqlCeMigrationSqlGenerator();
 
             var column = new ColumnModel(PrimitiveTypeKind.Guid)
-                             {
-                                 Name = "Bar",
-                                 IsNullable = false,
-                                 DefaultValueSql = "42"
-                             };
+            {
+                Name = "Bar",
+                IsNullable = false,
+                DefaultValueSql = "42"
+            };
             var addColumnOperation = new AddColumnOperation("Foo", column);
 
             var sql = migrationSqlGenerator.Generate(new[] { addColumnOperation }, "4.0").Join(s => s.Sql, Environment.NewLine);
@@ -728,10 +728,10 @@ WHERE (([MigrationId] = N'House Lannister') AND ([ContextKey] = N'The pointy end
             var migrationSqlGenerator = new SqlCeMigrationSqlGenerator();
 
             var column = new ColumnModel(PrimitiveTypeKind.Int32)
-                             {
-                                 Name = "Bar",
-                                 IsNullable = false
-                             };
+            {
+                Name = "Bar",
+                IsNullable = false
+            };
             var addColumnOperation = new AddColumnOperation("Foo", column);
 
             var sql = migrationSqlGenerator.Generate(new[] { addColumnOperation }, "4.0").Join(s => s.Sql, Environment.NewLine);
@@ -750,3 +750,5 @@ WHERE (([MigrationId] = N'House Lannister') AND ([ContextKey] = N'The pointy end
         }
     }
 }
+
+#endif

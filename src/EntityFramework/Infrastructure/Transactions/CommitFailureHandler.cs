@@ -15,10 +15,8 @@ namespace System.Data.Entity.Infrastructure
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Text;
-#if !NET40
     using System.Threading;
     using System.Threading.Tasks;
-#endif
 
     /// <summary>
     /// A transaction handler that allows to gracefully recover from connection failures
@@ -352,7 +350,6 @@ namespace System.Data.Entity.Infrastructure
             PruneTransactionHistory(force: true, useExecutionStrategy: true);
         }
 
-#if !NET40
         /// <summary>
         /// Asynchronously removes all the transaction history.
         /// </summary>
@@ -383,7 +380,6 @@ namespace System.Data.Entity.Infrastructure
                 PruneTransactionHistoryAsync( /*force:*/ true, /*useExecutionStrategy:*/ true, cancellationToken)
                     .WithCurrentCulture();
         }
-#endif
 
         /// <summary>
         /// Adds the specified transaction to the list of transactions that can be removed from the database
@@ -407,7 +403,6 @@ namespace System.Data.Entity.Infrastructure
             PruneTransactionHistory(force: true, useExecutionStrategy: true);
         }
 
-#if !NET40
         /// <summary>
         /// Asynchronously removes the transactions marked for deletion.
         /// </summary>
@@ -426,7 +421,6 @@ namespace System.Data.Entity.Infrastructure
         {
             return PruneTransactionHistoryAsync( /*force:*/ true, /*useExecutionStrategy:*/ true, cancellationToken);
         }
-#endif
 
         /// <summary>
         /// Removes the transactions marked for deletion if their number exceeds <see cref="PruningLimit"/>.
@@ -466,7 +460,6 @@ namespace System.Data.Entity.Infrastructure
             }
         }
 
-#if !NET40
         /// <summary>
         /// Removes the transactions marked for deletion if their number exceeds <see cref="PruningLimit"/>.
         /// </summary>
@@ -510,7 +503,6 @@ namespace System.Data.Entity.Infrastructure
                 }
             }
         }
-#endif
 
         private void PruneTransactionHistory(TransactionRow transaction)
         {

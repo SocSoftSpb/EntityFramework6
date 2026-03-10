@@ -6,7 +6,6 @@ namespace System.Data.Entity.Migrations
     using System.Data.Entity.Migrations.Design;
     using System.Data.Entity.Migrations.Sql;
     using System.Data.Entity.SqlServer;
-    using System.Data.Entity.SqlServerCompact;
     using DaFunc;
     using Moq;
     using Xunit;
@@ -70,6 +69,7 @@ namespace System.Data.Entity.Migrations
             Assert.Same(generator, migrationsConfiguration.GetSqlGenerator("Gu.Hu.Ha"));
         }
 
+#if false
         [Fact]
         public void Setting_SQL_generator_does_not_change_generator_set_in_DbConfiguration()
         {
@@ -78,6 +78,7 @@ namespace System.Data.Entity.Migrations
             Assert.IsType<SqlCeMigrationSqlGenerator>(
                 DbConfiguration.DependencyResolver.GetService<Func<MigrationSqlGenerator>>(DbProviders.SqlCe)());
         }
+#endif
 
         private class TestMigrationsConfiguration<TContext> : DbMigrationsConfiguration<TContext>
             where TContext : DbContext

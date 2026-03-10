@@ -229,8 +229,6 @@ namespace System.Data.Entity.Core.Objects.DataClasses
             // API that call (Internal void Load(IEnumerable<T>))
         }
 
-#if !NET40
-
         /// <inheritdoc />
         public override Task LoadAsync(MergeOption mergeOption, CancellationToken cancellationToken)
         {
@@ -244,8 +242,6 @@ namespace System.Data.Entity.Core.Objects.DataClasses
             // once it is fired in one level deeper, (at Internal void Load(IEnumerable<T>)), you don't need to add the event at other
             // API that call (Internal void Load(IEnumerable<T>))
         }
-
-#endif
 
         /// <summary>Defines relationships between an object and a collection of related objects in an object context.</summary>
         /// <remarks>
@@ -333,8 +329,6 @@ namespace System.Data.Entity.Core.Objects.DataClasses
             OnAssociationChanged(CollectionChangeAction.Refresh, null);
         }
 
-#if !NET40
-
         internal virtual async Task LoadAsync(List<IEntityWrapper> collection, MergeOption mergeOption, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -376,8 +370,6 @@ namespace System.Data.Entity.Core.Objects.DataClasses
             // fire the AssociationChange with Refresh
             OnAssociationChanged(CollectionChangeAction.Refresh, null);
         }
-
-#endif
 
         /// <summary>Adds an object to the collection.</summary>
         /// <param name="item">

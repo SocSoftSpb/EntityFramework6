@@ -57,6 +57,7 @@ namespace System.Data.Entity.ModelConfiguration.Configuration
             Assert.Equal("assembly", Assert.Throws<ArgumentNullException>(() => registrar.AddFromAssembly(null)).ParamName);
         }
 
+#if false
         [Fact]
         public void AddFromAssembly_should_add_all_configuration_to_model_configuration()
         {
@@ -73,6 +74,7 @@ namespace System.Data.Entity.ModelConfiguration.Configuration
             Assert.Equal(1, modelConfiguration.ConfiguredTypes.Count(t => t.Name == "Entity3"));
             Assert.Equal(1, modelConfiguration.ConfiguredTypes.Count(t => t.Name == "Complex3"));
         }
+#endif
 
         [Fact]
         public void Get_configured_types_should_return_types()

@@ -13,10 +13,7 @@ namespace System.Data.Entity.Internal.Linq
     // still implements <see cref="IQueryable{T}" />.
     // </summary>
     // <typeparam name="TElement"> The type of the element. </typeparam>
-    internal class InternalDbQuery<TElement> : DbQuery, IOrderedQueryable<TElement>
-#if !NET40
-                                               , IDbAsyncEnumerable<TElement>
-#endif
+    internal class InternalDbQuery<TElement> : DbQuery, IOrderedQueryable<TElement>, IDbAsyncEnumerable<TElement>
     {
         #region Fields and constructors
 
@@ -94,8 +91,6 @@ namespace System.Data.Entity.Internal.Linq
 
         #region IDbAsyncEnumerable implementation
 
-#if !NET40
-
         // <summary>
         // Returns an <see cref="IDbAsyncEnumerator{TEntity}" /> which when enumerated will execute the query against the database.
         // </summary>
@@ -104,8 +99,6 @@ namespace System.Data.Entity.Internal.Linq
         {
             return _internalQuery.GetAsyncEnumerator();
         }
-
-#endif
 
         #endregion
     }

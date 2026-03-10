@@ -98,13 +98,7 @@ namespace System.Data.Entity.ModelConfiguration.Configuration.Types
         /// <summary>
         /// Configured primitive properties
         /// </summary>
-        public virtual
-#if NET40
-            IDictionary<PropertyPath, PrimitivePropertyConfiguration>
-#else
-            IReadOnlyDictionary<PropertyPath, PrimitivePropertyConfiguration>
-#endif
-        PrimitiveProperties => _primitivePropertyConfigurations;
+        public virtual IReadOnlyDictionary<PropertyPath, PrimitivePropertyConfiguration> PrimitiveProperties => _primitivePropertyConfigurations;
 
         /// <summary>
         /// Ignored (not mapped) properties

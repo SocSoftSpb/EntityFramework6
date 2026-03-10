@@ -13,7 +13,6 @@ namespace System.Data.Entity.Infrastructure.DependencyResolution
     using System.Data.Entity.Internal.ConfigFile;
     using System.Data.Entity.ModelConfiguration.Internal.UnitTests;
     using System.Data.Entity.SqlServer;
-    using System.Data.Entity.SqlServerCompact;
     using System.Data.Entity.Utilities;
     using System.Globalization;
     using System.Linq;
@@ -146,11 +145,11 @@ namespace System.Data.Entity.Infrastructure.DependencyResolution
 
                 new AppConfigDependencyResolver(AppConfig.DefaultInstance, mockConfiguration.Object).GetService<IPilkington>();
 
-                Assert.Equal(3, resolvers.Count);
+                Assert.Equal(2, resolvers.Count);
 
                 Assert.IsType<FakeSqlProviderServices>(resolvers[0]);
-                Assert.IsType<SqlCeProviderServices>(resolvers[1]);
-                Assert.IsType<SqlProviderServices>(resolvers[2]);
+                // Assert.IsType<SqlCeProviderServices>(resolvers[1]);
+                Assert.IsType<SqlProviderServices>(resolvers[1]);
             }
 
             [Fact]
@@ -496,11 +495,11 @@ namespace System.Data.Entity.Infrastructure.DependencyResolution
 
                 new AppConfigDependencyResolver(AppConfig.DefaultInstance, mockConfiguration.Object).GetServices<IPilkington>();
 
-                Assert.Equal(3, resolvers.Count);
+                Assert.Equal(2, resolvers.Count);
 
                 Assert.IsType<FakeSqlProviderServices>(resolvers[0]);
-                Assert.IsType<SqlCeProviderServices>(resolvers[1]);
-                Assert.IsType<SqlProviderServices>(resolvers[2]);
+                // Assert.IsType<SqlCeProviderServices>(resolvers[1]);
+                Assert.IsType<SqlProviderServices>(resolvers[1]);
             }
 
             [Fact]

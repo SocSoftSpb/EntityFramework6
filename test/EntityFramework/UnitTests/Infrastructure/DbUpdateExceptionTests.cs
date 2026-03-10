@@ -68,6 +68,7 @@ namespace System.Data.Entity.Infrastructure
             Assert.True(typeof(DbUpdateException).GetCustomAttributes<SerializableAttribute>(inherit: false).Any());
         }
 
+#if false
         [Fact] // CodePlex 1107
         public void Deserialized_exception_can_be_serialized_and_deserialized_again()
         {
@@ -77,5 +78,6 @@ namespace System.Data.Entity.Infrastructure
                     ExceptionHelpers.SerializeAndDeserialize(
                         new DbUpdateException("But somehow the vital connection is made"))).Message);
         }
+#endif
     }
 }

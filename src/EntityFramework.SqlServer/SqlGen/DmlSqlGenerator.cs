@@ -27,7 +27,8 @@ namespace System.Data.Entity.SqlServer.SqlGen
             SqlGenerator sqlGenerator,
             out List<SqlParameter> parameters,
             bool generateReturningSql = true,
-            bool upperCaseKeywords = true)
+            bool upperCaseKeywords = true,
+            bool createParametersForParameterReference = false)
         {
             const string dummySetParameter = "@p";
 
@@ -37,7 +38,7 @@ namespace System.Data.Entity.SqlServer.SqlGen
                           UpperCaseKeywords = upperCaseKeywords
                       };
 
-            var translator = new ExpressionTranslator(commandText, tree, null != tree.Returning, sqlGenerator);
+            var translator = new ExpressionTranslator(commandText, tree, null != tree.Returning, sqlGenerator, createParametersForParameterReference: createParametersForParameterReference);
 
             if (tree.SetClauses.Count == 0)
             {
@@ -139,7 +140,8 @@ namespace System.Data.Entity.SqlServer.SqlGen
             out List<SqlParameter> parameters,
             bool generateReturningSql = true,
             bool upperCaseKeywords = true,
-            bool createParameters = true)
+            bool createParameters = true,
+            bool createParametersForParameterReference = false)
         {
             var commandText
                 = new SqlStringBuilder(CommandTextBuilderInitialCapacity)
@@ -153,7 +155,9 @@ namespace System.Data.Entity.SqlServer.SqlGen
                     tree,
                     null != tree.Returning,
                     sqlGenerator,
-                    createParameters: createParameters);
+                    createParameters: createParameters,
+                    createParametersForParameterReference : createParametersForParameterReference
+                    );
 
             var useGeneratedValuesVariable = UseGeneratedValuesVariable(tree, sqlGenerator.SqlVersion);
             var tableType = (EntityType)((DbScanExpression)tree.Target.Expression).Target.ElementType;
@@ -544,6 +548,7 @@ namespace System.Data.Entity.SqlServer.SqlGen
             private readonly SqlGenerator _sqlGenerator;
             private readonly ICollection<EdmProperty> _localVariableBindings;
             private readonly bool _createParameters;
+            private readonly bool _createParametersForParameterReference;
 
             // <summary>
             // Initialize a new expression translator populating the given string builder
@@ -558,7 +563,8 @@ namespace System.Data.Entity.SqlServer.SqlGen
                 bool preserveMemberValues,
                 SqlGenerator sqlGenerator,
                 ICollection<EdmProperty> localVariableBindings = null,
-                bool createParameters = true)
+                bool createParameters = true,
+                bool createParametersForParameterReference = false)
             {
                 DebugCheck.NotNull(commandText);
                 DebugCheck.NotNull(commandTree);
@@ -575,6 +581,7 @@ namespace System.Data.Entity.SqlServer.SqlGen
                                     : null;
 
                 _createParameters = createParameters;
+                _createParametersForParameterReference = createParametersForParameterReference;
             }
 
             internal List<SqlParameter> Parameters
@@ -708,13 +715,15 @@ namespace System.Data.Entity.SqlServer.SqlGen
             {
                 Check.NotNull(expression, "expression");
 
-                /*
-                var parameter
-                    = CreateParameter(
-                        DBNull.Value,
-                        expression.ResultType,
-                        "@" + expression.ParameterName);
-                */
+                if (_createParametersForParameterReference)
+                {
+                    var parameter
+                        = CreateParameter(
+                            null,
+                            DBNull.Value,
+                            expression.ResultType,
+                            "@" + expression.ParameterName);
+                }
 
                 _commandText.Append("@" + expression.ParameterName);
             }

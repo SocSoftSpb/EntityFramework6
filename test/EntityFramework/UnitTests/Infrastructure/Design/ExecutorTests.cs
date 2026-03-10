@@ -17,6 +17,8 @@ namespace System.Data.Entity.Infrastructure.Design
         [Fact]
         public void GetProviderServicesInternal_returns_type_name()
         {
+            var asmEntry = Assembly.GetEntryAssembly();
+
             var executor = new Executor(AssemblyFile, null);
 
             var providerServicesTypeName = executor.GetProviderServicesInternal("System.Data.SqlClient");

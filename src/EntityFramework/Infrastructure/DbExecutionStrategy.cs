@@ -198,8 +198,6 @@ namespace System.Data.Entity.Infrastructure
             }
         }
 
-#if !NET40
-
         /// <summary>
         /// Repetitively executes the specified asynchronous operation while it satisfies the current retry policy.
         /// </summary>
@@ -315,8 +313,6 @@ namespace System.Data.Entity.Infrastructure
                 await Task.Delay(delay.Value, cancellationToken).WithCurrentCulture();
             }
         }
-
-#endif
 
         private void EnsurePreexecutionState()
         {

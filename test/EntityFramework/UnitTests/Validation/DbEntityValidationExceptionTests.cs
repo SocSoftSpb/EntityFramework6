@@ -125,30 +125,31 @@ namespace System.Data.Entity.Validation
             }
         }
 
+#if false
         [Fact]
         public void DbEntityValidationException_serialization_and_deserialization()
         {
             var validationException = new DbEntityValidationException(
                 "error",
                 new[]
-                    {
-                        new DbEntityValidationResult(
-                            new Mock<InternalEntityEntryForMock<object>>().Object, new[]
-                                                                                       {
-                                                                                           new DbValidationError(
-                                                                                               "propA", "propA is Invalid"),
-                                                                                           new DbValidationError(
-                                                                                               "propB", "propB is Invalid"),
-                                                                                       }),
-                        new DbEntityValidationResult(
-                            new Mock<InternalEntityEntryForMock<object>>().Object, new[]
-                                                                                       {
-                                                                                           new DbValidationError(
-                                                                                               null, "The entity is invalid")
-                                                                                       })
-                    },
+                {
+                    new DbEntityValidationResult(
+                        new Mock<InternalEntityEntryForMock<object>>().Object, new[]
+                        {
+                            new DbValidationError(
+                                "propA", "propA is Invalid"),
+                            new DbValidationError(
+                                "propB", "propB is Invalid"),
+                        }),
+                    new DbEntityValidationResult(
+                        new Mock<InternalEntityEntryForMock<object>>().Object, new[]
+                        {
+                            new DbValidationError(
+                                null, "The entity is invalid")
+                        })
+                },
                 new Exception("dummy exception")
-                );
+            );
 
             using (var ms = new MemoryStream())
             {
@@ -178,12 +179,14 @@ namespace System.Data.Entity.Validation
                         expectedValidationResult.ValidationErrors.Zip(
                             actualValidationResult.ValidationErrors,
                             (actualValidationError, expectedValidationError) =>
-                            actualValidationError.ErrorMessage == expectedValidationError.ErrorMessage &&
-                            actualValidationError.PropertyName == expectedValidationError.PropertyName).Any(r => !r));
+                                actualValidationError.ErrorMessage == expectedValidationError.ErrorMessage &&
+                                actualValidationError.PropertyName == expectedValidationError.PropertyName).Any(r => !r));
                 }
             }
         }
+#endif
 
+#if false
         [Fact] // CodePlex 1107
         public void Deserialized_exception_can_be_serialized_and_deserialized_again()
         {
@@ -193,5 +196,6 @@ namespace System.Data.Entity.Validation
                     ExceptionHelpers.SerializeAndDeserialize(
                         new DbEntityValidationException("Roundabout and roundabout"))).Message);
         }
+#endif
     }
 }

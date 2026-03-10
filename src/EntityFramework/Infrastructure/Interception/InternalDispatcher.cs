@@ -210,7 +210,6 @@ namespace System.Data.Entity.Infrastructure.Interception
             return interceptionContext.MutableData.Result;
         }
 
-#if !NET40
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
         public Task DispatchAsync<TTarget, TInterceptionContext>(
             TTarget target,
@@ -348,6 +347,5 @@ namespace System.Data.Entity.Infrastructure.Interception
 
             return tcs.Task;
         }
-#endif
     }
 }

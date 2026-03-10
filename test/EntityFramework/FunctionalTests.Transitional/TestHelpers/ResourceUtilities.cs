@@ -83,7 +83,7 @@ namespace System.Data.Entity
                             var destinationStream = new FileStream(name, FileMode.Create, FileAccess.Write))
                         {
                             var sourceBuffer = new byte[sourceStream.Length];
-                            sourceStream.Read(sourceBuffer, 0, sourceBuffer.Length);
+                            var read = sourceStream.Read(sourceBuffer, 0, sourceBuffer.Length);
                             destinationStream.Write(sourceBuffer, 0, sourceBuffer.Length);
                         }
                     }

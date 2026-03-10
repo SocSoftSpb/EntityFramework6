@@ -26,11 +26,7 @@ namespace System.Data.Entity.Utilities
         {
             try
             {
-#if NET40
-                return assembly.GetTypes();
-#else
                 return assembly.DefinedTypes.Select(t => t.AsType());
-#endif
             }
             catch (ReflectionTypeLoadException ex)
             {
@@ -40,14 +36,5 @@ namespace System.Data.Entity.Utilities
                 return ex.Types.Where(t => t != null);
             }
         }
-
-#if NET40
-        public static IEnumerable<T> GetCustomAttributes<T>(this Assembly assembly) where T : Attribute
-        {
-            DebugCheck.NotNull(assembly);
-
-            return assembly.GetCustomAttributes(typeof(T), inherit: false).OfType<T>();
-        }
-#endif
     }
 }

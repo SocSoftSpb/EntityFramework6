@@ -332,8 +332,6 @@ namespace System.Data.Entity
             return InternalContext.SaveChanges();
         }
 
-#if !NET40
-
         /// <summary>
         /// Asynchronously saves all changes made in this context to the underlying database.
         /// </summary>
@@ -392,8 +390,6 @@ namespace System.Data.Entity
         {
             return InternalContext.SaveChangesAsync(cancellationToken);
         }
-
-#endif
 
         /// <summary>
         /// Returns the Entity Framework ObjectContext that is underlying this context.

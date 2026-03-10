@@ -462,8 +462,6 @@ namespace System.Data.Entity.Core.EntityClient
             }
         }
 
-#if !NET40
-
         /// <summary>
         /// Asynchronously moves the reader to the next result set when reading a batch of statements
         /// </summary>
@@ -488,8 +486,6 @@ namespace System.Data.Entity.Core.EntityClient
             }
         }
 
-#endif
-
         /// <summary>Advances the reader to the next record in a result set.</summary>
         /// <returns>true if there are more rows; otherwise, false.</returns>
         public override bool Read()
@@ -497,7 +493,6 @@ namespace System.Data.Entity.Core.EntityClient
             return _storeDataReader.Read();
         }
 
-#if !NET40
 
         /// <summary>
         /// Asynchronously moves the reader to the next row of the current result set
@@ -515,8 +510,6 @@ namespace System.Data.Entity.Core.EntityClient
 
             return _storeDataReader.ReadAsync(cancellationToken);
         }
-
-#endif
 
         /// <summary>
         /// Returns an <see cref="T:System.Collections.IEnumerator" /> that can be used to iterate through the rows in the data reader.

@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
-using md = System.Data.Entity.Core.Metadata.Edm;
+using Md = System.Data.Entity.Core.Metadata.Edm;
 
 //using System.Diagnostics; // Please use PlanCompiler.Assert instead of Debug.Assert in this class...
 
@@ -88,7 +88,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         // </summary>
         // <param name="type"> column datatype </param>
         // <param name="name"> column name </param>
-        private ColumnMap CreateColumnMap(md.TypeUsage type, string name)
+        private ColumnMap CreateColumnMap(Md.TypeUsage type, string name)
         {
             // For simple types, create a simple column map
             // Temporarily, handle collections exactly the same way
@@ -121,7 +121,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             if (typeInfo.HasNullSentinelProperty)
             {
                 nullSentinelColumnMap = CreateSimpleColumnMap(
-                    md.Helper.GetModelTypeUsage(typeInfo.NullSentinelProperty), c_NullSentinelColumnName);
+                    Md.Helper.GetModelTypeUsage(typeInfo.NullSentinelProperty), c_NullSentinelColumnName);
             }
 
             // Copy over information from my supertype if it already exists
@@ -140,9 +140,9 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             }
 
             // Now add on all of my "specific" properties
-            foreach (md.EdmMember property in myProperties)
+            foreach (Md.EdmMember property in myProperties)
             {
-                var propertyColumnMap = CreateColumnMap(md.Helper.GetModelTypeUsage(property), property.Name);
+                var propertyColumnMap = CreateColumnMap(Md.Helper.GetModelTypeUsage(property), property.Name);
                 propertyColumnMapList.Add(propertyColumnMap);
             }
 
@@ -199,9 +199,9 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
                     propertyColumnMapList.Add(c);
                 }
                 // Now add on all of my "specific" properties
-                foreach (md.EdmMember property in TypeHelpers.GetDeclaredStructuralMembers(typeInfo.Type))
+                foreach (Md.EdmMember property in TypeHelpers.GetDeclaredStructuralMembers(typeInfo.Type))
                 {
-                    var propertyColumnMap = CreateColumnMap(md.Helper.GetModelTypeUsage(property), property.Name);
+                    var propertyColumnMap = CreateColumnMap(Md.Helper.GetModelTypeUsage(property), property.Name);
                     propertyColumnMapList.Add(propertyColumnMap);
                 }
                 // create the entity column map w/ information from my supertype
@@ -218,25 +218,25 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
                 // build up a list of key columns
                 var keyColumnMapList = new List<SimpleColumnMap>();
                 // Create a dictionary to look up the key properties
-                var keyPropertyMap = new Dictionary<md.EdmProperty, ColumnMap>();
+                var keyPropertyMap = new Dictionary<Md.EdmProperty, ColumnMap>();
 
-                foreach (md.EdmMember property in TypeHelpers.GetDeclaredStructuralMembers(typeInfo.Type))
+                foreach (Md.EdmMember property in TypeHelpers.GetDeclaredStructuralMembers(typeInfo.Type))
                 {
-                    var propertyColumnMap = CreateColumnMap(md.Helper.GetModelTypeUsage(property), property.Name);
+                    var propertyColumnMap = CreateColumnMap(Md.Helper.GetModelTypeUsage(property), property.Name);
                     propertyColumnMapList.Add(propertyColumnMap);
                     // add property to keymap, if this property is part of the key
-                    if (md.TypeSemantics.IsPartOfKey(property))
+                    if (Md.TypeSemantics.IsPartOfKey(property))
                     {
-                        var edmProperty = property as md.EdmProperty;
+                        var edmProperty = property as Md.EdmProperty;
                         PlanCompiler.Assert(edmProperty != null, "EntityType key member is not property?");
                         keyPropertyMap[edmProperty] = propertyColumnMap;
                     }
                 }
 
                 // Build up the key list if required
-                foreach (var keyProperty in TypeHelpers.GetEdmType<md.EntityType>(typeInfo.Type).KeyMembers)
+                foreach (var keyProperty in TypeHelpers.GetEdmType<Md.EntityType>(typeInfo.Type).KeyMembers)
                 {
-                    var edmKeyProperty = keyProperty as md.EdmProperty;
+                    var edmKeyProperty = keyProperty as Md.EdmProperty;
                     PlanCompiler.Assert(edmKeyProperty != null, "EntityType key member is not property?");
                     var keyColumnMap = keyPropertyMap[edmKeyProperty] as SimpleColumnMap;
                     PlanCompiler.Assert(keyColumnMap != null, "keyColumnMap is null");
@@ -246,7 +246,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
                 //
                 // Create the entity identity. 
                 //
-                var identity = CreateEntityIdentity((md.EntityType)typeInfo.Type.EdmType, entitySetIdColumnMap, keyColumnMapList.ToArray());
+                var identity = CreateEntityIdentity((Md.EntityType)typeInfo.Type.EdmType, entitySetIdColumnMap, keyColumnMapList.ToArray());
 
                 // finally create the entity column map
                 columnMap = new EntityColumnMap(typeInfo.Type, name, propertyColumnMapList.ToArray(), identity);
@@ -301,11 +301,11 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
 
             if (includeSupertypeRelProperties)
             {
-                relProperties = m_typeInfo.RelPropertyHelper.GetRelProperties(typeInfo.Type.EdmType as md.EntityTypeBase);
+                relProperties = m_typeInfo.RelPropertyHelper.GetRelProperties(typeInfo.Type.EdmType as Md.EntityTypeBase);
             }
             else
             {
-                relProperties = m_typeInfo.RelPropertyHelper.GetDeclaredOnlyRelProperties(typeInfo.Type.EdmType as md.EntityTypeBase);
+                relProperties = m_typeInfo.RelPropertyHelper.GetDeclaredOnlyRelProperties(typeInfo.Type.EdmType as Md.EntityTypeBase);
             }
 
             //
@@ -328,9 +328,9 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         // <summary>
         // Create a column map for the entitysetid column
         // </summary>
-        private SimpleColumnMap CreateEntitySetIdColumnMap(md.EdmProperty prop)
+        private SimpleColumnMap CreateEntitySetIdColumnMap(Md.EdmProperty prop)
         {
-            return CreateSimpleColumnMap(md.Helper.GetModelTypeUsage(prop), c_EntitySetIdColumnName);
+            return CreateSimpleColumnMap(Md.Helper.GetModelTypeUsage(prop), c_EntitySetIdColumnName);
         }
 
         // <summary>
@@ -363,7 +363,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
 
             // process complex/entity types appropriately
             // use the same name for the column 
-            if (md.TypeSemantics.IsComplexType(typeInfo.Type))
+            if (Md.TypeSemantics.IsComplexType(typeInfo.Type))
             {
                 CreateComplexTypeColumnMap(rootTypeInfo, name, null, discriminatorMap, allMaps);
             }
@@ -379,7 +379,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             TypedColumnMap baseTypeColumnMap = null;
             foreach (var value in allMaps)
             {
-                if (md.TypeSemantics.IsStructurallyEqual(value.Type, typeInfo.Type))
+                if (Md.TypeSemantics.IsStructurallyEqual(value.Type, typeInfo.Type))
                 {
                     baseTypeColumnMap = value;
                     break;
@@ -404,20 +404,20 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             MessageId = "System.Data.Entity.Core.Query.PlanCompiler.PlanCompiler.Assert(System.Boolean,System.String)")]
         private RecordColumnMap CreateRecordColumnMap(TypeInfo typeInfo, string name)
         {
-            PlanCompiler.Assert(typeInfo.Type.EdmType is md.RowType, "not RowType");
+            PlanCompiler.Assert(typeInfo.Type.EdmType is Md.RowType, "not RowType");
             SimpleColumnMap nullSentinelColumnMap = null;
             if (typeInfo.HasNullSentinelProperty)
             {
                 nullSentinelColumnMap = CreateSimpleColumnMap(
-                    md.Helper.GetModelTypeUsage(typeInfo.NullSentinelProperty), c_NullSentinelColumnName);
+                    Md.Helper.GetModelTypeUsage(typeInfo.NullSentinelProperty), c_NullSentinelColumnName);
             }
 
             var properties = TypeHelpers.GetProperties(typeInfo.Type);
             var propertyColumnMapList = new ColumnMap[properties.Count];
             for (var i = 0; i < propertyColumnMapList.Length; ++i)
             {
-                md.EdmMember property = properties[i];
-                propertyColumnMapList[i] = CreateColumnMap(md.Helper.GetModelTypeUsage(property), property.Name);
+                Md.EdmMember property = properties[i];
+                propertyColumnMapList[i] = CreateColumnMap(Md.Helper.GetModelTypeUsage(property), property.Name);
             }
 
             var result = new RecordColumnMap(typeInfo.Type, name, propertyColumnMapList, nullSentinelColumnMap);
@@ -436,18 +436,18 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             if (typeInfo.HasEntitySetIdProperty)
             {
                 entitySetIdColumnMap = CreateSimpleColumnMap(
-                    md.Helper.GetModelTypeUsage(typeInfo.EntitySetIdProperty), c_EntitySetIdColumnName);
+                    Md.Helper.GetModelTypeUsage(typeInfo.EntitySetIdProperty), c_EntitySetIdColumnName);
             }
 
             // get the target entity type, 
-            var entityType = (md.EntityType)(TypeHelpers.GetEdmType<md.RefType>(typeInfo.Type).ElementType);
+            var entityType = (Md.EntityType)(TypeHelpers.GetEdmType<Md.RefType>(typeInfo.Type).ElementType);
 
             // Iterate through the list of "key" properties
             var keyColList = new SimpleColumnMap[entityType.KeyMembers.Count];
             for (var i = 0; i < keyColList.Length; ++i)
             {
                 var property = entityType.KeyMembers[i];
-                keyColList[i] = CreateSimpleColumnMap(md.Helper.GetModelTypeUsage(property), property.Name);
+                keyColList[i] = CreateSimpleColumnMap(Md.Helper.GetModelTypeUsage(property), property.Name);
             }
 
             // Create the entity identity
@@ -465,7 +465,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         // <param name="type"> Column type </param>
         // <param name="name"> column name </param>
         // <returns> Column map for this column </returns>
-        private SimpleColumnMap CreateSimpleColumnMap(md.TypeUsage type, string name)
+        private SimpleColumnMap CreateSimpleColumnMap(Md.TypeUsage type, string name)
         {
             var newVar = GetNextVar();
             SimpleColumnMap result = new VarRefColumnMap(type, name, newVar);
@@ -475,9 +475,9 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         // <summary>
         // Create a column map for the typeid column
         // </summary>
-        private SimpleColumnMap CreateTypeIdColumnMap(md.EdmProperty prop)
+        private SimpleColumnMap CreateTypeIdColumnMap(Md.EdmProperty prop)
         {
-            return CreateSimpleColumnMap(md.Helper.GetModelTypeUsage(prop), c_TypeIdColumnName);
+            return CreateSimpleColumnMap(Md.Helper.GetModelTypeUsage(prop), c_TypeIdColumnName);
         }
 
         // <summary>
@@ -485,19 +485,19 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         // </summary>
         // <param name="type"> Type info for the type </param>
         // <param name="name"> column name </param>
-        private ColumnMap CreateStructuralColumnMap(md.TypeUsage type, string name)
+        private ColumnMap CreateStructuralColumnMap(Md.TypeUsage type, string name)
         {
             // Get our augmented type information for this type
             var typeInfo = m_typeInfo.GetTypeInfo(type);
 
             // records?
-            if (md.TypeSemantics.IsRowType(type))
+            if (Md.TypeSemantics.IsRowType(type))
             {
                 return CreateRecordColumnMap(typeInfo, name);
             }
 
             // ref?
-            if (md.TypeSemantics.IsReferenceType(type))
+            if (Md.TypeSemantics.IsReferenceType(type))
             {
                 return CreateRefColumnMap(typeInfo, name);
             }
@@ -509,12 +509,12 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
             }
 
             // process complex/entity types appropriately
-            if (md.TypeSemantics.IsComplexType(type))
+            if (Md.TypeSemantics.IsComplexType(type))
             {
                 return CreateComplexTypeColumnMap(typeInfo, name, null, null, null);
             }
 
-            if (md.TypeSemantics.IsEntityType(type))
+            if (Md.TypeSemantics.IsEntityType(type))
             {
                 return CreateEntityColumnMap(typeInfo, name, null, null, null, true);
             }
@@ -533,7 +533,7 @@ namespace System.Data.Entity.Core.Query.PlanCompiler
         [SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters",
             MessageId = "System.Data.Entity.Core.Query.PlanCompiler.PlanCompiler.Assert(System.Boolean,System.String)")]
         private EntityIdentity CreateEntityIdentity(
-            md.EntityType entityType,
+            Md.EntityType entityType,
             SimpleColumnMap entitySetIdColumnMap,
             SimpleColumnMap[] keyColumnMaps)
         {

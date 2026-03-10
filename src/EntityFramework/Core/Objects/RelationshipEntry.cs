@@ -123,6 +123,8 @@ namespace System.Data.Entity.Core.Objects
             }
         }
 
+        public override bool HasEntity => false;
+
         public override EntityKey EntityKey
         {
             get

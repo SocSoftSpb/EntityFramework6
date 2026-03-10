@@ -202,16 +202,12 @@ namespace System.Data.Entity.Internal
             return ObjectContextInUse == null ? 0 : base.SaveChanges();
         }
 
-#if !NET40
-
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
             return ObjectContextInUse == null ? Task.FromResult(0) : base.SaveChangesAsync(cancellationToken);
         }
-
-#endif
 
         #endregion
 

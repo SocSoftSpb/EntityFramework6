@@ -8,7 +8,6 @@ namespace System.Data.Entity.Migrations.Utilities
     using Xunit;
 
     [Variant(DatabaseProvider.SqlClient, ProgrammingLanguage.CSharp)]
-    [Variant(DatabaseProvider.SqlServerCe, ProgrammingLanguage.CSharp)]
     public class EmptyContextTests : DbTestCase
     {
         private static readonly XNamespace _csdlNamespace

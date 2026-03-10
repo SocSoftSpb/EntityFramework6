@@ -481,14 +481,12 @@ namespace System.Data.Entity.SqlServer.SqlGen
                     case DbDmlOperationKind.Update:
                         break;
                     case DbDmlOperationKind.Insert:
-#if !NET40
                         var opInsert = (DbDmlInsertOperation)DmlOperation;
                         if (opInsert.FromObjectQuery != null)
                         {
                             paramsToForceNonUnicode = null;
                             return MakeInsertFromQuery(opInsert);
                         }
-#endif
                         break;
                     default:
                         throw new InvalidOperationException($"Unknown DML operation: {DmlOperation.Kind}.");
@@ -643,7 +641,6 @@ namespace System.Data.Entity.SqlServer.SqlGen
             }
         }
 
-#if !NET40
         private string MakeInsertFromQuery(DbDmlInsertOperation opInsert)
         {
             var insertColumnList = new StringBuilder(256);
@@ -706,7 +703,6 @@ namespace System.Data.Entity.SqlServer.SqlGen
 
             return sbCommand.ToString();
         }
-#endif
 
         // <summary>
         // Convert the SQL fragments to a string. Writes a string representing the SQL to be executed

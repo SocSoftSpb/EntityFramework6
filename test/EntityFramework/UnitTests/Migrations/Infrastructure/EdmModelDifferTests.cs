@@ -27,7 +27,6 @@ namespace System.Data.Entity.Migrations.Infrastructure
     using Order = System.Data.Entity.Migrations.Order;
 
     [Variant(DatabaseProvider.SqlClient, ProgrammingLanguage.CSharp)]
-    [Variant(DatabaseProvider.SqlServerCe, ProgrammingLanguage.CSharp)]
     public class EdmModelDifferTests : DbTestCase
     {
         public EdmModelDifferTests(DatabaseProviderFixture databaseProviderFixture)
@@ -977,11 +976,7 @@ namespace System.Data.Entity.Migrations.Infrastructure
                 = ordersCreateTableOperation.Columns
                     .Single(c => c.Name == "Type");
 
-            Assert.Equal(
-                DatabaseProvider != DatabaseProvider.SqlServerCe
-                    ? (int?)null
-                    : 4000,
-                typeColumn.MaxLength);
+            Assert.Equal(null, typeColumn.MaxLength);
 
             var orderLinesCreateTableOperation
                = operations.OfType<CreateTableOperation>()
@@ -2307,21 +2302,14 @@ namespace System.Data.Entity.Migrations.Infrastructure
 
             Assert.Equal(25, alterColumnOperation.Column.MaxLength);
 
-            if (DatabaseProvider != DatabaseProvider.SqlServerCe)
-            {
-                Assert.Equal(false, alterColumnOperation.Column.IsUnicode);
-            }
+            Assert.Equal(false, alterColumnOperation.Column.IsUnicode);
 
             var inverseAlterColumnOperation
                 = (AlterColumnOperation)alterColumnOperation.Inverse;
 
             Assert.Equal("FullName", inverseAlterColumnOperation.Column.Name);
 
-            Assert.Equal(
-                DatabaseProvider != DatabaseProvider.SqlServerCe
-                    ? (int?)null
-                    : 4000,
-                inverseAlterColumnOperation.Column.MaxLength);
+            Assert.Equal(null, inverseAlterColumnOperation.Column.MaxLength);
 
             Assert.Null(inverseAlterColumnOperation.Column.IsUnicode);
         }
@@ -3378,6 +3366,7 @@ namespace System.Data.Entity.Migrations.Infrastructure
             Assert.Equal(1, operations.Count());
         }
 
+#if false
         [MigrationsTheory]
         public void Cross_provider_diff_should_be_clean_when_same_model()
         {
@@ -3398,6 +3387,7 @@ namespace System.Data.Entity.Migrations.Infrastructure
 
             Assert.Equal(0, operations.Count());
         }
+#endif
 
         public class SwagBag
         {

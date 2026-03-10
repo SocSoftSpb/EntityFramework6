@@ -5,6 +5,7 @@ namespace System.Data.Entity.Core.Objects
     using System.Collections.Generic;
     using System.Data.Entity.Resources;
     using System.Diagnostics.CodeAnalysis;
+    using System.Globalization;
 
     /// <summary>
     /// Provides common language runtime (CLR) methods that expose EDM canonical functions
@@ -599,6 +600,28 @@ namespace System.Data.Entity.Core.Objects
         [DbFunction("Edm", "Reverse")]
         [SuppressMessage("Microsoft.Naming", "CA1720:IdentifiersShouldNotContainTypeNames", MessageId = "string")]
         public static String Reverse(String stringArgument)
+        {
+            throw new NotSupportedException(Strings.ELinq_DbFunctionDirectCall);
+        }
+
+        /// <summary>Returns the number of bytes used to represent any expression.</summary>
+        /// <returns>The number of bytes in the input value.</returns>
+        /// <param name="stringArgument">The value to be examined for data length.</param>
+        [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "stringArgument")]
+        [DbFunction("Edm", "DataLength")]
+        [SuppressMessage("Microsoft.Naming", "CA1720:IdentifiersShouldNotContainTypeNames", MessageId = "string")]
+        public static int? DataLength(string stringArgument)
+        {
+            throw new NotSupportedException(Strings.ELinq_DbFunctionDirectCall);
+        }
+
+        /// <summary>Returns the number of bytes used to represent any expression.</summary>
+        /// <returns>The number of bytes in the input value.</returns>
+        /// <param name="bytesArgument">The value to be examined for data length.</param>
+        [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "bytesArgument")]
+        [DbFunction("Edm", "DataLength")]
+        [SuppressMessage("Microsoft.Naming", "CA1720:IdentifiersShouldNotContainTypeNames", MessageId = "bytes")]
+        public static int? DataLength(byte[] bytesArgument)
         {
             throw new NotSupportedException(Strings.ELinq_DbFunctionDirectCall);
         }
@@ -1646,6 +1669,18 @@ namespace System.Data.Entity.Core.Objects
         }
 
         /// <summary>
+        /// Get time in string format HH:MM:SS
+        /// </summary>
+        /// <param name="timeValue">DateTime argument</param>
+        /// <returns>Time string in HH:MM:SS format</returns>
+        [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "timeValue")]
+        [DbFunction("Edm", "TimeToString")]
+        public static string TimeToString(DateTime? timeValue)
+        {
+            throw new NotSupportedException(Strings.ELinq_DbFunctionDirectCall);
+        }
+
+        /// <summary>
         /// When used as part of a LINQ to Entities query, this method invokes the canonical Truncate EDM function to
         /// truncate the given value to the number of specified digits.
         /// </summary>
@@ -1722,6 +1757,24 @@ namespace System.Data.Entity.Core.Objects
         }
 
         /// <summary>
+        /// When used as part of a LINQ to Entities query, this method invokes the canonical Like EDM operator to match an expression.
+        /// </summary>
+        /// <remarks>
+        /// You cannot call this function directly. This function can only appear within a LINQ to Entities query.
+        /// This function is translated to a corresponding function in the database.
+        /// </remarks>
+        /// <param name="searchString"> The string to search. </param>
+        /// <param name="pattern"> The expression to match against. </param>
+        /// <returns> True if the searched string matches the expression; otherwise false. </returns>
+        [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "searchString")]
+        [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "pattern")]
+        [SuppressMessage("Microsoft.Naming", "CA1720:IdentifiersShouldNotContainTypeNames", MessageId = "string")]
+        public static bool LikeCommon(string searchString, DbLikePattern pattern)
+        {
+            throw new NotSupportedException(Strings.ELinq_DbFunctionDirectCall);
+        }
+
+        /// <summary>
         /// When used as part of a LINQ to Entities query, this method acts as an operator that ensures the input
         /// is treated as a Unicode string.
         /// </summary>
@@ -1749,6 +1802,30 @@ namespace System.Data.Entity.Core.Objects
         public static string AsNonUnicode(string value)
         {
             return value;
+        }
+
+        /// <summary>
+        /// Determines whether an expression is a valid numeric type
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns>ISNUMERIC returns <c>true</c> when the input expression evaluates to a valid numeric data type; otherwise it returns <c>false</c></returns>
+        /// <remarks>In PostgreSql requires to create function in Database</remarks>
+        [DbFunction("Edm", "IsNumeric")]
+        public static bool IsNumeric(string value)
+        {
+            return decimal.TryParse(value, NumberStyles.Any, CultureInfo.InvariantCulture, out _);
+        }
+
+        /// <summary>
+        /// Contains for Full-Text Search
+        /// </summary>
+        /// <param name="expr">Expression to search</param>
+        /// <param name="columns">Columns list in table</param>
+        /// <returns></returns>
+        [SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "arg")]
+        public static bool FtContains(string expr, params string[] columns)
+        {
+            throw new NotSupportedException(Strings.ELinq_DbFunctionDirectCall);
         }
     }
 }

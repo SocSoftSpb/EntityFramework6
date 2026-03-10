@@ -879,11 +879,7 @@ namespace System.Data.Entity.Core.Query.InternalTrees
             {
 #if NET5_0_OR_GREATER
                 var arr = _arrayPool.Rent(length);
-#if NET5_0
-                Array.Clear(arr, 0, arr.Length);
-#else
                 Array.Clear(arr);
-#endif
                 return arr;
 #else
                 ConcurrentBag<int[]> arrays = GetBag(length);

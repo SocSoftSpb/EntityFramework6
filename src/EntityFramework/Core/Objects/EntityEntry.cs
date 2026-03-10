@@ -150,6 +150,8 @@ namespace System.Data.Entity.Core.Objects
             }
         }
 
+        public override bool HasEntity => _wrappedEntity?.Entity != null;
+
         // <summary>
         // The EntityKey associated with the ObjectStateEntry
         // </summary>

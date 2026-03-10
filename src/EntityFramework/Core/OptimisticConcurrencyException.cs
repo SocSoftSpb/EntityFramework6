@@ -3,6 +3,7 @@
 namespace System.Data.Entity.Core
 {
     using System.Collections.Generic;
+    using System.ComponentModel;
     using System.Data.Entity.Core.Objects;
     using System.Runtime.Serialization;
 
@@ -57,6 +58,10 @@ namespace System.Data.Entity.Core
         // <summary>
         // Initializes a new instance of OptimisticConcurrencyException
         // </summary>
+#if NET10_0_OR_GREATER
+        [Obsolete("This API supports obsolete formatter-based serialization. It should not be called or extended by application code.", DiagnosticId = "SYSLIB0051", UrlFormat = "https://aka.ms/dotnet-warnings/{0}")]
+#endif
+        [EditorBrowsable(EditorBrowsableState.Never)]
         private OptimisticConcurrencyException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
