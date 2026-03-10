@@ -33,7 +33,33 @@ namespace System.Data.Entity.Core.Objects.ELinq
         private readonly ConstantExpression _rootContextExpression;
         private readonly ReadOnlyCollection<ParameterExpression> _compiledQueryParameters;
         private readonly Mode _mode;
-        private readonly HashSet<Expression> _linqExpressionStack = new HashSet<Expression>();
+        private readonly LinqExpressionStack _linqExpressionStack = new();
+
+        private sealed class LinqExpressionStack
+        {
+            private List<Expression> _expressions = new List<Expression>(16);
+
+            public bool Push(Expression e)
+            {
+                foreach (var expression in _expressions)
+                {
+                    if (expression == e)
+                        return false;
+                }
+
+                _expressions.Add(e);
+                return true;
+            }
+
+            public void Pop()
+            {
+                _expressions.RemoveAt(_expressions.Count - 1);
+            }
+
+            public int Count => _expressions.Count;
+
+            public Expression this[int i] => _expressions[i];
+        }
 
         // Object parameters
         private const string s_parameterPrefix = "p__linq__";
@@ -419,7 +445,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
                 var expInStack = exp;
                 if (exp != null)
                 {
-                    if (!_funcletizer._linqExpressionStack.Add(expInStack))
+                    if (!_funcletizer._linqExpressionStack.Push(expInStack))
                     {
                         // This expression is already in the stack.
                         throw new InvalidOperationException(Strings.ELinq_CycleDetected);
@@ -440,7 +466,8 @@ namespace System.Data.Entity.Core.Objects.ELinq
                                     exp = Expression.Constant(value, value.GetType());
                             }
 
-                            if (_funcletizer.TryGetTypeUsageForTerminal(exp, out var queryParameterType))
+                            if (_funcletizer.TryGetTypeUsageForTerminal(exp, out var queryParameterType)
+                                && !IsFirstParameterOfArrayContains(exp, queryParameterType))
                             {
                                 var parameterReference = queryParameterType.Parameter(_funcletizer.GenerateParameterName());
                                 return new QueryParameterExpression(parameterReference, exp, _funcletizer._compiledQueryParameters);
@@ -458,10 +485,41 @@ namespace System.Data.Entity.Core.Objects.ELinq
                     }
                     finally
                     {
-                        _funcletizer._linqExpressionStack.Remove(expInStack);
+                        _funcletizer._linqExpressionStack.Pop();
                     }
                 }
                 return base.Visit(exp);
+            }
+
+            private bool IsFirstParameterOfArrayContains(Expression exp, TypeUsage queryParameterType)
+            {
+                if (exp.Type == typeof(byte[]))
+                {
+                    var stack = _funcletizer._linqExpressionStack;
+                    if (stack.Count < 2)
+                        return false;
+                    
+                    var prevExp = stack[^2];
+                    if (prevExp is MethodCallExpression mci)
+                    {
+                        if (mci.Method.Name == "op_Implicit")
+                        {
+                            if (stack.Count < 3)
+                                return false;
+                            prevExp = stack[^3];
+                            if (prevExp is MethodCallExpression { Method.Name: "Contains" })
+                            {
+                                return true;
+                            }
+                        }
+                        else if (mci.Method.Name == "Contains")
+                        {
+                            return true;
+                        }
+                    }
+                }
+
+                return false;
             }
 
             private static NotSupportedException InvalidCompiledQueryParameterException(Expression expression)

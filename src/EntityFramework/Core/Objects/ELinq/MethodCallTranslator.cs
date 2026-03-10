@@ -2882,7 +2882,27 @@ namespace System.Data.Entity.Core.Objects.ELinq
                 internal static DbExpression TranslateContains(
                     ExpressionConverter parent, Expression sourceExpression, Expression valueExpression)
                 {
-                    var source = parent.NormalizeSetSource(parent.TranslateExpression(sourceExpression));
+                    DbExpression translateSource;
+                    if (sourceExpression.NodeType == ExpressionType.Constant && sourceExpression.Type == typeof(byte[])
+                        && ((ConstantExpression)sourceExpression).Value is byte[] bytes)
+                    {
+                        var elementType = typeof(byte);
+                        var expressions = new List<Expression>();
+                        foreach (var o in bytes)
+                        {
+                            expressions.Add(Expression.Constant(o, elementType));
+                        }
+
+                        parent._recompileRequired = () => true;
+
+                        translateSource = parent.TranslateExpression(Expression.NewArrayInit(elementType, expressions));
+                    }
+                    else
+                    {
+                        translateSource = parent.TranslateExpression(sourceExpression);
+                    }
+
+                    var source = parent.NormalizeSetSource(translateSource);
                     var value = parent.TranslateExpression(valueExpression);
                     var sourceArgumentType = TypeSystem.GetElementType(sourceExpression.Type);
 

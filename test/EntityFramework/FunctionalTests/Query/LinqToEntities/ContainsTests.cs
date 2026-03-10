@@ -2,6 +2,7 @@
 
 namespace System.Data.Entity.Query.LinqToEntities
 {
+    using System;
     using System.Collections.Generic;
     using System.Data.Entity.Infrastructure;
     using System.Linq;
@@ -22,6 +23,7 @@ namespace System.Data.Entity.Query.LinqToEntities
             public string Title { get; set; }
             public Genre? Genre { get; set; }
             public AuthorName Author { get; set; }
+            public byte Bobo { get; set; }
         }
 
         public class AuthorName
@@ -288,8 +290,8 @@ WHERE (([Extent1].[Title] IN (N'Title1', N'Title2')) AND ([Extent1].[Title] IS N
         public void Contains_on_non_static_collection_of_enums()
         {
             const string expectedSql =
-                @"SELECT 
-CASE WHEN ( EXISTS (SELECT 
+                @"SELECT
+CASE WHEN ( EXISTS (SELECT
 	1 AS [C1]
 	FROM [dbo].[Books] AS [Extent2]
 	WHERE 0 = [Extent2].[Genre]
@@ -301,6 +303,87 @@ FROM [dbo].[Books] AS [Extent1]";
                 context.Configuration.UseDatabaseNullSemantics = true;
 
                 var query = context.Books.Select(q => context.Books.Select(b => b.Genre).Contains(Genre.Action));
+
+                QueryTestHelpers.VerifyDbQuery(query, expectedSql);
+            }
+        }
+
+        [Fact]
+        public void EnumerableContains_with_string_array_on_net10_is_translated_to_expected_sql()
+        {
+            // On .NET 10+, the C# compiler prefers Span-based overloads ("first-class spans").
+            // This means array.Contains(value) compiles to MemoryExtensions.Contains(array.AsSpan(), value)
+            // instead of Enumerable.Contains(array, value). EF6 needs to rewrite these back to
+            // Enumerable.Contains for the LINQ interpreter to work.
+            const string expectedSql =
+                @"SELECT
+[Extent1].[Id] AS [Id]
+FROM [dbo].[Books] AS [Extent1]
+WHERE [Extent1].[Title] IN (N'Title1', N'Title2')";
+
+            var array = new[] { "Title1", "Title2" };
+
+            using (var context = new UnicodeContext())
+            {
+                context.Configuration.UseDatabaseNullSemantics = true;
+
+                var query = from book in context.Books
+                            where array.Contains(book.Title)
+                            select book.Id;
+
+                QueryTestHelpers.VerifyDbQuery(query, expectedSql);
+            }
+        }
+
+        [Fact]
+        public void EnumerableContains_with_int_array_on_net10_is_translated_to_expected_sql()
+        {
+            // On .NET 10+, the C# compiler prefers Span-based overloads ("first-class spans").
+            // This means array.Contains(value) compiles to MemoryExtensions.Contains(array.AsSpan(), value)
+            // instead of Enumerable.Contains(array, value). EF6 needs to rewrite these back to
+            // Enumerable.Contains for the LINQ interpreter to work.
+            const string expectedSql =
+                @"SELECT
+[Extent1].[Id] AS [Id]
+FROM [dbo].[Books] AS [Extent1]
+WHERE [Extent1].[Id] IN (1, 2)";
+
+            var array = new[] { 1, 2 };
+
+            using (var context = new UnicodeContext())
+            {
+                context.Configuration.UseDatabaseNullSemantics = true;
+
+                var query = from book in context.Books
+                    where array.Contains(book.Id)
+                    select book.Id;
+
+                QueryTestHelpers.VerifyDbQuery(query, expectedSql);
+            }
+        }
+
+        [Fact]
+        public void EnumerableContains_with_byte_array_on_net10_is_translated_to_expected_sql()
+        {
+            // On .NET 10+, the C# compiler prefers Span-based overloads ("first-class spans").
+            // This means array.Contains(value) compiles to MemoryExtensions.Contains(array.AsSpan(), value)
+            // instead of Enumerable.Contains(array, value). EF6 needs to rewrite these back to
+            // Enumerable.Contains for the LINQ interpreter to work.
+            const string expectedSql =
+                @"SELECT
+[Extent1].[Id] AS [Id]
+FROM [dbo].[Books] AS [Extent1]
+WHERE [Extent1].[Bobo] IN (cast(1 as tinyint), cast(2 as tinyint))";
+
+            byte[] array = [1, 2];
+
+            using (var context = new UnicodeContext())
+            {
+                context.Configuration.UseDatabaseNullSemantics = true;
+
+                var query = from book in context.Books
+                    where array.Contains(book.Bobo)
+                    select book.Id;
 
                 QueryTestHelpers.VerifyDbQuery(query, expectedSql);
             }
