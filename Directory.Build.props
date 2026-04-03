@@ -2,7 +2,7 @@
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
 
   <PropertyGroup>
-    <MyEfRevision>504</MyEfRevision>
+    <MyEfRevision>505</MyEfRevision>
     <FileVersion>46.5.1.$(MyEfRevision)</FileVersion>
     <PackageVersion>6.5.1.$(MyEfRevision)</PackageVersion>
   </PropertyGroup>
