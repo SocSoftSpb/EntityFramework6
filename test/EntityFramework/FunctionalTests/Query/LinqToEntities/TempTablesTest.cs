@@ -71,6 +71,19 @@ namespace System.Data.Entity.Query.LinqToEntities
 
                 return queryProvider.CreateQuery<T>(queryExpression);
             }
+
+            public IQueryable<T> DynamicTable<T>(DynamicEntitySetOptions options)
+            {
+                if (string.IsNullOrEmpty(options.Table))
+                {
+                    throw new ArgumentException(@"Table name must be specified.", nameof(options));
+                }
+
+                var queryProvider = GetQueryProvider();
+                var queryExpression = DynamicQueryUtils.CreateDynamicQueryExpression(typeof(T), "TABLE:$", options);
+
+                return queryProvider.CreateQuery<T>(queryExpression);
+            }
         }
 
         internal static class DynamicQueryUtils
@@ -163,7 +176,8 @@ INSERT INTO #t_dynamic VALUES ('XXX', 0, 2);";
                 
                 var opts = DynamicQueryUtils.CreateDynamicQueryOptions(typeof(DynamicVersion));
                 opts.Columns[0].ColumnName = "DatabaseVersionx";
-                var dynQ = context.DynamicQuery<DynamicVersion>("TABLE:#t_dynamic", opts);
+                opts.Table = "#t_dynamic";
+                var dynQ = context.DynamicTable<DynamicVersion>(opts);
                 var strDynQ = ((ObjectQuery)dynQ).ToTraceString();
                 var lst = dynQ.AsNoTracking().ToList();
                 
@@ -204,7 +218,8 @@ INSERT INTO #t_dynamic VALUES ('XXX', 0, 2);";
                     IQueryable<Author> authors = objectContext.CreateObjectSet<Author>();
                     var options = DynamicQueryUtils.CreateDynamicQueryOptions(typeof(TempBook));
                     options.Columns[2].ColumnName = "A_Id";
-                    var dynQ = context.DynamicQuery<TempBook>("TABLE:#t_Books", options);
+                    options.Table = "#t_Books";
+                    var dynQ = context.DynamicTable<TempBook>(options);
                     var strDynQ = ((ObjectQuery)dynQ).ToTraceString();
                 
                     var toInsert = authors.Where(
@@ -222,7 +237,8 @@ INSERT INTO #t_dynamic VALUES ('XXX', 0, 2);";
                     var fromQuery = (ObjectQuery<TempBook>)toInsert;
                     if (withCache)
                         options.UniqueSetName = "UUQ_t_Books";
-                    var insertQuery = BatchDmlFactory.CreateBatchInsertDynamicTableQuery(fromQuery, "#t_Books", options, true);
+                    options.Table = "#t_Books";
+                    var insertQuery = BatchDmlFactory.CreateBatchInsertDynamicTableQuery(fromQuery, options, true);
                     var strInsert = insertQuery.ToTraceString();
                     var result = insertQuery.Execute();
 
@@ -266,7 +282,8 @@ INSERT INTO #t_dynamic VALUES ('XXX', 0, 2);";
                     var options = DynamicQueryUtils.CreateDynamicQueryOptions(typeof(TempBook));
                     if (withCache)
                         options.UniqueSetName = "UUQ_t_Books";
-                    var insertQuery = BatchDmlFactory.CreateBatchInsertDynamicTableQuery(fromQuery, "#t_Books", options, true);
+                    options.Table = "#t_Books";
+                    var insertQuery = BatchDmlFactory.CreateBatchInsertDynamicTableQuery(fromQuery, options, true);
                     var strInsert = insertQuery.ToTraceString();
                     var result = insertQuery.Execute();
 
@@ -315,7 +332,8 @@ INSERT INTO #t_dynamic VALUES ('XXX', 0, 2);";
                     var options = DynamicQueryUtils.CreateDynamicQueryOptions(typeof(TempBook));
                     if (withCache)
                         options.UniqueSetName = "UUQ_t_Books";
-                    var insertQuery = BatchDmlFactory.CreateBatchInsertDynamicTableQuery(fromQuery, "#t_Books", options, true);
+                    options.Table = "#t_Books";
+                    var insertQuery = BatchDmlFactory.CreateBatchInsertDynamicTableQuery(fromQuery, options, true);
                     var strInsert = insertQuery.ToTraceString();
                     var result = insertQuery.Execute();
 
@@ -358,7 +376,8 @@ INSERT INTO #t_dynamic VALUES ('XXX', 0, 2);";
 
                     var fromQuery = (ObjectQuery<TempBook>)toInsert;
                     var options = DynamicQueryUtils.CreateDynamicQueryOptions(typeof(TempBook));
-                    var insertQuery = BatchDmlFactory.CreateBatchInsertDynamicTableQuery(fromQuery, "#t_Books", options, true);
+                    options.Table = "#t_Books";
+                    var insertQuery = BatchDmlFactory.CreateBatchInsertDynamicTableQuery(fromQuery, options, true);
                     var strInsert = insertQuery.ToTraceString();
                     var result = insertQuery.Execute();
 
@@ -561,7 +580,8 @@ VALUES (1, 'Book 1', 1), (2, 'Book 2', 1), (3, 'Book 3', 2), (4, 'Book 4', 3)";
                     Assert.Equal(books2Cnt, toInsertCount);
                     
                     var fromQuery = (ObjectQuery<TempBook>)toInsert;
-                    var insertQuery = BatchDmlFactory.CreateBatchInsertDynamicTableQuery(fromQuery, "#t_Books", options, true);
+                    options.Table = "#t_Books";
+                    var insertQuery = BatchDmlFactory.CreateBatchInsertDynamicTableQuery(fromQuery, options, true);
                     var strInsert = insertQuery.ToTraceString();
                     var result = insertQuery.Execute();
 

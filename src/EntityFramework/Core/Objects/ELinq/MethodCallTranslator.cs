@@ -4140,21 +4140,18 @@ namespace System.Data.Entity.Core.Objects.ELinq
 
                 internal override DbExpression Translate(ExpressionConverter parent, MethodCallExpression call)
                 {
-                    Debug.Assert(4 == call.Arguments.Count);
+                    Debug.Assert(3 == call.Arguments.Count);
 
                     var entityType = call.Method.GetGenericArguments()[0];
 
                     if (!TryEvaluateAsConstantChain(call.Arguments[1], out var objValue)
-                        || !(objValue is string tableName))
-                        throw new InvalidOperationException("Argument 2 (tableName) must be a string constant.");
-                    if (!TryEvaluateAsConstantChain(call.Arguments[2], out objValue)
                         || !(objValue is DynamicEntitySetOptions tempTableOptions))
-                        throw new InvalidOperationException("Argument 3 (tempTableOptions) must be a DynamicEntitySetOptions constant.");
-                    if (!TryEvaluateAsConstantChain(call.Arguments[3], out objValue)
+                        throw new InvalidOperationException("Argument 2 (tempTableOptions) must be a DynamicEntitySetOptions constant.");
+                    if (!TryEvaluateAsConstantChain(call.Arguments[2], out objValue)
                         || !(objValue is bool withRowCount))
-                        throw new InvalidOperationException("Argument 4 (withRowCount) must be a boolean constant.");
+                        throw new InvalidOperationException("Argument 3 (withRowCount) must be a boolean constant.");
 
-                    var entitySet = DynamicSqlTranslator.CreateDynamicEntitySet(parent, entityType, "TABLE:" + tableName, tempTableOptions);
+                    var entitySet = DynamicSqlTranslator.CreateDynamicEntitySet(parent, entityType, "TABLE:$", tempTableOptions);
                     var storeSet = entitySet.DynamicEntitySetMapper.StoreEntitySet ?? entitySet;
                     var colNameMappings = entitySet.DynamicEntitySetMapper.GetDifferentColumnMappings();
 
@@ -4436,20 +4433,30 @@ namespace System.Data.Entity.Core.Objects.ELinq
 
                 if (sqlDefinition.StartsWith("TABLE:", StringComparison.Ordinal))
                 {
-                    tableName = sqlDefinition.Substring(6);
-                    var pointPos = tableName.LastIndexOf('.');
-                    if (pointPos > 0)
+                    if (sqlDefinition == "TABLE:$")
                     {
-                        schemaName = tableName.Substring(0, pointPos);
-                        tableName = tableName.Substring(pointPos + 1);
-
-                        pointPos = schemaName.LastIndexOf('.');
+                        tableName = options.Table;
+                        schemaName = options.Schema;
+                        database = options.Database;
+                    }
+                    else
+                    {
+                        tableName = sqlDefinition.Substring(6);
+                        var pointPos = tableName.LastIndexOf('.');
                         if (pointPos > 0)
                         {
-                            database = schemaName.Substring(0, pointPos);
-                            schemaName = schemaName.Substring(pointPos + 1);
+                            schemaName = tableName.Substring(0, pointPos);
+                            tableName = tableName.Substring(pointPos + 1);
+
+                            pointPos = schemaName.LastIndexOf('.');
+                            if (pointPos > 0)
+                            {
+                                database = schemaName.Substring(0, pointPos);
+                                schemaName = schemaName.Substring(pointPos + 1);
+                            }
                         }
                     }
+
                     sqlDefinition = null;
                 }
 

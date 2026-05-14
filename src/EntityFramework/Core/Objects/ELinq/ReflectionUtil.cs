@@ -486,7 +486,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
             map.Add(@"BatchDeleteJoinDynamic(IQueryable`1<T0>, DynamicEntitySetOptions, Boolean, Int32)->IQueryable`1<Int32>", SequenceMethod.BatchDeleteDynamic);
             map.Add(@"BatchUpdateDynamic(IQueryable`1<T0>, DynamicEntitySetOptions, Expression`1<Func`2<T0, T0>>, Boolean, Int32)->IQueryable`1<Int32>", SequenceMethod.BatchUpdateDynamic);
             map.Add(@"BatchUpdateJoinDynamic(IQueryable`1<T0>, DynamicEntitySetOptions, Expression`1<Func`2<T0, T1>>, Boolean, Int32)->IQueryable`1<Int32>", SequenceMethod.BatchUpdateDynamic);
-            map.Add(@"BatchInsertDynamic(IQueryable`1<T0>, String, DynamicEntitySetOptions, Boolean)->IQueryable`1<Int32>", SequenceMethod.BatchInsertDynamic);
+            map.Add(@"BatchInsertDynamic(IQueryable`1<T0>, DynamicEntitySetOptions, Boolean)->IQueryable`1<Int32>", SequenceMethod.BatchInsertDynamic);
             
             // by redirection through canonical method names, determine sequence enum value
             // for all know LINQ operators

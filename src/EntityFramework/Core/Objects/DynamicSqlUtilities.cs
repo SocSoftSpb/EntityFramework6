@@ -55,6 +55,21 @@ namespace System.Data.Entity.Core.Objects
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
         public string[] KeyMemberNames { get; set; }
+
+        /// <summary>
+        /// Table name for Dynamic Table EntitySet.
+        /// </summary>
+        public string Table { get; set; }
+
+        /// <summary>
+        /// Schema name for Dynamic Table EntitySet. Optional.
+        /// </summary>
+        public string Schema { get; set; }
+
+        /// <summary>
+        /// Database name for Dynamic Table EntitySet. Optional.
+        /// </summary>
+        public string Database { get; set; }
     }
 
     /// <summary>

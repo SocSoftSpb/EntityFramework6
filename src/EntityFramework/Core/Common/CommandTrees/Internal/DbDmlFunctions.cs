@@ -65,7 +65,7 @@ namespace System.Data.Entity.Core.Common.CommandTrees.Internal
             public IQueryProvider Provider => throw new NotImplementedException();
         }
         
-        public static IQueryable<int> BatchInsertDynamic<TSource>(IQueryable<TSource> source, string tempTableName, DynamicEntitySetOptions tempTableOptions, bool withRowCount)
+        public static IQueryable<int> BatchInsertDynamic<TSource>(IQueryable<TSource> source, DynamicEntitySetOptions tempTableOptions, bool withRowCount)
         {
             if (source is ObjectQuery<TSource> objectQuery && string.IsNullOrEmpty(tempTableOptions.UniqueSetName))
             {
@@ -75,13 +75,12 @@ namespace System.Data.Entity.Core.Common.CommandTrees.Internal
                     Expression.Call(
                         _miBatchInsertDynamic.MakeGenericMethod(typeof(TSource)),
                         Expression.Constant(wrapper, typeof(DynObjectQueryWrapper<TSource>)),
-                        Expression.Constant(tempTableName, typeof(string)),
                         Expression.Constant(tempTableOptions, typeof(DynamicEntitySetOptions)),
                         Expression.Constant(withRowCount, typeof(bool))
                     ));
             }
             
-            return EntityEnumerableExtensions.BootstrapHelper.BootstrapFunction(e => BatchInsertDynamic(e, null, null, false), source, tempTableName, tempTableOptions, withRowCount);
+            return EntityEnumerableExtensions.BootstrapHelper.BootstrapFunction(e => BatchInsertDynamic(e, null, false), source, tempTableOptions, withRowCount);
         }
         
         public static IQueryable<int> BatchUpdateDynamic<TSource>(IQueryable<TSource> source, DynamicEntitySetOptions tempTableOptions, Expression<Func<TSource, TSource>> selector, bool withRowCount, int limit)

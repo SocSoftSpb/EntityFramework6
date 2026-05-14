@@ -71,13 +71,12 @@ namespace System.Data.Entity.Core.Objects
         /// <summary>
         /// Create command for BatchInsert into Temp Table
         /// </summary>
-        public static IBatchInsertCommand CreateBatchInsertDynamicTableQuery<T>(ObjectQuery<T> queryFrom, string tempTableName, DynamicEntitySetOptions tempTableOptions, bool withRowCount)
+        public static IBatchInsertCommand CreateBatchInsertDynamicTableQuery<T>(ObjectQuery<T> queryFrom, DynamicEntitySetOptions tempTableOptions, bool withRowCount)
         {
             Check.NotNull(queryFrom, nameof(queryFrom));
-            Check.NotEmpty(tempTableName, nameof(tempTableName));
             Check.NotNull(tempTableOptions, nameof(tempTableOptions));
             
-            var q = (ObjectQuery<int>)DbDmlQueryFunctions.BatchInsertDynamic(queryFrom, tempTableName, tempTableOptions, withRowCount);
+            var q = (ObjectQuery<int>)DbDmlQueryFunctions.BatchInsertDynamic(queryFrom, tempTableOptions, withRowCount);
             return new BatchInsertCommand(q, withRowCount);
         }
 
