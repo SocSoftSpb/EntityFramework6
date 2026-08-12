@@ -226,19 +226,36 @@ namespace System.Data.Entity.Query.LinqToEntities
         [Fact]
         public void VectorParametersCanBeUsedInCompiledQueries()
         {
+            var comp = CompiledQuery.Compile<MyObjectContext, int, int, VectorParameter<int>, IEnumerable<Book>>(
+                (ctx, x, y, bookIds) => from b in ctx.CreateObjectSet<Book>()
+                    join a in ctx.CreateObjectSet<Author>().WithDefaultTableHint(TableHints.Nolock) on b.AuthorId equals a.Id
+                                        where b.Id >= x && b.Id <= y && bookIds.Contains(b.Id)
+                                        where b.AuthorId.Between(x, y)
+                                        where a.AuthorType >= AuthorType.None
+                                        // select new BookProj { Id = b.Id, Title = b.Title }
+                                        select b
+            );
+
             using (var context = new MyObjectContext())
             {
-                var comp = CompiledQuery.Compile<MyObjectContext, int, int, VectorParameter<int>, IEnumerable<BookProj>>(
-                    (ctx, x, y, bookIds) => from b in ctx.Books
-                        where b.AuthorId.Between(x, y) && bookIds.Contains(b.Id)
-                        select new BookProj { Id = b.Id, Title = b.Title }
-                );
-
+                // context.ContextOptions.ProxyCreationEnabled = false;
+                context.ContextOptions.LazyLoadingEnabled = true;
                 var vp = new VectorParameter<int>(new[] { 1, 2, 3, 4 });
                 var lst = comp(context, 2, 3, vp).ToList();
                 
                 vp = new VectorParameter<int>(new[] { 1, 2, 3, 4, 5, 6 });
                 lst = comp(context, 1, 5, vp).ToList();
+                var entities = context.ObjectStateManager.GetObjectStateEntries(EntityState.Unchanged).ToList();
+            }
+
+            using (var context2 = new MyObjectContext())
+            {
+                // context2.ContextOptions.ProxyCreationEnabled = true;
+                // context2.ContextOptions.UseCSharpNullComparisonBehavior = true;
+                context2.ContextOptions.LazyLoadingEnabled = false;
+                var vp = new VectorParameter<int>(new[] { 1, 2, 3, 4 });
+                var lst = comp(context2, 2, 3, vp).ToList();
+                var entities = context2.ObjectStateManager.GetObjectStateEntries(EntityState.Unchanged).ToList();
             }
         }
 

@@ -20,6 +20,7 @@ namespace System.Data.Entity.Core.Objects.ELinq
     {
         private readonly Guid _cacheToken;
         private readonly object[] _parameterValues;
+        private readonly ISingleCompiledPlanCache _singleCache;
         private CompiledQueryCacheEntry _cacheEntry;
         private readonly ObjectQueryExecutionPlanFactory _objectQueryExecutionPlanFactory;
 
@@ -35,13 +36,14 @@ namespace System.Data.Entity.Core.Objects.ELinq
         // <param name="parameterValues"> The values passed into the CompiledQuery delegate </param>
         internal CompiledELinqQueryState(
             Type elementType, ObjectContext context, LambdaExpression lambda, Guid cacheToken, object[] parameterValues,
-            ObjectQueryExecutionPlanFactory objectQueryExecutionPlanFactory = null)
+            ObjectQueryExecutionPlanFactory objectQueryExecutionPlanFactory = null, ISingleCompiledPlanCache singleCache = null)
             : base(elementType, context, lambda)
         {
             DebugCheck.NotNull(parameterValues);
 
             _cacheToken = cacheToken;
             _parameterValues = parameterValues;
+            _singleCache = singleCache;
 
             EnsureParameters();
             Parameters.SetReadOnly(true);
@@ -91,10 +93,10 @@ namespace System.Data.Entity.Core.Objects.ELinq
             {
                 // This instance does not yet have a reference to a cache entry.
                 // First, attempt to retrieve an existing cache entry.
-                var cacheManager = ObjectContext.MetadataWorkspace.GetQueryCacheManager();
-                var cacheKey = new CompiledQueryCacheKey(_cacheToken);
+                QueryCacheManager cacheManager = null;
+                CompiledQueryCacheKey cacheKey = null;
 
-                if (cacheManager.TryCacheLookup(cacheKey, out cacheEntry))
+                if (TryCacheLookup(out cacheEntry, ref cacheManager, ref cacheKey))
                 {
                     // An entry was found in the cache, so compute the effective merge option based on its propagated merge option,
                     // and use the UseCSharpNullComparisonBehavior flag to retrieve the corresponding execution plan.
@@ -118,12 +120,12 @@ namespace System.Data.Entity.Core.Objects.ELinq
                     // which is required in order to create the cache entry.
                     if (cacheEntry == null)
                     {
+                        cacheKey ??= new CompiledQueryCacheKey(_cacheToken);
                         // Create the cache entry using this instance's cache token and the propagated merge option (which may be null)
                         cacheEntry = new CompiledQueryCacheEntry(cacheKey, converter.PropagatedMergeOption);
 
                         // Attempt to add the entry to the cache. If an entry was added in the meantime, use that entry instead.
-                        QueryCacheEntry foundEntry;
-                        if (cacheManager.TryLookupAndAdd(cacheEntry, out foundEntry))
+                        if (TryCacheLookupAndAdd(cacheEntry, out var foundEntry, ref cacheManager))
                         {
                             cacheEntry = (CompiledQueryCacheEntry)foundEntry;
                         }
@@ -179,6 +181,38 @@ namespace System.Data.Entity.Core.Objects.ELinq
 
             Debug.Assert(plan != null, "Failed to produce an execution plan?");
             return plan;
+        }
+
+        private bool TryCacheLookupAndAdd(CompiledQueryCacheEntry entry, out QueryCacheEntry foundEntry, ref QueryCacheManager cacheManager)
+        {
+            foundEntry = null;
+            if (_singleCache != null)
+            {
+                var retVal = _singleCache.TryLookupAndAdd(entry, out var foundObj);
+                foundEntry = (CompiledQueryCacheEntry)foundObj;
+                return retVal;
+            }
+
+            cacheManager ??= ObjectContext.MetadataWorkspace.GetQueryCacheManager();
+            return cacheManager.TryLookupAndAdd(entry, out foundEntry);
+        }
+
+        private bool TryCacheLookup(out CompiledQueryCacheEntry entry, ref QueryCacheManager cacheManager, ref CompiledQueryCacheKey cacheKey)
+        {
+            entry = null;
+
+            if (_singleCache != null)
+            {
+                var p = _singleCache.Get();
+                if (p == null)
+                    return false;
+                entry = (CompiledQueryCacheEntry)p;
+                return true;
+            }
+
+            cacheManager ??= ObjectContext.MetadataWorkspace.GetQueryCacheManager();
+            cacheKey ??= new CompiledQueryCacheKey(_cacheToken);
+            return cacheManager.TryCacheLookup(cacheKey, out entry);
         }
 
         // <summary>

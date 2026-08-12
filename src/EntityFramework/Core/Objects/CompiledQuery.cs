@@ -21,6 +21,7 @@ namespace System.Data.Entity.Core.Objects
         //       so it won't have any thread safety concerns
         private readonly LambdaExpression _query;
         private readonly Guid _cacheToken = Guid.NewGuid();
+        private readonly ISingleCompiledPlanCache _singleCache;
 
         // <summary>
         // Constructs a new compiled query instance which hosts the delegate returned to the user
@@ -35,6 +36,11 @@ namespace System.Data.Entity.Core.Objects
             var funcletizer = Funcletizer.CreateCompiledQueryLockdownFuncletizer();
             Func<bool> recompiledRequire;
             _query = (LambdaExpression)funcletizer.Funcletize(query, out recompiledRequire);
+        }
+
+        private CompiledQuery(LambdaExpression query, ISingleCompiledPlanCache planCache) : this(query)
+        {
+            _singleCache = planCache;
         }
 
         /// <summary>Creates a new delegate that represents the compiled LINQ to Entities query.</summary>
@@ -535,6 +541,103 @@ namespace System.Data.Entity.Core.Objects
             return new CompiledQuery(query).Invoke<TArg0, TResult>;
         }
 
+        /// <summary>Creates a new delegate that represents the compiled LINQ to Entities query.</summary>
+        /// <returns>
+        /// <see cref="T:System.Func`2" />, a generic delegate that represents the compiled LINQ to Entities query.
+        /// </returns>
+        /// <param name="planCache">Single plan cache holder</param>
+        /// <param name="query">The lambda expression to compile.</param>
+        /// <typeparam name="TArg0">
+        /// A type derived from <see cref="T:System.Data.Entity.Core.Objects.ObjectContext" />.
+        /// </typeparam>
+        /// <typeparam name="TResult">
+        /// The type  T  of the query results returned by executing the delegate returned by the
+        /// <see
+        ///     cref="M:System.Data.Entity.Core.Objects.CompiledQuery.Compile``2(System.Linq.Expressions.Expression{System.Func{``0,``1}})" />
+        /// method.
+        /// </typeparam>
+        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures")]
+        [SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters", Justification = "required for this feature")]
+        public static Func<TArg0, TResult> CompileEx<TArg0, TResult>(ISingleCompiledPlanCache planCache, Expression<Func<TArg0, TResult>> query) where TArg0 : ObjectContext
+        {
+            return new CompiledQuery(query, planCache).Invoke<TArg0, TResult>;
+        }
+
+        public static Func<TArg0, TArg1, TResult> CompileEx<TArg0, TArg1, TResult>(ISingleCompiledPlanCache planCache, Expression<Func<TArg0, TArg1, TResult>> query) where TArg0 : ObjectContext
+        {
+            return new CompiledQuery(query, planCache).Invoke<TArg0, TArg1, TResult>;
+        }
+
+        public static Func<TArg0, TArg1, TArg2, TResult> CompileEx<TArg0, TArg1, TArg2, TResult>(ISingleCompiledPlanCache planCache, Expression<Func<TArg0, TArg1, TArg2, TResult>> query) where TArg0 : ObjectContext
+        {
+            return new CompiledQuery(query, planCache).Invoke<TArg0, TArg1, TArg2, TResult>;
+        }
+
+        public static Func<TArg0, TArg1, TArg2, TArg3, TResult> CompileEx<TArg0, TArg1, TArg2, TArg3, TResult>(ISingleCompiledPlanCache planCache, Expression<Func<TArg0, TArg1, TArg2, TArg3, TResult>> query) where TArg0 : ObjectContext
+        {
+            return new CompiledQuery(query, planCache).Invoke<TArg0, TArg1, TArg2, TArg3, TResult>;
+        }
+
+        public static Func<TArg0, TArg1, TArg2, TArg3, TArg4, TResult> CompileEx<TArg0, TArg1, TArg2, TArg3, TArg4, TResult>(ISingleCompiledPlanCache planCache, Expression<Func<TArg0, TArg1, TArg2, TArg3, TArg4, TResult>> query) where TArg0 : ObjectContext
+        {
+            return new CompiledQuery(query, planCache).Invoke<TArg0, TArg1, TArg2, TArg3, TArg4, TResult>;
+        }
+
+        public static Func<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TResult> CompileEx<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TResult>(ISingleCompiledPlanCache planCache, Expression<Func<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TResult>> query) where TArg0 : ObjectContext
+        {
+            return new CompiledQuery(query, planCache).Invoke<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TResult>;
+        }
+
+        public static Func<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TResult> CompileEx<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TResult>(ISingleCompiledPlanCache planCache, Expression<Func<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TResult>> query) where TArg0 : ObjectContext
+        {
+            return new CompiledQuery(query, planCache).Invoke<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TResult>;
+        }
+
+        public static Func<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TResult> CompileEx<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TResult>(ISingleCompiledPlanCache planCache, Expression<Func<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TResult>> query) where TArg0 : ObjectContext
+        {
+            return new CompiledQuery(query, planCache).Invoke<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TResult>;
+        }
+
+        public static Func<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TResult> CompileEx<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TResult>(ISingleCompiledPlanCache planCache, Expression<Func<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TResult>> query) where TArg0 : ObjectContext
+        {
+            return new CompiledQuery(query, planCache).Invoke<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TResult>;
+        }
+
+        public static Func<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TResult> CompileEx<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TResult>(ISingleCompiledPlanCache planCache, Expression<Func<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TResult>> query) where TArg0 : ObjectContext
+        {
+            return new CompiledQuery(query, planCache).Invoke<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TResult>;
+        }
+
+        public static Func<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10, TResult> CompileEx<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10, TResult>(ISingleCompiledPlanCache planCache, Expression<Func<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10, TResult>> query) where TArg0 : ObjectContext
+        {
+            return new CompiledQuery(query, planCache).Invoke<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10, TResult>;
+        }
+
+        public static Func<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10, TArg11, TResult> CompileEx<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10, TArg11, TResult>(ISingleCompiledPlanCache planCache, Expression<Func<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10, TArg11, TResult>> query) where TArg0 : ObjectContext
+        {
+            return new CompiledQuery(query, planCache).Invoke<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10, TArg11, TResult>;
+        }
+
+        public static Func<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10, TArg11, TArg12, TResult> CompileEx<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10, TArg11, TArg12, TResult>(ISingleCompiledPlanCache planCache, Expression<Func<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10, TArg11, TArg12, TResult>> query) where TArg0 : ObjectContext
+        {
+            return new CompiledQuery(query, planCache).Invoke<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10, TArg11, TArg12, TResult>;
+        }
+
+        public static Func<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10, TArg11, TArg12, TArg13, TResult> CompileEx<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10, TArg11, TArg12, TArg13, TResult>(ISingleCompiledPlanCache planCache, Expression<Func<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10, TArg11, TArg12, TArg13, TResult>> query) where TArg0 : ObjectContext
+        {
+            return new CompiledQuery(query, planCache).Invoke<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10, TArg11, TArg12, TArg13, TResult>;
+        }
+
+        public static Func<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10, TArg11, TArg12, TArg13, TArg14, TResult> CompileEx<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10, TArg11, TArg12, TArg13, TArg14, TResult>(ISingleCompiledPlanCache planCache, Expression<Func<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10, TArg11, TArg12, TArg13, TArg14, TResult>> query) where TArg0 : ObjectContext
+        {
+            return new CompiledQuery(query, planCache).Invoke<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10, TArg11, TArg12, TArg13, TArg14, TResult>;
+        }
+
+        public static Func<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10, TArg11, TArg12, TArg13, TArg14, TArg15, TResult> CompileEx<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10, TArg11, TArg12, TArg13, TArg14, TArg15, TResult>(ISingleCompiledPlanCache planCache, Expression<Func<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10, TArg11, TArg12, TArg13, TArg14, TArg15, TResult>> query) where TArg0 : ObjectContext
+        {
+            return new CompiledQuery(query, planCache).Invoke<TArg0, TArg1, TArg2, TArg3, TArg4, TArg5, TArg6, TArg7, TArg8, TArg9, TArg10, TArg11, TArg12, TArg13, TArg14, TArg15, TResult>;
+        }
+
         private TResult Invoke<TArg0, TResult>(TArg0 arg0) where TArg0 : ObjectContext
         {
             DebugCheck.NotNull(arg0);
@@ -772,7 +875,7 @@ namespace System.Data.Entity.Core.Objects
         {
             bool isSingleton;
             var elementType = GetElementType(typeof(TResult), out isSingleton);
-            ObjectQueryState queryState = new CompiledELinqQueryState(elementType, context, _query, _cacheToken, parameterValues);
+            ObjectQueryState queryState = new CompiledELinqQueryState(elementType, context, _query, _cacheToken, parameterValues, singleCache: _singleCache);
             IEnumerable query = queryState.CreateQuery();
             if (isSingleton)
             {
